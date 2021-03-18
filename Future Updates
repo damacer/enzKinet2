@@ -1,0 +1,40 @@
+Updates to be made to enzKinet package
+
+- Add substrate name input. This will allow the KmA, KmB, etc to be returned as KmNAME, thus more clear.
+- Add user input file. This would make it more like a real website version
+X Add graphs vs secondary substrates/inhibitors/activators
+X Allow multiple models to be run consecutively (i.e. ping-pong and TC).
+X Update functions to display parameters on graphs.
+  - Move annotations based on data.
+- Discuss code with an R expert to determine how to optimise package.
+X Standardise all graphs (labels).
+X Add statistics.
+- Allow users to define the regression type to be used (lm, nls, etc.).
+- Check that data has the correct number of columns for the chosen method.
+- Add plotting options to change how data is graphed (i.e. subplots)
+- Add more user options (tickmarks, legend name, tables)
+- Allow exporting of fitted model csv
+X Allow custom equations
+  - Improve stability and error messages of custom equation functions
+
+
+Application to website
+-
+
+
+R Tutorial Questions
+- = vs <-.
+- Simplify model functions into one generalised one.
+- What is a factor and how does it affect the error "Discrete value applied to continuous scale".
+- How to prevent nls from having a singlular gradient, particularly when a variable is missing from the formula.
+
+
+Best way to integrate package into a website.
+- Just use R markdown
+- Don't do a webpage
+- Shiny is horrible to work with
+- Cost of hosting or requires a constantly running computer
+- Requires lots of work- either me learning new languages or hiring someone else.
+- Will break constantly
+- Can just provide the package
+- Better for students to use R so they can learn the basics than giving them an easy access website.
