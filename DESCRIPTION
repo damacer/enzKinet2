@@ -29,7 +29,6 @@ Imports:
     gridExtra,
     broom,
     modelr,
-    glance,
     rlist
 Suggests: 
     testthat (>= 3.0.0)
