@@ -266,7 +266,7 @@ Ternary.complex = function(EK.data) {
   R2 = modelr::rsquare(model,EK.data)
   RMSE = modelr::rmse(model, EK.data)
   MAE = modelr::mae(model, EK.data)
-  Glance = glance(model)
+  Glance = broom::glance(model)
   stats = list(Model = "MM",
                R2 = R2,
                RMSE = RMSE,
