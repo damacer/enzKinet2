@@ -86,7 +86,13 @@ Ping.pong = function(EK.data) {
 
   ## Process ----
   # Non-linear least square regression
-  model = nls(formu, data = EK.data, start = ests, control = nlc) # perform regression
+  tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
+    model = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
+    error = function(cond) {
+      return("Data could not be fit")
+    }
+  )
+
   KmA = unname(coef(model)["KmA"])                                # extract fitted Km values
   KmB = unname(coef(model)["KmB"])
   Vmax = unname(coef(model)["Vmax"])                              # extract fitted Vmax value
