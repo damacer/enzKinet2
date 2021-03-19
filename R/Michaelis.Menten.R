@@ -20,7 +20,7 @@ Michaelis.Menten = function(EK.data) {
   A.col = 1                               # expect that A data is in the first column
   V0.col = 2                              # expect that V0 data is in the second column
 
-  if (data.size > 2) {                   # if their are more than 2 columns
+  if (data.size > 2) {                    # if their are more than 2 columns
     if ("V0" %in% colnames(EK.data)) {    # if V0 exists as one of the column names
       V0.col = match("V0",names(EK.data)) # change the V0.col number to the correct column
       if (V0.col == 1) {                  # if V0 data is in the first column
@@ -29,7 +29,7 @@ Michaelis.Menten = function(EK.data) {
     } else {
       V0.col = data.size                  # assume that V0 data is in the last column
     }
-  } else if(data.size < 2) {
+  } else if (data.size < 2) {
     return("Error, data requires 2 or more columns")
   }
 
