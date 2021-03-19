@@ -16,11 +16,26 @@
 Michaelis.Menten = function(EK.data) {
   ## Setup ----
   # Standardise column names
-  name.1 = names(EK.data)[1] # store names for later use
-  name.2 = names(EK.data)[2]
+  data.size = ncol(EK.data)               # find the number of columns in the data
+  A.col = 1                               # expect that A data is in the first column
+  V0.col = 2                              # expect that V0 data is in the second column
 
-  names(EK.data)[1] = "A"    # overwrite names
-  names(EK.data)[2] = "V0"
+  if (data.size != 2) {                   # if their are more than 2 columns
+    if ("V0" %in% colnames(EK.data)) {    # if V0 exists as one of the column names
+      V0.col = match("V0",names(EK.data)) # change the V0.col number to the correct column
+      if (V0.col == 1) {                  # if V0 data is in the first column
+        A.col = 2                         # assume that A data is in the second column
+      }
+    } else {                              # if there is no column named V0
+      V0.col = data.size                  # assume that V0 data is in the last column
+    }
+  }
+
+  name.1 = names(EK.data)[A.col] # store names for later use
+  name.2 = names(EK.data)[V0.col]
+
+  names(EK.data)[A.col] = "A"    # overwrite names
+  names(EK.data)[V0.col] = "V0"
 
 
   # Define model
@@ -65,8 +80,7 @@ Michaelis.Menten = function(EK.data) {
   EK.data$V0.fit = Vmax*EK.data$A/(Km + EK.data$A) # calculate fitted results at the same points as the experimental data
 
   A.fit.df = data.frame(A = A.range,               # dataframe for results of the fitted model using A as the range for each B concentration
-                        V0 = Vmax*A.range /
-                             (Km + A.range))
+                        V0 = Vmax*A.range / (Km + A.range))
 
 
   print("Model simulated over range")
