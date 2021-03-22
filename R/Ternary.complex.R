@@ -82,7 +82,6 @@ Ternary.complex = function(EK.data) {
 
 
   print("Setup complete")
-  print(EK.data)
 
 
 
