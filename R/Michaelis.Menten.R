@@ -70,12 +70,17 @@ Michaelis.Menten = function(EK.data) {
 
   ## Process ----
   # Non-linear least square regression
-  tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
-    model = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
+  model = tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
+    expr = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
     error = function(cond) {
-      return("Data could not be fit")
+      print(cond)
+      return(F)
     }
   )
+
+  if (!is.list(model)) {
+    return("Data could not be fit")
+  }
 
   Km = unname(coef(model)["Km"])                                  # extract fitted KmA value
   Vmax = unname(coef(model)["Vmax"])                              # extract fitted Vmax value

@@ -86,12 +86,17 @@ Ping.pong = function(EK.data) {
 
   ## Process ----
   # Non-linear least square regression
-  tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
-    model = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
+  model = tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
+    expr = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
     error = function(cond) {
-      return("Data could not be fit")
+      print(cond)
+      return(F)
     }
   )
+
+  if (!is.list(model)) {
+    return("Data could not be fit")
+  }
 
   KmA = unname(coef(model)["KmA"])                                # extract fitted Km values
   KmB = unname(coef(model)["KmB"])
@@ -289,7 +294,7 @@ Ping.pong = function(EK.data) {
   RMSE = modelr::rmse(model, EK.data)
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
-  stats = list(Model = "MM",
+  stats = list(Model = "PP",
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,

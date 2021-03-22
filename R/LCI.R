@@ -80,12 +80,17 @@ LCI = function(EK.data) {
 
   ## Process ----
   # Non-linear least square regression
-  tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
-    model = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
+  model = tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
+    expr = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
     error = function(cond) {
-      return("Data could not be fit")
+      print(cond)
+      return(F)
     }
   )
+
+  if (!is.list(model)) {
+    return("Data could not be fit")
+  }
 
   Km = unname(coef(model)["Km"])                                  # extract fitted KmA value
   Ki = unname(coef(model)["Ki"])                                  # extract fitted Ksat value
@@ -214,7 +219,7 @@ LCI = function(EK.data) {
   RMSE = modelr::rmse(model, EK.data)
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
-  stats = list(Model = "MM",
+  stats = list(Model = "LCI",
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,
