@@ -190,5 +190,5 @@ Michaelis.Menten = function(EK.data) {
 
 
   # Return parameters
-  return(list(Km,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats))
+  return(list(Km,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df))
 }

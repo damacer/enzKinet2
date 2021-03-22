@@ -311,5 +311,5 @@ Ternary.complex = function(EK.data) {
 
 
   # Return parameters
-  return(list(KmA,KmB,Ksat,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats))
+  return(list(KmA,KmB,Ksat,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats,A.fit.df,B.fit.df))
 }
