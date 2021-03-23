@@ -38,7 +38,7 @@ Given.Params = function(params,model) {
                             V0 = NULL)
 
     for (B in B.values) {
-      model.data[1 + A.len*(run.count - 1):A.len*run.count,2] = Vmax*A.range/(KmA*(1 + B/KmB) + A.range)
+      model.data[1 + A.len*(run.count - 1):A.len*run.count,V0] = Vmax*A.range/(KmA*(1 + B/KmB) + A.range)
       run.count = run.count + 1
     }
   }
