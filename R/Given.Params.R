@@ -17,7 +17,9 @@ Given.Params = function(params,model) {
   KmB = params$Km2
   Ksat = params$Ksat
   Vmax = params$Vmax
-  A.range = params$Arange
+  A.min = params$Arange[1]
+  A.max = params$Arange[2]
+  A.range = pracma::linspace(A.min, A.max, n = 100)
   B.values = params$Bvalues
 
   A.len = length(A.range)
