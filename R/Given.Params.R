@@ -12,7 +12,7 @@
 #' @export
 
 Given.Params = function(params,model) {
-  ## Setup ----
+  ## Setup
   KmA = params$Km1
   KmB = params$Km2
   Ksat = params$Ksat
@@ -37,30 +37,48 @@ Given.Params = function(params,model) {
 
   else if (model == "LCI") {
     model.data = data.frame(A = A.rep.B,
-                            V0 = NULL)
+                            V0 = rep(0, times = length(A.rep.B)))
 
     for (B in B.values) {
-      model.data[1 + A.len*(run.count - 1):A.len*run.count,V0] = Vmax*A.range/(KmA*(1 + B/KmB) + A.range)
+      start.pos = 1 + A.len*(run.count - 1)
+      end.pos = A.len*run.count
+
+      V0 = Vmax*A.range/(KmA*(1 + B/KmB) + A.range)
+
+      model.data[start.pos:end.pos,"V0"] = V0
+
       run.count = run.count + 1
     }
   }
 
   else if (model == "PP") {
     model.data = data.frame(A = A.rep.B,
-                            V0 = NULL)
+                            V0 = rep(0, times = length(A.rep.B)))
 
     for (B in B.values) {
-      model.data[1 + A.len*(run.count - 1):A.len*run.count,2] = Vmax*A.range*B/(KmA*A.range + KmB*B + A.range*B)
+      start.pos = 1 + A.len*(run.count - 1)
+      end.pos = A.len*run.count
+
+      V0 = Vmax*A.range*B/(KmA*A.range + KmB*B + A.range*B)
+
+      model.data[start.pos:end.pos,"V0"] = V0
+
       run.count = run.count + 1
     }
   }
 
   else if (model == "TC") {
     model.data = data.frame(A = A.rep.B,
-                            V0 = NULL)
+                            V0 = rep(0, times = length(A.rep.B)))
 
     for (B in B.values) {
-      model.data[1 + A.len*(run.count - 1):A.len*run.count,2] = Vmax*A.range*B/(KmA*A.range + KmB*B + A.range*B + Ksat*KmB)
+      start.pos = 1 + A.len*(run.count - 1)
+      end.pos = A.len*run.count
+
+      V0 = Vmax*A.range*B/(KmA*A.range + KmB*B + A.range*B + Ksat*KmB)
+
+      model.data[start.pos:end.pos,"V0"] = V0
+
       run.count = run.count + 1
     }
   }
