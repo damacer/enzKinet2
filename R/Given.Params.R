@@ -25,6 +25,7 @@ Given.Params = function(params,model) {
   A.len = length(A.range)
   B.len = length(B.values)
   A.rep.B = rep(A.range, times = B.len)
+  B.rep.A = rep(B.values, each = A.len)
 
   run.count = 1
 
@@ -37,6 +38,7 @@ Given.Params = function(params,model) {
 
   else if (model == "LCI") {
     model.data = data.frame(A = A.rep.B,
+                            B = B.rep.A,
                             V0 = rep(0, times = length(A.rep.B)))
 
     for (B in B.values) {
@@ -53,6 +55,7 @@ Given.Params = function(params,model) {
 
   else if (model == "PP") {
     model.data = data.frame(A = A.rep.B,
+                            B = B.rep.A,
                             V0 = rep(0, times = length(A.rep.B)))
 
     for (B in B.values) {
@@ -69,6 +72,7 @@ Given.Params = function(params,model) {
 
   else if (model == "TC") {
     model.data = data.frame(A = A.rep.B,
+                            B = B.rep.A,
                             V0 = rep(0, times = length(A.rep.B)))
 
     for (B in B.values) {
