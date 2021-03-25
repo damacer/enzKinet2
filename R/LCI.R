@@ -18,13 +18,32 @@
 LCI = function(EK.data) {
   ## Setup ----
   # Standardise column names
-  name.1 = names(EK.data)[1] # store names for later use
-  name.2 = names(EK.data)[2]
-  name.3 = names(EK.data)[3]
+  data.size = ncol(EK.data)               # find the number of columns in the data
+  A.col = 1                               # expect that A data is in the first column
+  I.col = 2                               # expect that I data is in the second column
+  V0.col = 3                              # expect that V0 data is in the third column
 
-  names(EK.data)[1] = "A"    # overwrite names
-  names(EK.data)[2] = "I"
-  names(EK.data)[3] = "V0"
+  if (data.size > 3) {                    # if their are more than 3 columns
+    if ("V0" %in% colnames(EK.data)) {    # if V0 exists as one of the column names
+      V0.col = match("V0",names(EK.data)) # change the V0.col number to the correct column
+      if (V0.col == 1) {                  # if V0 data is in the first column
+        A.col = 2                         # assume that A data is in the second column
+        I.col = 3                         # assume that I data is in the third column
+      }
+    } else {
+      V0.col = data.size                  # assume that V0 data is in the last column
+    }
+  } else if (data.size < 3) {
+    return("Error, data requires 3 or more columns")
+  }
+
+  name.1 = names(EK.data)[A.col] # store names for later use
+  name.2 = names(EK.data)[I.col]
+  name.3 = names(EK.data)[V0.col]
+
+  names(EK.data)[A.col] = "A"    # overwrite names
+  names(EK.data)[I.col] = "I"
+  names(EK.data)[V0.col] = "V0"
 
 
   # Define model
@@ -61,7 +80,18 @@ LCI = function(EK.data) {
 
   ## Process ----
   # Non-linear least square regression
-  model = nls(formu, data = EK.data, start = ests, control = nlc) # perform regression
+  model = tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
+    expr = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
+    error = function(cond) {
+      print(cond)
+      return(F)
+    }
+  )
+
+  if (!is.list(model)) {
+    return("Data could not be fit")
+  }
+
   Km = unname(coef(model)["Km"])                                  # extract fitted KmA value
   Ki = unname(coef(model)["Ki"])                                  # extract fitted Ksat value
   Vmax = unname(coef(model)["Vmax"])                              # extract fitted Vmax value
@@ -189,7 +219,7 @@ LCI = function(EK.data) {
   RMSE = modelr::rmse(model, EK.data)
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
-  stats = list(Model = "MM",
+  stats = list(Model = "LCI",
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,
@@ -199,5 +229,5 @@ LCI = function(EK.data) {
 
 
   # Return parameters
-  return(list(Km,Ki,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats))
+  return(list(Km,Ki,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df))
 }

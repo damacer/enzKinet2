@@ -3,6 +3,7 @@
 export(Custom.1S)
 export(Custom.2S)
 export(EK.main)
+export(Given.Params)
 export(LCI)
 export(Michaelis.Menten)
 export(Ping.pong)
