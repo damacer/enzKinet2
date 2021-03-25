@@ -13,8 +13,8 @@
 
 Given.Params = function(params,model) {
   ## Setup
-  KmA = params$Km1
-  KmB = params$Km2
+  KmA = params$KmA
+  KmB = params$KmB
   Ksat = params$Ksat
   Vmax = params$Vmax
   A.min = params$Arange[1]
@@ -32,6 +32,7 @@ Given.Params = function(params,model) {
 
   ## Process ----
   if (model == "MM") {
+    print(Vmax*A.range/(KmA + A.range))
     model.data = data.frame(A = A.range,
                             V0 = Vmax*A.range/(KmA + A.range))
   }
