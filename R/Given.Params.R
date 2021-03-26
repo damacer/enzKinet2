@@ -13,14 +13,17 @@
 
 Given.Params = function(params,model) {
   ## Setup
+  measurements = params$measurements
   KmA = params$KmA
   KmB = params$KmB
   Ksat = params$Ksat
   Vmax = params$Vmax
   A.min = params$Arange[1]
   A.max = params$Arange[2]
-  A.range = pracma::linspace(A.min, A.max, n = 100)
+  A.range = pracma::linspace(A.min, A.max, n = measurements)
   B.values = params$Bvalues
+  noise = params$noise
+  noise.type = params$noise.type
 
   A.len = length(A.range)
   B.len = length(B.values)
@@ -32,7 +35,6 @@ Given.Params = function(params,model) {
 
   ## Process ----
   if (model == "MM") {
-    print(Vmax*A.range/(KmA + A.range))
     model.data = data.frame(A = A.range,
                             V0 = Vmax*A.range/(KmA + A.range))
   }
@@ -87,6 +89,16 @@ Given.Params = function(params,model) {
       run.count = run.count + 1
     }
   }
+
+  # Noise
+  noise.vec =  rnorm(length(A.rep.B), mean = 0, sd = 1)
+  if (noise.type == "Abs") {
+    model.data$V0 = model.data$V0 + noise*noise.vec
+  }
+  else if (noise.type == "Rel") {
+    model.data$V0 = model.data$V0 + model.data$V0*noise*noise.vec
+  }
+
 
 
   ## Results ----
