@@ -15,7 +15,7 @@
 #' Plots - A vs Vmax, 1/A vs 1/Vmax, B vs Vmax, 1/B vs 1/Vmax, residuals
 #' @export
 
-Ternary.complex = function(EK.data,units) {
+Ternary.complex = function(EK.data,plot.options) {
   ## Setup ----
   # Standardise column names
   data.size = ncol(EK.data)               # find the number of columns in the data
@@ -45,9 +45,19 @@ Ternary.complex = function(EK.data,units) {
   names(EK.data)[B.col] = "B"
   names(EK.data)[V0.col] = "V0"
 
-  # Extract units
-  x.units = units$x.units
-  y.units = units$y.units
+  # Extract plot options
+  options.counter = plot.options$plot.options.counter
+  if (options.counter == 1) {
+    title.1 = "Enzyme Kinetics \nDirect plot"
+    title.2 = "Enzyme Kinetics \nLineweaver-Burk"
+    x.units = ""
+    y.units = ""
+  } else if (options.counter == 2) {
+    title.1 = plot.options$title.1
+    title.2 = plot.options$title.2
+    x.units = plot.options$x.units
+    y.units = plot.options$y.units
+  }
 
   # Define model
   formu = formula(V0 ~ (Vmax*A*B /

@@ -13,7 +13,7 @@
 #' Plots - A vs V0, 1/A vs 1/V0, and A vs residuals
 #' @export
 
-Michaelis.Menten = function(EK.data,units) {
+Michaelis.Menten = function(EK.data,plot.options) {
   ## Setup ----
   # Standardise column names
   data.size = ncol(EK.data)               # find the number of columns in the data
@@ -39,9 +39,19 @@ Michaelis.Menten = function(EK.data,units) {
   names(EK.data)[A.col] = "A"    # overwrite names
   names(EK.data)[V0.col] = "V0"
 
-  # Extract units
-  x.units = units$x.units
-  y.units = units$y.units
+  # Extract plot options
+  options.counter = plot.options$plot.options.counter
+  if (options.counter == 1) {
+    title.1 = "Enzyme Kinetics \nDirect plot"
+    title.2 = "Enzyme Kinetics \nLineweaver-Burk"
+    x.units = ""
+    y.units = ""
+  } else if (options.counter == 2) {
+    title.1 = plot.options$title.1
+    title.2 = plot.options$title.2
+    x.units = plot.options$x.units
+    y.units = plot.options$y.units
+  }
 
 
   # Define model
@@ -144,7 +154,7 @@ Michaelis.Menten = function(EK.data,units) {
                         colour = "red") +
     ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
     ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
-    ggplot2::ggtitle("Enzyme Kinetics \nModel fitted to data") +
+    ggplot2::ggtitle(title.1) +
     ggplot2::labs(colour = "Legend") +                                          # rename the legend
     ggplot2::annotate(geom = "text",                                            # add a text annotation
                       x = median(A.range),                                      # in the approximate middle
@@ -164,7 +174,7 @@ Michaelis.Menten = function(EK.data,units) {
                        inherit.aes = F) +
     ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
     ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
-    ggplot2::ggtitle("Lineweaver-Burk") +
+    ggplot2::ggtitle(title.2) +
     ggthemes::theme_few()
 
 
