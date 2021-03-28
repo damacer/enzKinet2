@@ -32,7 +32,6 @@ Given.Params = function(params,model) {
 
   ## Process ----
   if (model == "MM") {
-    print(Vmax*A.range/(KmA + A.range))
     model.data = data.frame(A = A.range,
                             V0 = Vmax*A.range/(KmA + A.range))
   }
