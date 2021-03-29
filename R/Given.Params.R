@@ -100,13 +100,40 @@ Given.Params = function(params,model) {
   }
 
 
+  # Apparent Fit
+  plot.options = list(options = 1)
+  if (model == "MM") {
+    params = Michaelis.Menten(model.data,plot.options)
+
+    fit.data = params[[7]]
+  }
+  else if (model == "LCI") {
+    params = LCI(model.data,plot.options)
+
+    fit.data = params[[8]]
+  }
+  else if (model == "TC") {
+    params = Ternary.complex(model.data,plot.options)
+
+    fit.data = params[[11]]
+  }
+  else if (model == "PP") {
+    params = Ping.pong(model.data,plot.options)
+
+    fit.data = params[[10]]
+  }
+
+
 
   ## Results ----
   if (model == "MM") {
     enz.plot.A =                                                                  # create a ggplot
       ggplot2::ggplot(model.data,                                                    # using EK.data
                       ggplot2::aes(A, V0)) +                                       # plot A vs V0
-      ggplot2::geom_line() +                                                     # and plot as points
+      ggplot2::geom_point() +                                                     # and plot as points
+      ggplot2::geom_line(fit.data,
+                         mapping = ggplot2::aes(A,V0),
+                         inherit.aes = F) +
       ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
                           linetype = "dashed",
                           colour = "green") +
@@ -128,7 +155,10 @@ Given.Params = function(params,model) {
     enz.plot.A =                                                                  # create a ggplot
       ggplot2::ggplot(model.data,
                       ggplot2::aes(A, V0, colour = as.factor(B))) +                           # plot A vs V0, colouring based on their B value
-      ggplot2::geom_line() +                                                     # and plot as points
+      ggplot2::geom_point() +                                                     # and plot as points
+      ggplot2::geom_line(fit.data,
+                         mapping = ggplot2::aes(A, V0, colour = as.factor(B)),
+                         inherit.aes = F) +
       ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
                           linetype = "dashed",
                           colour = "green") +
