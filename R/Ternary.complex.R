@@ -15,7 +15,7 @@
 #' Plots - A vs Vmax, 1/A vs 1/Vmax, B vs Vmax, 1/B vs 1/Vmax, residuals
 #' @export
 
-Ternary.complex = function(EK.data) {
+Ternary.complex = function(EK.data,plot.options) {
   ## Setup ----
   # Standardise column names
   data.size = ncol(EK.data)               # find the number of columns in the data
@@ -45,6 +45,19 @@ Ternary.complex = function(EK.data) {
   names(EK.data)[B.col] = "B"
   names(EK.data)[V0.col] = "V0"
 
+  # Extract plot options
+  options.counter = plot.options$options
+  if (options.counter == 1) {
+    title.1 = "Enzyme Kinetics \nDirect plot"
+    title.2 = "Enzyme Kinetics \nLineweaver-Burk"
+    x.units = ""
+    y.units = ""
+  } else if (options.counter == 2) {
+    title.1 = plot.options$title.1
+    title.2 = plot.options$title.2
+    x.units = plot.options$x.units
+    y.units = plot.options$y.units
+  }
 
   # Define model
   formu = formula(V0 ~ (Vmax*A*B /
@@ -219,8 +232,8 @@ Ternary.complex = function(EK.data) {
     ggplot2::geom_vline(xintercept = KmA,                                       # add a horizontal line for KmA
                         linetype = "dashed",
                         colour = "red") +
-    ggplot2::xlab(sprintf("%s, mM",name.1)) +
-    ggplot2::ylab("Velocity, µM/min/mg.enz") +
+    ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
+    ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
     ggplot2::ggtitle("Enzyme Kinetics \nModel fitted to data") +
     ggplot2::labs(colour = "Legend") +                                          # rename the legend
     ggplot2::annotate(geom = "text",                                            # add a text annotation
@@ -239,8 +252,8 @@ Ternary.complex = function(EK.data) {
     ggplot2::geom_line(A.LWB.df,                                                # then, using A.LWB.df
                        mapping = ggplot2::aes(A.inv, V0.inv, colour = B),       # add a line of 1/A vs 1/V0, colouring based on their B values
                        inherit.aes = F) +
-    ggplot2::xlab(sprintf("1/%s",name.1)) +
-    ggplot2::ylab("1/V0") +
+    ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
+    ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
     ggplot2::ggtitle("Lineweaver-Burk") +
     ggthemes::theme_few()
 
@@ -259,8 +272,8 @@ Ternary.complex = function(EK.data) {
     ggplot2::geom_vline(xintercept = KmB,
                         linetype = "dashed",
                         colour = "red") +
-    ggplot2::xlab(sprintf("%s, mM",name.2)) +
-    ggplot2::ylab("Velocity, µM/min/mg.enz") +
+    ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
+    ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
     ggplot2::ggtitle("Enzyme Kinetics \nModel fitted to data") +
     ggplot2::labs(colour = "Legend") +
     ggplot2::annotate(geom = "text",
@@ -279,8 +292,8 @@ Ternary.complex = function(EK.data) {
     ggplot2::geom_line(B.LWB.df,
                        mapping = ggplot2::aes(B.inv, V0.inv, colour = A),
                        inherit.aes = F) +
-    ggplot2::xlab(sprintf("1/%s",name.2)) +
-    ggplot2::ylab("1/V0") +
+    ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
+    ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
     ggplot2::ggtitle("Lineweaver-Burk") +
     ggthemes::theme_few()
 
@@ -290,8 +303,8 @@ Ternary.complex = function(EK.data) {
     ggplot2::ggplot(EK.data,
                     ggplot2::aes(A, Resids)) +
     ggplot2::geom_point() +
-    ggplot2::xlab(sprintf("%s, mM",name.1)) +
-                    ggplot2::ylab("Velocity error") +
+    ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
+                    ggplot2::ylab(sprintf("Velocity error, %s",y.units)) +
                     ggplot2::ggtitle("Residual error of model") +
                     ggthemes::theme_few()
 

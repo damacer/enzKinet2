@@ -13,7 +13,7 @@
 #' Plots - A vs V0, 1/A vs 1/V0, and A vs residuals
 #' @export
 
-Michaelis.Menten = function(EK.data) {
+Michaelis.Menten = function(EK.data,plot.options) {
   ## Setup ----
   # Standardise column names
   data.size = ncol(EK.data)               # find the number of columns in the data
@@ -39,6 +39,22 @@ Michaelis.Menten = function(EK.data) {
   names(EK.data)[A.col] = "A"    # overwrite names
   names(EK.data)[V0.col] = "V0"
 
+  # Extract plot options
+  options.counter = plot.options$options
+  print(options.counter)
+  if (options.counter == 1) {
+    title.1 = "Enzyme Kinetics \nDirect plot"
+    title.2 = "Enzyme Kinetics \nLineweaver-Burk"
+    x.units = ""
+    y.units = ""
+  } else if (options.counter == 2) {
+    title.1 = plot.options$title.1
+    title.2 = plot.options$title.2
+    x.units = plot.options$x.units
+    y.units = plot.options$y.units
+  }
+
+  print("test 1")
 
   # Define model
   formu = formula(V0 ~ Vmax*A/(Km + A))
@@ -138,9 +154,9 @@ Michaelis.Menten = function(EK.data) {
     ggplot2::geom_vline(xintercept = Km,                                        # add a horizontal line for KmA
                         linetype = "dashed",
                         colour = "red") +
-    ggplot2::xlab(sprintf("%s, mM",name.1)) +
-    ggplot2::ylab("Velocity, µM/min/mg.enz") +
-    ggplot2::ggtitle("Enzyme Kinetics \nModel fitted to data") +
+    ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
+    ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
+    ggplot2::ggtitle(title.1) +
     ggplot2::labs(colour = "Legend") +                                          # rename the legend
     ggplot2::annotate(geom = "text",                                            # add a text annotation
                       x = median(A.range),                                      # in the approximate middle
@@ -158,9 +174,9 @@ Michaelis.Menten = function(EK.data) {
     ggplot2::geom_line(A.LWB.df,                                                # then, using A.LWB.df
                        mapping = ggplot2::aes(A.inv, V0.inv),                   # add a line of 1/A vs 1/V0
                        inherit.aes = F) +
-    ggplot2::xlab(sprintf("1/%s",name.1)) +
-    ggplot2::ylab("1/V0") +
-    ggplot2::ggtitle("Lineweaver-Burk") +
+    ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
+    ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
+    ggplot2::ggtitle(title.2) +
     ggthemes::theme_few()
 
 
@@ -169,8 +185,8 @@ Michaelis.Menten = function(EK.data) {
     ggplot2::ggplot(EK.data,
                     ggplot2::aes(A, Resids)) +
     ggplot2::geom_point() +
-    ggplot2::xlab(sprintf("%s, mM",name.1)) +
-    ggplot2::ylab("Velocity error") +
+    ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
+    ggplot2::ylab(sprintf("Velocity error, %s",y.units)) +
     ggplot2::ggtitle("Residual error of model") +
     ggthemes::theme_few()
 
