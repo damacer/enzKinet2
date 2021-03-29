@@ -13,14 +13,14 @@
 #'
 #' @export
 
-EK.main = function(file, model,units) {
+EK.main = function(file, model,plot.options) {
   # Read file
   EK.data = read.csv(file, fileEncoding = "UTF-8-BOM")
 
 
   # Run Analysis
   if (model == "MM") {
-    params = enzKinet2::Michaelis.Menten(EK.data,units)
+    params = enzKinet2::Michaelis.Menten(EK.data,plot.options)
 
 
   } else if (model == "LCI") {
@@ -28,11 +28,11 @@ EK.main = function(file, model,units) {
 
 
   } else if (model == "TC") {
-    params = enzKinet2::Ternary.complex(EK.data,units)
+    params = enzKinet2::Ternary.complex(EK.data,plot.options)
 
 
   } else if (model == "PP") {
-    params = enzKinet2::Ping.pong(EK.data,units)
+    params = enzKinet2::Ping.pong(EK.data,plot.options)
 
 
   }else {

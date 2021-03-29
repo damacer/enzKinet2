@@ -40,7 +40,8 @@ Michaelis.Menten = function(EK.data,plot.options) {
   names(EK.data)[V0.col] = "V0"
 
   # Extract plot options
-  options.counter = plot.options$plot.options.counter
+  options.counter = plot.options$options
+  print(options.counter)
   if (options.counter == 1) {
     title.1 = "Enzyme Kinetics \nDirect plot"
     title.2 = "Enzyme Kinetics \nLineweaver-Burk"
@@ -53,6 +54,7 @@ Michaelis.Menten = function(EK.data,plot.options) {
     y.units = plot.options$y.units
   }
 
+  print("test 1")
 
   # Define model
   formu = formula(V0 ~ Vmax*A/(Km + A))
