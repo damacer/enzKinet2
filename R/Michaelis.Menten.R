@@ -88,11 +88,7 @@ Michaelis.Menten = function(EK.data,plot.options) {
   ## Process ----
   # Non-linear least square regression
   model = tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
-    expr = minpack.lm::nlsLM(formu,
-                             data = EK.data,
-                             start = ests,
-                             control = nlc,
-                             lower = c(1e-16, 1e-16)), # perform regression
+    expr = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
     error = function(cond) {
       print(cond)
       return(F)
