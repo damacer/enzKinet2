@@ -98,6 +98,9 @@ Given.Params = function(params,model) {
   else if (noise.type == "Rel") {
     model.data$V0 = model.data$V0 + model.data$V0*noise*noise.vec
   }
+  else if (noise.type == "None" | noise == 0) {
+    model.data$V0 = model.data$V0 + 1e-10      # add insignificant noise so that nls can fit properly
+  }
 
 
   # Apparent Fit
@@ -105,21 +108,34 @@ Given.Params = function(params,model) {
   if (model == "MM") {
     params = Michaelis.Menten(model.data,plot.options)
 
+    Km.app = params[[1]]
+    Vmax.app = params[[2]]
     fit.data = params[[7]]
   }
   else if (model == "LCI") {
     params = LCI(model.data,plot.options)
 
+    KmA.app = params[[1]]
+    Ki.app = params[[2]]
+    Vmax.app = params[[3]]
     fit.data = params[[8]]
   }
   else if (model == "TC") {
     params = Ternary.complex(model.data,plot.options)
 
+    KmA.app = params[[1]]
+    KmB.app = params[[2]]
+    Ksat.app = params[[3]]
+    Vmax.app = params[[4]]
     fit.data = params[[11]]
   }
   else if (model == "PP") {
     params = Ping.pong(model.data,plot.options)
 
+    KmA.app = params[[1]]
+    KmB.app = params[[2]]
+    Ksat.app = params[[3]]
+    Vmax.app = params[[4]]
     fit.data = params[[10]]
   }
 
@@ -147,8 +163,8 @@ Given.Params = function(params,model) {
       ggplot2::annotate(geom = "text",                                            # add a text annotation
                         x = median(A.range),                                      # in the approximate middle
                         y = median(Vmax/2),
-                        label = sprintf("Km1 = %.3f\nVmax = %.3f",              # stating the KmA and Vmax values
-                                        KmA,Vmax)) +
+                        label = sprintf("Km Apparent = %.3f\nVmax Apparent = %.3f",              # stating the KmA and Vmax values
+                                        Km.app,Vmax.app)) +
       ggthemes::theme_few()
   }
   else {
@@ -172,8 +188,8 @@ Given.Params = function(params,model) {
       ggplot2::annotate(geom = "text",                                            # add a text annotation
                         x = median(A.range),                                      # in the approximate middle
                         y = median(Vmax/2),
-                        label = sprintf("Km1 = %.3f\nVmax = %.3f",              # stating the KmA and Vmax values
-                                        KmA,Vmax)) +
+                        label = sprintf("Km Apparent = %.3f\nVmax Apparent = %.3f",              # stating the KmA and Vmax values
+                                        KmA.app,Vmax.app)) +
       ggthemes::theme_few()                                                       # use the minimalist theme
   }
 
