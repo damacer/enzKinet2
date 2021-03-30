@@ -300,7 +300,7 @@ Ping.pong = function(EK.data,plot.options) {
                     ggplot2::aes(A, Resids)) +
     ggplot2::geom_point() +
     ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
-    ggplot2::ylab("Velocity error, %s",y.units) +
+    ggplot2::ylab(sprintf("Velocity error, %s",y.units)) +
     ggplot2::ggtitle("Residual error of model") +
     ggthemes::theme_few()
 
