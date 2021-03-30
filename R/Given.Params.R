@@ -92,10 +92,10 @@ Given.Params = function(params,model) {
 
   # Noise
   noise.vec =  rnorm(length(A.rep.B), mean = 0, sd = 1)
-  if (noise.type == "Abs") {
+  if (noise.type == "Abs" & noise != 0) {
     model.data$V0 = model.data$V0 + noise*noise.vec
   }
-  else if (noise.type == "Rel") {
+  else if (noise.type == "Rel" & noise != 0) {
     model.data$V0 = model.data$V0 + model.data$V0*noise*noise.vec
   }
   else if (noise.type == "None" | noise == 0) {
