@@ -8,7 +8,8 @@
 #' This function provides top-level control for the enzKinet package
 #' @param file a .csv file containing enzyme kinetics data
 #' @param model the name of the model to be used
-#' @param units a list containing a pair of strings of the x and y axes units
+#' @param plot.options a list containing plot options. Must include options = 1
+#' or 2.
 #' @return
 #'
 #' @export

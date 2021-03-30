@@ -4,12 +4,16 @@
 \alias{Ternary.complex}
 \title{Ternary-Complex Model}
 \usage{
-Ternary.complex(EK.data)
+Ternary.complex(EK.data, plot.options)
 }
 \arguments{
 \item{EK.data}{a dataframe containing the enzyme kinetics data- three
 columns, the first and second for substrate concentrations and the third for
 velocity.}
+
+\item{plot.options}{a list of plot options to use. Must include numeric
+variable "options", which decides on the use of the base options
+(options = 1) or the custom options (options = 2)}
 }
 \value{
 list(KmA, KmB, Ksat, Vmax, model, stats)

@@ -4,11 +4,15 @@
 \alias{Michaelis.Menten}
 \title{Michaelis-Menten Model}
 \usage{
-Michaelis.Menten(EK.data)
+Michaelis.Menten(EK.data, plot.options)
 }
 \arguments{
 \item{EK.data}{a dataframe containing the enzyme kinetics data- two columns,
 the first for substrate concentration and the second for velocity.}
+
+\item{plot.options}{a list of plot options to use. Must include numeric
+variable "options", which decides on the use of the base options
+(options = 1) or the custom options (options = 2)}
 }
 \value{
 list(Km, Vmax, model, stats)

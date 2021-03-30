@@ -4,12 +4,15 @@
 \alias{EK.main}
 \title{Enzyme Kinetics for Website Implementation}
 \usage{
-EK.main(file, model)
+EK.main(file, model, plot.options)
 }
 \arguments{
 \item{file}{a .csv file containing enzyme kinetics data}
 
 \item{model}{the name of the model to be used}
+
+\item{plot.options}{a list containing plot options. Must include options = 1
+or 2.}
 }
 \value{
 
