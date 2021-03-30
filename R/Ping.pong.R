@@ -10,6 +10,9 @@
 #' @param EK.data a dataframe containing the enzyme kinetics data- three
 #' columns, the first and second for substrate concentrations and the third for
 #' velocity.
+#' @param plot.options a list of plot options to use. Must include numeric
+#' variable "options", which decides on the use of the base options
+#' (options = 1) or the custom options (options = 2)
 #' @return list(KmA, KmB, Vmax, model, stats)
 #' Prints- KmA, KmB, Vmax
 #' Plots - A vs Vmax, 1/A vs 1/Vmax, B vs Vmax, 1/B vs 1/Vmax, residuals
