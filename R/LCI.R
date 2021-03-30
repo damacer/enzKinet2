@@ -40,6 +40,7 @@ LCI = function(EK.data,plot.options) {
     return("Error, data requires 3 or more columns")
   }
 
+
   name.1 = names(EK.data)[A.col] # store names for later use
   name.2 = names(EK.data)[I.col]
   name.3 = names(EK.data)[V0.col]
@@ -61,6 +62,7 @@ LCI = function(EK.data,plot.options) {
     x.units = plot.options$x.units
     y.units = plot.options$y.units
   }
+
 
   # Define model
   formu = formula(V0 ~ (Vmax*A/(Km*(1 + I/Ki) + A)))
@@ -194,7 +196,7 @@ LCI = function(EK.data,plot.options) {
                         linetype = "dashed",
                         colour = "red") +
     ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
-    ggplot2::ylab("Velocity, %s",y.units) +
+    ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
     ggplot2::ggtitle(title.1) +
     ggplot2::labs(colour = "Legend") +                                          # rename the legend
     ggplot2::annotate(geom = "text",                                            # add a text annotation

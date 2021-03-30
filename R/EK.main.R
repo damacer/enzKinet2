@@ -25,7 +25,7 @@ EK.main = function(file, model,plot.options) {
 
 
   } else if (model == "LCI") {
-    params = enzKinet2::LCI(EK.data,units)
+    params = enzKinet2::LCI(EK.data,plot.options)
 
 
   } else if (model == "TC") {
