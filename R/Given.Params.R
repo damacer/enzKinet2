@@ -206,5 +206,12 @@ Given.Params = function(params,model) {
       ggthemes::theme_few()                                                       # use the minimalist theme
   }
 
-  return(enz.plot.A)
+  if (model == "MM" | model == "LCI") {
+    plots = list(enz.plot.A, LWB.plot.A, res.plot, stats)
+  }
+  else if (model == "TC" | model == "PP") {
+    plots = list(enz.plot.A, LWB.plot.A, LWB.plot.B, res.plot, stats)
+  }
+
+  return(plots)
 }
