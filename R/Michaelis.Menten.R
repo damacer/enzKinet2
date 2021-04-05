@@ -95,6 +95,7 @@ Michaelis.Menten = function(EK.data,plot.options) {
     }
   )
 
+
   if (!is.list(model)) {
     return("Data could not be fit")
   }

@@ -110,6 +110,9 @@ Given.Params = function(params,model) {
 
     Km.app = params[[1]]
     Vmax.app = params[[2]]
+    LWB.plot.A = params[[4]]
+    res.plot = params[[5]]
+    stats = params[[6]]
     fit.data = params[[7]]
   }
   else if (model == "LCI") {
@@ -118,6 +121,9 @@ Given.Params = function(params,model) {
     KmA.app = params[[1]]
     Ki.app = params[[2]]
     Vmax.app = params[[3]]
+    LWB.plot.A = params[[5]]
+    res.plot = params[[6]]
+    stats = params[[7]]
     fit.data = params[[8]]
   }
   else if (model == "TC") {
@@ -127,6 +133,10 @@ Given.Params = function(params,model) {
     KmB.app = params[[2]]
     Ksat.app = params[[3]]
     Vmax.app = params[[4]]
+    LWB.plot.A = params[[7]]
+    LWB.plot.B = params[[8]]
+    res.plot = params[[9]]
+    stats = params[[10]]
     fit.data = params[[11]]
   }
   else if (model == "PP") {
@@ -134,8 +144,11 @@ Given.Params = function(params,model) {
 
     KmA.app = params[[1]]
     KmB.app = params[[2]]
-    Ksat.app = params[[3]]
-    Vmax.app = params[[4]]
+    Vmax.app = params[[3]]
+    LWB.plot.A = params[[6]]
+    LWB.plot.B = params[[7]]
+    res.plot = params[[8]]
+    stats = params[[9]]
     fit.data = params[[10]]
   }
 
