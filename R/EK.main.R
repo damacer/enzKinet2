@@ -15,6 +15,8 @@
 #' @export
 
 EK.main = function(file, model,plot.options) {
+  print("Starting EK.main")
+
   # Read file
   EK.data = read.csv(file, fileEncoding = "UTF-8-BOM")
 

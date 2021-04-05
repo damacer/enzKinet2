@@ -17,6 +17,8 @@
 #' @export
 
 Michaelis.Menten = function(EK.data,plot.options) {
+  print("Starting Michaelis.Menten")
+
   ## Setup ----
   # Standardise column names
   data.size = ncol(EK.data)               # find the number of columns in the data
@@ -91,13 +93,13 @@ Michaelis.Menten = function(EK.data,plot.options) {
     expr = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
     error = function(cond) {
       print(cond)
-      return(F)
+      return(cond)
     }
   )
 
 
   if (!is.list(model)) {
-    return("Data could not be fit")
+    return(cond)
   }
 
   Km = unname(coef(model)["Km"])                                  # extract fitted KmA value
