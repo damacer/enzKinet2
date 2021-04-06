@@ -19,6 +19,8 @@
 #' @export
 
 Ternary.complex = function(EK.data,plot.options) {
+  print("starting Ternary.complex")
+
   ## Setup ----
   # Standardise column names
   data.size = ncol(EK.data)               # find the number of columns in the data
@@ -108,12 +110,13 @@ Ternary.complex = function(EK.data,plot.options) {
     expr = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
     error = function(cond) {
       print(cond)
-      return(F)
+      return(c(F,cond))
     }
   )
 
-  if (!is.list(model)) {
-    return("Data could not be fit")
+  if (!is.list(model[[1]])) {
+    print("nls failed, returning error statement")
+    return(model)
   }
 
   if (!is.list(model)) {

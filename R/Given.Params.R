@@ -12,6 +12,8 @@
 #' @export
 
 Given.Params = function(params,model) {
+  print("Starting Given.Params")
+
   ## Setup
   measurements = params$measurements
   KmA = params$KmA
@@ -31,6 +33,8 @@ Given.Params = function(params,model) {
   B.rep.A = rep(B.values, each = A.len)
 
   run.count = 1
+
+  print("Setup complete")
 
 
   ## Process ----
@@ -90,8 +94,16 @@ Given.Params = function(params,model) {
     }
   }
 
+  print("Data created")
+
   # Noise
-  noise.vec =  rnorm(length(A.rep.B), mean = 0, sd = 1)
+  if (model == "MM") {
+    noise.vec =  rnorm(measurements, mean = 0, sd = 1)
+  }
+  else {
+    noise.vec =  rnorm(length(A.rep.B), mean = 0, sd = 1)
+  }
+
   if (noise.type == "Abs" & noise != 0) {
     model.data$V0 = model.data$V0 + noise*noise.vec
   }
@@ -102,11 +114,17 @@ Given.Params = function(params,model) {
     model.data$V0 = model.data$V0 + 1e-10      # add insignificant noise so that nls can fit properly
   }
 
+  print("Noise added")
+
 
   # Apparent Fit
   plot.options = list(options = 1)
   if (model == "MM") {
     params = Michaelis.Menten(model.data,plot.options)
+
+    if (length(params) == 1) {
+      return(c(F,params))
+    }
 
     Km.app = params[[1]]
     Vmax.app = params[[2]]
@@ -117,6 +135,10 @@ Given.Params = function(params,model) {
   }
   else if (model == "LCI") {
     params = LCI(model.data,plot.options)
+
+    if (params[[1]] == F) {
+      return(c(F,params))
+    }
 
     KmA.app = params[[1]]
     Ki.app = params[[2]]
@@ -129,10 +151,15 @@ Given.Params = function(params,model) {
   else if (model == "TC") {
     params = Ternary.complex(model.data,plot.options)
 
+    if (length(params) == 1) {
+      return(c(F,params))
+    }
+
     KmA.app = params[[1]]
     KmB.app = params[[2]]
     Ksat.app = params[[3]]
     Vmax.app = params[[4]]
+    enz.plot.B = params[[6]]
     LWB.plot.A = params[[7]]
     LWB.plot.B = params[[8]]
     res.plot = params[[9]]
@@ -142,15 +169,22 @@ Given.Params = function(params,model) {
   else if (model == "PP") {
     params = Ping.pong(model.data,plot.options)
 
+    if (length(params) == 1) {
+      return(c(F,params))
+    }
+
     KmA.app = params[[1]]
     KmB.app = params[[2]]
     Vmax.app = params[[3]]
+    enz.plot.B = params[[5]]
     LWB.plot.A = params[[6]]
     LWB.plot.B = params[[7]]
     res.plot = params[[8]]
     stats = params[[9]]
     fit.data = params[[10]]
   }
+
+  print("Apparent fit complete")
 
 
 
@@ -210,8 +244,9 @@ Given.Params = function(params,model) {
     plots = list(enz.plot.A, LWB.plot.A, res.plot, stats)
   }
   else if (model == "TC" | model == "PP") {
-    plots = list(enz.plot.A, LWB.plot.A, LWB.plot.B, res.plot, stats)
+    plots = list(enz.plot.A, enz.plot.B, LWB.plot.A, LWB.plot.B, res.plot, stats)
   }
 
-  return(plots)
+  print("Plots created, returning")
+  return(c(T,plots))
 }
