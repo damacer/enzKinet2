@@ -97,7 +97,13 @@ Given.Params = function(params,model) {
   print("Data created")
 
   # Noise
-  noise.vec =  rnorm(length(A.rep.B), mean = 0, sd = 1)
+  if (model == "MM") {
+    noise.vec =  rnorm(measurements, mean = 0, sd = 1)
+  }
+  else {
+    noise.vec =  rnorm(length(A.rep.B), mean = 0, sd = 1)
+  }
+
   if (noise.type == "Abs" & noise != 0) {
     model.data$V0 = model.data$V0 + noise*noise.vec
   }
@@ -153,6 +159,7 @@ Given.Params = function(params,model) {
     KmB.app = params[[2]]
     Ksat.app = params[[3]]
     Vmax.app = params[[4]]
+    enz.plot.B = params[[6]]
     LWB.plot.A = params[[7]]
     LWB.plot.B = params[[8]]
     res.plot = params[[9]]
@@ -169,6 +176,7 @@ Given.Params = function(params,model) {
     KmA.app = params[[1]]
     KmB.app = params[[2]]
     Vmax.app = params[[3]]
+    enz.plot.B = params[[5]]
     LWB.plot.A = params[[6]]
     LWB.plot.B = params[[7]]
     res.plot = params[[8]]
@@ -236,7 +244,7 @@ Given.Params = function(params,model) {
     plots = list(enz.plot.A, LWB.plot.A, res.plot, stats)
   }
   else if (model == "TC" | model == "PP") {
-    plots = list(enz.plot.A, LWB.plot.A, LWB.plot.B, res.plot, stats)
+    plots = list(enz.plot.A, enz.plot.B, LWB.plot.A, LWB.plot.B, res.plot, stats)
   }
 
   print("Plots created, returning")
