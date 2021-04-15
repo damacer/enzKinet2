@@ -99,7 +99,7 @@ Michaelis.Menten = function(EK.data,plot.options) {
 
 
   if (!is.list(model)) {
-    return(cond)
+    return(model)
   }
 
   Km = unname(coef(model)["Km"])                                  # extract fitted KmA value
