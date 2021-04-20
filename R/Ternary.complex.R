@@ -186,10 +186,10 @@ Ternary.complex = function(EK.data,plot.options) {
   for (B.conc in B.concs) {
     V0.inv.B = (KmA*A.range + KmB*B.conc + A.range*B.conc + Ksat*KmB) /
                (Vmax*A.range*B.conc)
-      start.pos = 1 + num.A*counter                                             # starting index
-      end.pos = num.A*(1 + counter)                                             # ending index
-      A.LWB.df[start.pos:end.pos, "V0.inv"] = V0.inv.B                            # place data in the V0.inv column
-      counter = counter + 1                                                     # increment counter
+    start.pos = 1 + num.A*counter                                             # starting index
+    end.pos = num.A*(1 + counter)                                             # ending index
+    A.LWB.df[start.pos:end.pos, "V0.inv"] = V0.inv.B                            # place data in the V0.inv column
+    counter = counter + 1                                                     # increment counter
   }
 
   # B as range

@@ -255,6 +255,20 @@ TEMPLATE = function(EK.data, plot.options) {
   enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, "A")
 
 
+  # Get stats
+  R2 = modelr::rsquare(model, EK.data)
+  RMSE = modelr::rmse(model, EK.data)
+  MAE = modelr::mae(model, EK.data)
+  Glance = broom::glance(model)
+  stats = list(Model = "TC",
+               R2 = R2,
+               RMSE = RMSE,
+               MAE = MAE,
+               AIC = Glance$AIC,
+               BIC = Glance$BIC,
+               logLik = Glance$logLik)
+
+
   # Return parameters
   return(list(KmA, KmB, Ksat, Vmax,
               enz.plot.A,
