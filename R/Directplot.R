@@ -15,10 +15,10 @@
 #' @export
 
 Directplot = function(EK.data, fit.data, params, labels, AB) {
-  if (AB = "A") {
+  if (AB == "A") {
     col1 = 1
     col2 = 2
-  } else if (AB = "B") {
+  } else if (AB == "B") {
     col1 = 2
     col2 = 1
   }

@@ -212,7 +212,7 @@ TEMPLATE = function(EK.data, plot.options) {
                (Vmax*A.range*B.conc)
     start.pos = 1 + num.A*counter
     end.pos = num.A*(1 + counter)
-    A.LWB.df[start.pos:end.pos, "V0.inv"] V0.inv.B
+    A.LWB.df[start.pos:end.pos, "V0.inv"] = V0.inv.B
     counter = counter + 1
   }
 
