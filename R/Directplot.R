@@ -10,11 +10,12 @@
 #' @param fit.data a data-frame containing the fitted data to be plotted
 #' @param params parameters to be used in plotting
 #' @param labels a list of 2 plot labels (x-axis and y-axis)
+#' @param title a string for the title of the plot
 #' @param AB a string ("A" or "B") to choose which data-frame columns to use
 #'
 #' @export
 
-Directplot = function(EK.data, fit.data, params, labels, AB) {
+Directplot = function(EK.data, fit.data, params, labels, title, AB) {
   if (AB == "A") {
     col1 = 1
     col2 = 2
@@ -42,7 +43,7 @@ Directplot = function(EK.data, fit.data, params, labels, AB) {
                                               V0,
                                               colour = as.factor(fit.data[,col2])),
                        inherit.aes = F) +
-    ggplot2:geom_hline(yintercept = Vmax,
+    ggplot2::geom_hline(yintercept = Vmax,
                        linetype = "dashed",
                        colour = "green") +
     ggplot2::geom_vline(xintercept = Km,
@@ -53,9 +54,12 @@ Directplot = function(EK.data, fit.data, params, labels, AB) {
     ggplot2::ggtitle("Enzyme Kinetics \nModel fitted to data") +
     ggplot2::labs(colour = "Legend") +
     ggplot2::annotate(geom = "text",
-                      x = 1,
-                      y = 1,
+                      x = median(EK.data[,col1]),
+                      y = max(EK.data[,3]),
                       label = sprintf("Km %s = %.3f\nVmax = %.3f",
-                                      name.1, Km, Vmax)) +
+                                      name, Km, Vmax)) +
     ggthemes::theme_few()
+
+  print(plot)
+  return(plot)
 }

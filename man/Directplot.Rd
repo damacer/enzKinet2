@@ -4,7 +4,7 @@
 \alias{Directplot}
 \title{Direct plot function}
 \usage{
-Directplot(EK.data, fit.data, params, labels, AB)
+Directplot(EK.data, fit.data, params, labels, title, AB)
 }
 \arguments{
 \item{EK.data}{a data-frame containing the primary data to be plotted}
@@ -14,6 +14,8 @@ Directplot(EK.data, fit.data, params, labels, AB)
 \item{params}{parameters to be used in plotting}
 
 \item{labels}{a list of 2 plot labels (x-axis and y-axis)}
+
+\item{title}{a string for the title of the plot}
 
 \item{AB}{a string ("A" or "B") to choose which data-frame columns to use}
 }
