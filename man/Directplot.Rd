@@ -11,6 +11,8 @@ Directplot(EK.data, fit.data, params, labels, AB)
 
 \item{fit.data}{a data-frame containing the fitted data to be plotted}
 
+\item{params}{parameters to be used in plotting}
+
 \item{labels}{a list of 2 plot labels (x-axis and y-axis)}
 
 \item{AB}{a string ("A" or "B") to choose which data-frame columns to use}

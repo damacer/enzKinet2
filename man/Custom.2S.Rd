@@ -10,6 +10,8 @@ Custom.2S(EK.data, formula.text)
 \item{EK.data}{a dataframe containing the enzyme kinetics data- three
 columns, the first and second for substrate concentrations and the third for
 velocity.}
+
+\item{formula.text}{custom formula text}
 }
 \value{
 list(KmA, KmB, Ksat, Vmax, model, stats)

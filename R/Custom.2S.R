@@ -10,7 +10,7 @@
 #' @param EK.data a dataframe containing the enzyme kinetics data- three
 #' columns, the first and second for substrate concentrations and the third for
 #' velocity.
-#' @param formula.text
+#' @param formula.text custom formula text
 #' @return list(KmA, KmB, Ksat, Vmax, model, stats)
 #' Prints- KmA, KmB, Ksat, Vmax
 #' Plots - A vs Vmax, 1/A vs 1/Vmax, B vs Vmax, 1/B vs 1/Vmax, residuals

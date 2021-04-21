@@ -1,10 +1,10 @@
-## 3S-TEMPLATE function for enzKinet2 package
-#' [To use this template, replace any words/variables where you see all capitals]
-#' [i.e. "TEMPLATE" above and below this paragraph.]
-#' [Additionally, {} represents optional words/variables to include depending on]
-#' [the model you are using.]
+## TEMPLATE2S function for enzKinet2 package
+#' To use this template, replace any words/variables where you see all capitals
+#' i.e. "TEMPLATE" above and below this paragraph.
+#' Additionally, {} represents optional words/variables to include depending on
+#' the model you are using.
 
-#' 3S-TEMPLATE model
+#' TEMPLATE2S model
 #'
 #' @author Daniel Mak
 #' 20/04/2021
@@ -26,7 +26,7 @@
 #'
 #' @export
 
-TEMPLATE = function(EK.data, plot.options) {
+TEMPLATE2S = function(EK.data, plot.options) {
   print("Starting TEMPLATE")
 
 

@@ -8,7 +8,7 @@
 #' This function creates plots for the enzKinet2 model functions
 #' @param EK.data a data-frame containing the primary data to be plotted
 #' @param fit.data a data-frame containing the fitted data to be plotted
-#' @param params
+#' @param params parameters to be used in plotting
 #' @param labels a list of 2 plot labels (x-axis and y-axis)
 #' @param AB a string ("A" or "B") to choose which data-frame columns to use
 #'
