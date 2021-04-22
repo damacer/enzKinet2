@@ -52,18 +52,39 @@ LCI = function(EK.data,plot.options) {
   names(EK.data)[V0.col] = "V0"
 
   # Extract plot options
-  options.counter = plot.options$options
-  if (options.counter == 1) {
+  x.units = plot.options$x.units
+  y.units = plot.options$y.units
+  if (plot.options$options == 1) {        # use the base options
     title.1 = "Enzyme Kinetics \nDirect plot"
     title.2 = "Enzyme Kinetics \nLineweaver-Burk"
-    x.units = ""
-    y.units = ""
-  } else if (options.counter == 2) {
+    x.lab1 = sprintf("%s", name.1)
+    x.lab2 = sprintf("%s", name.2)
+    x.lab1.inv = sprintf("1/%s", name.1)
+    x.lab2.inv = sprintf("1/%s", name.2)
+    y.lab = sprintf("Velocity")
+    y.lab.inv = sprintf("1/V0")
+  } else if (plot.options$options == 2) { # use custom options
     title.1 = plot.options$title.1
     title.2 = plot.options$title.2
-    x.units = plot.options$x.units
-    y.units = plot.options$y.units
+    x.lab1 = sprintf("%s, %s", name.1, x.units)
+    x.lab2 = sprintf("%s, %s", name.2, x.units)
+    x.lab1.inv = sprintf("1/%s, 1/%s", name.1, x.units)
+    x.lab2.inv = sprintf("1/%s, 1/%s", name.2, x.units)
+    y.lab = sprintf("Velocity, %s", y.units)
+    y.lab.inv = sprintf("1/V0, 1/%s", y.units)
   }
+  # options.counter = plot.options$options
+  # if (options.counter == 1) {
+  #   title.1 = "Enzyme Kinetics \nDirect plot"
+  #   title.2 = "Enzyme Kinetics \nLineweaver-Burk"
+  #   x.units = ""
+  #   y.units = ""
+  # } else if (options.counter == 2) {
+  #   title.1 = plot.options$title.1
+  #   title.2 = plot.options$title.2
+  #   x.units = plot.options$x.units
+  #   y.units = plot.options$y.units
+  # }
 
 
   # Define model
@@ -185,43 +206,48 @@ LCI = function(EK.data,plot.options) {
 
 
   # Figure 1 - enzyme kinetics, substrate one
-  enz.plot.A =                                                                  # create a ggplot
-    ggplot2::ggplot(EK.data,                                                    # using EK.data
-                    ggplot2::aes(A, V0, colour = as.factor(I))) +                           # plot A vs V0, colouring based on their I value
-    ggplot2::geom_point() +                                                     # and plot as points
-    ggplot2::geom_line(A.fit.df,                                                # then, using A.fit.df
-                       mapping = ggplot2::aes(A, V0, colour = I),               # add a line of A vs V0, colouring based on their I value
-                       inherit.aes = F) +
-    ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
-                        linetype = "dashed",
-                        colour = "green") +
-    ggplot2::geom_vline(xintercept = Km,                                       # add a horizontal line for Km
-                        linetype = "dashed",
-                        colour = "red") +
-    ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
-    ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
-    ggplot2::ggtitle(title.1) +
-    ggplot2::labs(colour = "Legend") +                                          # rename the legend
-    ggplot2::annotate(geom = "text",                                            # add a text annotation
-                      x = median(A.range),                                      # in the approximate middle
-                      y = median(Vmax/2),
-                      label = sprintf("Km %s = %.3f\nVmax = %.3f",              # stating the KmA and Vmax values
-                                      name.1,Km,Vmax)) +
-    ggthemes::theme_few()                                                       # use the minimalist theme
+  fig1.params = list(Km = KmA, Vmax = Vmax, name = name.1)
+  fig1.labs = list(x.lab1, y.lab)
+  enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A")
+  # enz.plot.A =                                                                  # create a ggplot
+  #   ggplot2::ggplot(EK.data,                                                    # using EK.data
+  #                   ggplot2::aes(A, V0, colour = as.factor(I))) +                           # plot A vs V0, colouring based on their I value
+  #   ggplot2::geom_point() +                                                     # and plot as points
+  #   ggplot2::geom_line(A.fit.df,                                                # then, using A.fit.df
+  #                      mapping = ggplot2::aes(A, V0, colour = I),               # add a line of A vs V0, colouring based on their I value
+  #                      inherit.aes = F) +
+  #   ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
+  #                       linetype = "dashed",
+  #                       colour = "green") +
+  #   ggplot2::geom_vline(xintercept = Km,                                       # add a horizontal line for Km
+  #                       linetype = "dashed",
+  #                       colour = "red") +
+  #   ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
+  #   ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
+  #   ggplot2::ggtitle(title.1) +
+  #   ggplot2::labs(colour = "Legend") +                                          # rename the legend
+  #   ggplot2::annotate(geom = "text",                                            # add a text annotation
+  #                     x = median(A.range),                                      # in the approximate middle
+  #                     y = median(Vmax/2),
+  #                     label = sprintf("Km %s = %.3f\nVmax = %.3f",              # stating the KmA and Vmax values
+  #                                     name.1,Km,Vmax)) +
+  #   ggthemes::theme_few()                                                       # use the minimalist theme
 
 
   # Figure 2 - Lineweaver-Burk, substrate one
-  LWB.plot.A =                                                                  # create a ggplot
-    ggplot2::ggplot(EK.data,                                                    # using EK.data
-                    ggplot2::aes(A.inv, V0.inv, colour = as.factor(I))) +       # plot 1/A vs 1/V0, colouring based on their I value
-    ggplot2::geom_point() +                                                     # and plot as points
-    ggplot2::geom_line(A.LWB.df,                                                # then, using A.LWB.df
-                       mapping = ggplot2::aes(A.inv, V0.inv, colour = I),       # add a line of 1/A vs 1/V0, colouring based on their I values
-                       inherit.aes = F) +
-    ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
-    ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
-    ggplot2::ggtitle(title.2) +
-    ggthemes::theme_few()
+  fig2.labs = list(x.lab1.inv, y.lab.inv)
+  LWB.plot.A = enzKinet2::LWBplot(EK.data, A.LWB.df, fig2.labs, title.2, "A")
+  # LWB.plot.A =                                                                  # create a ggplot
+  #   ggplot2::ggplot(EK.data,                                                    # using EK.data
+  #                   ggplot2::aes(A.inv, V0.inv, colour = as.factor(I))) +       # plot 1/A vs 1/V0, colouring based on their I value
+  #   ggplot2::geom_point() +                                                     # and plot as points
+  #   ggplot2::geom_line(A.LWB.df,                                                # then, using A.LWB.df
+  #                      mapping = ggplot2::aes(A.inv, V0.inv, colour = I),       # add a line of 1/A vs 1/V0, colouring based on their I values
+  #                      inherit.aes = F) +
+  #   ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
+  #   ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
+  #   ggplot2::ggtitle(title.2) +
+  #   ggthemes::theme_few()
 
 
   # Figure 3 - Residuals of model
