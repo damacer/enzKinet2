@@ -7,7 +7,7 @@
 Ternary.complex(EK.data, plot.options)
 }
 \arguments{
-\item{EK.data}{a dataframe containing the enzyme kinetics data- three
+\item{EK.data}{a data-frame containing the enzyme kinetics data- three
 columns, the first and second for substrate concentrations and the third for
 velocity.}
 

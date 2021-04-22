@@ -7,15 +7,19 @@
 #'
 #' This function analyses enzyme kinetics and reports on the results, using the
 #' ternary-complex mechanism model.
-#' @param EK.data a dataframe containing the enzyme kinetics data- three
+#'
+#' @param EK.data a data-frame containing the enzyme kinetics data- three
 #' columns, the first and second for substrate concentrations and the third for
 #' velocity.
+#'
 #' @param plot.options a list of plot options to use. Must include numeric
 #' variable "options", which decides on the use of the base options
 #' (options = 1) or the custom options (options = 2)
+#'
 #' @return list(KmA, KmB, Ksat, Vmax, model, stats)
 #' Prints- KmA, KmB, Ksat, Vmax
 #' Plots - A vs Vmax, 1/A vs 1/Vmax, B vs Vmax, 1/B vs 1/Vmax, residuals
+#'
 #' @export
 
 Ternary.complex = function(EK.data,plot.options) {
@@ -42,7 +46,7 @@ Ternary.complex = function(EK.data,plot.options) {
     return("Error, data requires 3 or more columns")
   }
 
-  name.1 = names(EK.data)[A.col] # store names for later use
+  name.1 = names(EK.data)[A.col] # store original names for later use
   name.2 = names(EK.data)[B.col]
   name.3 = names(EK.data)[V0.col]
 
@@ -50,19 +54,29 @@ Ternary.complex = function(EK.data,plot.options) {
   names(EK.data)[B.col] = "B"
   names(EK.data)[V0.col] = "V0"
 
-  # Extract plot options
-  options.counter = plot.options$options
-  if (options.counter == 1) {
+  # Define plot options
+  x.units = plot.options$x.units
+  y.units = plot.options$y.units
+  if (plot.options$options == 1) {        # use the base options
     title.1 = "Enzyme Kinetics \nDirect plot"
     title.2 = "Enzyme Kinetics \nLineweaver-Burk"
-    x.units = ""
-    y.units = ""
-  } else if (options.counter == 2) {
+    x.lab1 = sprintf("%s", name.1)
+    x.lab2 = sprintf("%s", name.2)
+    x.lab1.inv = sprintf("1/%s", name.1)
+    x.lab2.inv = sprintf("1/%s", name.2)
+    y.lab = sprintf("Velocity")
+    y.lab.inv = sprintf("1/V0")
+  } else if (plot.options$options == 2) { # use custom options
     title.1 = plot.options$title.1
     title.2 = plot.options$title.2
-    x.units = plot.options$x.units
-    y.units = plot.options$y.units
+    x.lab1 = sprintf("%s, %s", name.1, x.units)
+    x.lab2 = sprintf("%s, %s", name.2, x.units)
+    x.lab1.inv = sprintf("1/%s, 1/%s", name.1, x.units)
+    x.lab2.inv = sprintf("1/%s, 1/%s", name.2, x.units)
+    y.lab = sprintf("Velocity, %s", y.units)
+    y.lab.inv = sprintf("1/V0, 1/%s", y.units)
   }
+
 
   # Define model
   formu = formula(V0 ~ (Vmax*A*B /
@@ -70,11 +84,11 @@ Ternary.complex = function(EK.data,plot.options) {
 
 
   # Estimate starting parameters for regression
-  KmA.est = median(EK.data$A, na.rm = T) # use the median of measurements for Km values
-  KmB.est = median(EK.data$B, na.rm = T) # use the median of measurements for Km values
-  Ksat.est = 0.5                         # use 0.5 for Ksat values
-  Vmax.est = max(EK.data$V0, na.rm = T)  # use maximum measured value for V0
-  ests = list(KmA = KmA.est,             # create a named list of estimates
+  KmA.est = median(EK.data$A, na.rm = T)  # use the median of measurements for Km values
+  KmB.est = median(EK.data$B, na.rm = T)
+  Ksat.est = 0.5                          # use 0.5 for Ksat values
+  Vmax.est = max(EK.data$V0, na.rm = T)   # use maximum measured value for V0
+  ests = list(KmA = KmA.est,              # create a named list of estimates
               KmB = KmB.est,
               Ksat = Ksat.est,
               Vmax = Vmax.est)
@@ -106,19 +120,24 @@ Ternary.complex = function(EK.data,plot.options) {
 
   ## Process ----
   # Non-linear least square regression
-  model = tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
-    expr = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
-    error = function(cond) {
+  model = tryCatch(                                                   # prevent code from breaking in case where the data cannot be fit
+    expr = nls(formu, data = EK.data, start = ests, control = nlc),   # perform regression
+    error = function(cond) {                                          # catch errors
+
+      #### Add additional tryCatch statement to run linear regression if nls failed. This will allow the removal of the necessary noise addition to perfect data
+
       print(cond)
       return(c(F,cond))
     }
   )
 
+  # Check if model failed
   if (!is.list(model[[1]])) {
     print("nls failed, returning error statement")
     return(model)
   }
 
+  # Check if data could not be fit !!!! Possibly obsolete code !!!!
   if (!is.list(model)) {
     return("Data could not be fit")
   }
@@ -139,7 +158,7 @@ Ternary.complex = function(EK.data,plot.options) {
   # A as range for each B concentration
   A.seqA = rep(A.range, times = length(num.B))     # vector containing A.range repeated num.B times
   B.seqA = paste(rep(B.concs, each = num.A))       # vector containing each value in B.concs repeated num.A times
-  A.fit.df = data.frame(A = A.seqA,                # dataframe for results of the fitted model using A as the range for each B concentration
+  A.fit.df = data.frame(A = A.seqA,                # data-frame for results of the fitted model using A as the range for each B concentration
                         B = B.seqA,
                         V0 = NA)
   counter = 0
@@ -155,7 +174,7 @@ Ternary.complex = function(EK.data,plot.options) {
   # B as range for each A concentration
   A.seqB = paste(rep(A.concs, each = num.B))       # vector containing A.range repeated num.B times
   B.seqB = rep(B.range, times = length(num.A))     # vector containing each value in B.concs repeated num.A times
-  B.fit.df = data.frame(A = A.seqB,                # dataframe for results of the fitted model using B as the range for each A concentration
+  B.fit.df = data.frame(A = A.seqB,                # data-frame for results of the fitted model using B as the range for each A concentration
                         B = B.seqB,
                         V0 = NA)
   counter = 0
@@ -178,7 +197,7 @@ Ternary.complex = function(EK.data,plot.options) {
   EK.data$V0.inv = 1/EK.data$V0 # invert V0 velocities
 
   # A as range
-  A.LWB.df = data.frame(A = A.seqA,            # dataframe for 1/A vs 1/V0
+  A.LWB.df = data.frame(A = A.seqA,            # data-frame for 1/A vs 1/V0
                         B = as.factor(B.seqA),
                         A.inv = 1/A.range,
                         V0.inv = NA)
@@ -186,14 +205,14 @@ Ternary.complex = function(EK.data,plot.options) {
   for (B.conc in B.concs) {
     V0.inv.B = (KmA*A.range + KmB*B.conc + A.range*B.conc + Ksat*KmB) /
                (Vmax*A.range*B.conc)
-      start.pos = 1 + num.A*counter                                             # starting index
-      end.pos = num.A*(1 + counter)                                             # ending index
-      A.LWB.df[start.pos:end.pos, "V0.inv"] = V0.inv.B                            # place data in the V0.inv column
-      counter = counter + 1                                                     # increment counter
+    start.pos = 1 + num.A*counter                                             # starting index
+    end.pos = num.A*(1 + counter)                                             # ending index
+    A.LWB.df[start.pos:end.pos, "V0.inv"] = V0.inv.B                            # place data in the V0.inv column
+    counter = counter + 1                                                     # increment counter
   }
 
   # B as range
-  B.LWB.df = data.frame(A = as.factor(A.seqB),            # dataframe for 1/A vs 1/V0
+  B.LWB.df = data.frame(A = as.factor(A.seqB),            # data-frame for 1/A vs 1/V0
                         B = B.seqB,
                         B.inv = 1/B.range,
                         V0.inv = NA)
@@ -225,91 +244,29 @@ Ternary.complex = function(EK.data,plot.options) {
 
 
   # Figure 1 - enzyme kinetics, substrate one
-  enz.plot.A =                                                                  # create a ggplot
-    ggplot2::ggplot(EK.data,                                                    # using EK.data
-                    ggplot2::aes(A, V0, colour = as.factor(B))) +                           # plot A vs V0, colouring based on their B value
-    ggplot2::geom_point() +                                                     # and plot as points
-    ggplot2::geom_line(A.fit.df,                                                # then, using A.fit.df
-                       mapping = ggplot2::aes(A, V0, colour = B),               # add a line of A vs V0, colouring based on their B value
-                       inherit.aes = F) +
-    ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
-                        linetype = "dashed",
-                        colour = "green") +
-    ggplot2::geom_vline(xintercept = KmA,                                       # add a horizontal line for KmA
-                        linetype = "dashed",
-                        colour = "red") +
-    ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
-    ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
-    ggplot2::ggtitle("Enzyme Kinetics \nModel fitted to data") +
-    ggplot2::labs(colour = "Legend") +                                          # rename the legend
-    ggplot2::annotate(geom = "text",                                            # add a text annotation
-                      x = median(A.range),                                      # in the approximate middle
-                      y = median(Vmax/2),
-                      label = sprintf("Km %s = %.3f\nVmax = %.3f",              # stating the KmA and Vmax values
-                                      name.1,KmA,Vmax)) +
-    ggthemes::theme_few()                                                       # use the minimalist theme
-
+  fig1.params = list(Km = KmA, Vmax = Vmax, name = name.1)
+  fig1.labs = list(x.lab1, y.lab)
+  enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A")
 
   # Figure 2 - Lineweaver-Burk, substrate one
-  LWB.plot.A =                                                                  # create a ggplot
-    ggplot2::ggplot(EK.data,                                                    # using EK.data
-                    ggplot2::aes(A.inv, V0.inv, colour = as.factor(B))) +       # plot 1/A vs 1/V0, colouring based on their B value
-    ggplot2::geom_point() +                                                     # and plot as points
-    ggplot2::geom_line(A.LWB.df,                                                # then, using A.LWB.df
-                       mapping = ggplot2::aes(A.inv, V0.inv, colour = B),       # add a line of 1/A vs 1/V0, colouring based on their B values
-                       inherit.aes = F) +
-    ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
-    ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
-    ggplot2::ggtitle("Lineweaver-Burk") +
-    ggthemes::theme_few()
-
+  fig2.labs = list(x.lab1.inv, y.lab.inv)
+  LWB.plot.A = enzKinet2::LWBplot(EK.data, A.LWB.df, fig2.labs, title.2, "A")
 
   # Figure 3 - enzyme kinetics, substrate two
-  enz.plot.B =
-    ggplot2::ggplot(EK.data,
-                    ggplot2::aes(B, V0, colour = as.factor(A))) +
-    ggplot2::geom_point() +
-    ggplot2::geom_line(B.fit.df,
-                       mapping = ggplot2::aes(B, V0, colour = A),
-                       inherit.aes = F) +
-    ggplot2::geom_hline(yintercept = Vmax,
-                        linetype = "dashed",
-                        colour = "green") +
-    ggplot2::geom_vline(xintercept = KmB,
-                        linetype = "dashed",
-                        colour = "red") +
-    ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
-    ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
-    ggplot2::ggtitle("Enzyme Kinetics \nModel fitted to data") +
-    ggplot2::labs(colour = "Legend") +
-    ggplot2::annotate(geom = "text",
-                      x = median(B.range),
-                      y = median(Vmax/2),
-                      label = sprintf("Km %s = %.3f\nVmax = %.3f",
-                                      name.2,KmB,Vmax)) +
-    ggthemes::theme_few()
-
+  fig3.params = list(Km = KmB, Vmax = Vmax, name = name.2)
+  fig3.labs = list(x.lab2, y.lab)
+  enz.plot.B = enzKinet2::Directplot(EK.data, B.fit.df, fig3.params, fig3.labs, title.1, "B")
 
   # Figure 4 - Lineweaver-Burk, substrate two
-  LWB.plot.B =
-    ggplot2::ggplot(EK.data,
-                    ggplot2::aes(B.inv, V0.inv, colour = as.factor(A))) +
-    ggplot2::geom_point() +
-    ggplot2::geom_line(B.LWB.df,
-                       mapping = ggplot2::aes(B.inv, V0.inv, colour = A),
-                       inherit.aes = F) +
-    ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
-    ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
-    ggplot2::ggtitle("Lineweaver-Burk") +
-    ggthemes::theme_few()
-
+  fig4.labs = list(x.lab2.inv, y.lab.inv)
+  LWB.plot.B = enzKinet2::LWBplot(EK.data, B.LWB.df, fig4.labs, title.2, "B")
 
   # Figure 5 - Residuals of model
   res.plot =
     ggplot2::ggplot(EK.data,
                     ggplot2::aes(A, Resids)) +
     ggplot2::geom_point() +
-    ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
+    ggplot2::xlab(x.lab1) +
                     ggplot2::ylab(sprintf("Velocity error, %s",y.units)) +
                     ggplot2::ggtitle("Residual error of model") +
                     ggthemes::theme_few()

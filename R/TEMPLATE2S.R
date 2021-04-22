@@ -1,10 +1,10 @@
-## 3S-TEMPLATE function for enzKinet2 package
-#' [To use this template, replace any words/variables where you see all capitals]
-#' [i.e. "TEMPLATE" above and below this paragraph.]
-#' [Additionally, {} represents optional words/variables to include depending on]
-#' [the model you are using.]
+## TEMPLATE2S function for enzKinet2 package
+#' To use this template, replace any words/variables where you see all capitals
+#' i.e. "TEMPLATE" above and below this paragraph.
+#' Additionally, {} represents optional words/variables to include depending on
+#' the model you are using.
 
-#' 3S-TEMPLATE model
+#' TEMPLATE2S model
 #'
 #' @author Daniel Mak
 #' 20/04/2021
@@ -26,7 +26,7 @@
 #'
 #' @export
 
-TEMPLATE = function(EK.data, plot.options) {
+TEMPLATE2S = function(EK.data, plot.options) {
   print("Starting TEMPLATE")
 
 
@@ -212,7 +212,7 @@ TEMPLATE = function(EK.data, plot.options) {
                (Vmax*A.range*B.conc)
     start.pos = 1 + num.A*counter
     end.pos = num.A*(1 + counter)
-    A.LWB.df[start.pos:end.pos, "V0.inv"] V0.inv.B
+    A.LWB.df[start.pos:end.pos, "V0.inv"] = V0.inv.B
     counter = counter + 1
   }
 
@@ -253,6 +253,20 @@ TEMPLATE = function(EK.data, plot.options) {
   fig1.params = list(Km = KmA, Vmax = Vmax, name = name.1)
   fig1.labs = list(x.lab1, y.lab)
   enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, "A")
+
+
+  # Get stats
+  R2 = modelr::rsquare(model, EK.data)
+  RMSE = modelr::rmse(model, EK.data)
+  MAE = modelr::mae(model, EK.data)
+  Glance = broom::glance(model)
+  stats = list(Model = "TC",
+               R2 = R2,
+               RMSE = RMSE,
+               MAE = MAE,
+               AIC = Glance$AIC,
+               BIC = Glance$BIC,
+               logLik = Glance$logLik)
 
 
   # Return parameters
