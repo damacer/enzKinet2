@@ -230,91 +230,19 @@ Ping.pong = function(EK.data,plot.options) {
   fig1.params = list(Km = KmA, Vmax = Vmax, name = name.1)
   fig1.labs = list(x.lab1, y.lab)
   enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A")
-  # enz.plot.A =                                                                  # create a ggplot
-  #   ggplot2::ggplot(EK.data,                                                    # using EK.data
-  #                   ggplot2::aes(A, V0, colour = as.factor(B))) +                           # plot A vs V0, colouring based on their B value
-  #   ggplot2::geom_point() +                                                     # and plot as points
-  #   ggplot2::geom_line(A.fit.df,                                                # then, using A.fit.df
-  #                      mapping = ggplot2::aes(A, V0, colour = B),               # add a line of A vs V0, colouring based on their B value
-  #                      inherit.aes = F) +
-  #   ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
-  #                       linetype = "dashed",
-  #                       colour = "green") +
-  #   ggplot2::geom_vline(xintercept = KmA,                                       # add a horizontal line for KmA
-  #                       linetype = "dashed",
-  #                       colour = "red") +
-  #   ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
-  #   ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
-  #   ggplot2::ggtitle(title.1) +
-  #   ggplot2::labs(colour = "Legend") +                                          # rename the legend
-  #   ggplot2::annotate(geom = "text",                                            # add a text annotation
-  #                     x = median(A.range),                                      # in the approximate middle
-  #                     y = median(Vmax/2),
-  #                     label = sprintf("Km %s = %.3f\nVmax = %.3f",              # stating the KmA and Vmax values
-  #                                     name.1,KmA,Vmax)) +
-  #   ggthemes::theme_few()                                                       # use the minimalist theme
-
 
   # Figure 2 - Lineweaver-Burk, substrate one
   fig2.labs = list(x.lab1.inv, y.lab.inv)
   LWB.plot.A = enzKinet2::LWBplot(EK.data, A.LWB.df, fig2.labs, title.2, "A")
-  # LWB.plot.A =                                                                  # create a ggplot
-  #   ggplot2::ggplot(EK.data,                                                    # using EK.data
-  #                   ggplot2::aes(A.inv, V0.inv, colour = as.factor(B))) +       # plot 1/A vs 1/V0, colouring based on their B value
-  #   ggplot2::geom_point() +                                                     # and plot as points
-  #   ggplot2::geom_line(A.LWB.df,                                                # then, using A.LWB.df
-  #                      mapping = ggplot2::aes(A.inv, V0.inv, colour = B),       # add a line of 1/A vs 1/V0, colouring based on their B values
-  #                      inherit.aes = F) +
-  #   ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
-  #   ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
-  #   ggplot2::ggtitle(title.2) +
-  #   ggthemes::theme_few()
-
 
   # Figure 3 - enzyme kinetics, substrate two
   fig3.params = list(Km = KmB, Vmax = Vmax, name = name.2)
   fig3.labs = list(x.lab2, y.lab)
   enz.plot.B = enzKinet2::Directplot(EK.data, B.fit.df, fig3.params, fig3.labs, title.1, "B")
-    # enz.plot.B =
-  #   ggplot2::ggplot(EK.data,
-  #                   ggplot2::aes(B, V0, colour = as.factor(A))) +
-  #   ggplot2::geom_point() +
-  #   ggplot2::geom_line(B.fit.df,
-  #                      mapping = ggplot2::aes(B, V0, colour = A),
-  #                      inherit.aes = F) +
-  #   ggplot2::geom_hline(yintercept = Vmax,
-  #                       linetype = "dashed",
-  #                       colour = "green") +
-  #   ggplot2::geom_vline(xintercept = KmB,
-  #                       linetype = "dashed",
-  #                       colour = "red") +
-  #   ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
-  #   ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
-  #   ggplot2::ggtitle(title.1) +
-  #   ggplot2::labs(colour = "Legend") +
-  #   ggplot2::annotate(geom = "text",
-  #                     x = median(B.range),
-  #                     y = median(Vmax/2),
-  #                     label = sprintf("Km %s = %.3f\nVmax = %.3f",
-  #                                     name.2,KmB,Vmax)) +
-  #   ggthemes::theme_few()
-
 
   # Figure 4 - Lineweaver-Burk, substrate two
   fig4.labs = list(x.lab2.inv, y.lab.inv)
   LWB.plot.B = enzKinet2::LWBplot(EK.data, B.LWB.df, fig4.labs, title.2, "B")
-  # LWB.plot.B =
-  #   ggplot2::ggplot(EK.data,
-  #                   ggplot2::aes(B.inv, V0.inv, colour = as.factor(A))) +
-  #   ggplot2::geom_point() +
-  #   ggplot2::geom_line(B.LWB.df,
-  #                      mapping = ggplot2::aes(B.inv, V0.inv, colour = A),
-  #                      inherit.aes = F) +
-  #   ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
-  #   ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
-  #   ggplot2::ggtitle(title.2) +
-  #   ggthemes::theme_few()
-
 
   # Figure 5 - Residuals of model
   res.plot =
