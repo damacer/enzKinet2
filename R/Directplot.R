@@ -5,7 +5,7 @@
 #' @author Daniel Mak
 #' 21/04/2021
 #'
-#' This function creates plots for the enzKinet2 model functions
+#' This function creates direct plots for the enzKinet2 model functions
 #' @param EK.data a data-frame containing the primary data to be plotted
 #' @param fit.data a data-frame containing the fitted data to be plotted
 #' @param params parameters to be used in plotting
@@ -51,7 +51,7 @@ Directplot = function(EK.data, fit.data, params, labels, title, AB) {
                         colour = "red") +
     ggplot2::xlab(x.lab) +
     ggplot2::ylab(y.lab) +
-    ggplot2::ggtitle("Enzyme Kinetics \nModel fitted to data") +
+    ggplot2::ggtitle(title) +
     ggplot2::labs(colour = "Legend") +
     ggplot2::annotate(geom = "text",
                       x = median(EK.data[,col1]),
