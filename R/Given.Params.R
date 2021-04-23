@@ -12,7 +12,7 @@
 #' @export
 
 Given.Params = function(params,model) {
-  ## Setup
+  ## Setup ----
   measurements = params$measurements
   KmA = params$KmA
   KmB = params$KmB
