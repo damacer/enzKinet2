@@ -26,7 +26,10 @@ Given.Params = function(params,model) {
   if (spacing == "lin") {
     A.range = pracma::linspace(A.min, A.max, n = measurements)
   } else if (spacing == "log") {
-    A.range = pracma::logspace(A.min, A.max, n = measurements)
+    if (A.min == 0) {
+      A.min = .Machine$double.eps
+    }
+    A.range = pracma::logspace(log10(A.min), log10(A.max), n = measurements)
   }
   B.values = params$Bvalues
   noise = params$noise
