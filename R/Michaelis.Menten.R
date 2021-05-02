@@ -93,13 +93,23 @@ Michaelis.Menten = function(EK.data,plot.options) {
     expr = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
     error = function(cond) {
       print(cond)
+      print("nls failed, trying lm")
       return(cond)
     }
   )
 
 
   if (!is.list(model)) {
-    return(cond)
+    lin.model = tryCatch(
+      expr = lm(formu, EK.data),
+      error = function(cond) {
+        print(cond)
+        print("lm failed")
+        lm.fit = lm(formu, data = EK.data)
+        return(lm.fit)
+      }
+    )
+    return(model)
   }
 
   Km = unname(coef(model)["Km"])                                  # extract fitted KmA value
