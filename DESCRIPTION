@@ -15,8 +15,7 @@ Description: This package contains models of enzyme kinetics. Users input data
     This particular update is for website application, thus removes the graphs,
     plots, and print statements that were present in the original enzKinet
     package.
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+License: use_gpl3_license()
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
