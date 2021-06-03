@@ -54,7 +54,9 @@ Directplot = function(EK.data, fit.data, params, labels, title, AB) {
                         linetype = "dashed",
                         colour = "red") +
     ggplot2::geom_ribbon(EK.data,
-                         mapping = ggplot2::aes(x = EK.data[,col1], ymin = V0.lb, ymax = V0.ub),
+                         mapping = ggplot2::aes(x = EK.data[,col1],
+                                                ymin = V0.lb, ymax = V0.ub,
+                                                colour = as.factor(EK.data[,col2])),
                          alpha = 0.2,
                          inherit.aes = F) +
     ggplot2::xlab(x.lab) +

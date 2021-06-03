@@ -16,12 +16,12 @@
 
 LWBplot = function(EK.data, fit.data, labels, title, AB) {
   if (AB == "A") {
-    col1.data = 5
+    col1.data = 7
     col2.data = 2
     col1.fit = 3
     col2.fit = 2
   } else if (AB == "B") {
-    col1.data = 6
+    col1.data = 8
     col2.data = 1
     col1.fit = 3
     col2.fit = 1
