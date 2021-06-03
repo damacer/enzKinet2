@@ -119,6 +119,14 @@ Michaelis.Menten = function(EK.data,plot.options) {
   print("Model simulated over range")
 
 
+  # Confidence interval
+  confints = nlstools::confint2(model)
+  Km.2.5 = confints[1]
+  Km.97.5 = confints[2]
+  Vmax.2.5 = confints[3]
+  Vmax.97.5 = confints[4]
+
+
   # Lineweaver-Burk
   EK.data$A.inv = 1/EK.data$A   # invert A concentrations
   EK.data$V0.inv = 1/EK.data$V0 # invert V0 velocities
@@ -165,8 +173,12 @@ Michaelis.Menten = function(EK.data,plot.options) {
     ggplot2::annotate(geom = "text",                                            # add a text annotation
                       x = median(A.range),                                      # in the approximate middle
                       y = median(Vmax/2),
-                      label = sprintf("Km %s = %.3f\nVmax = %.3f",              # stating the KmA and Vmax values
-                                      name.1,Km,Vmax)) +
+                      label = sprintf(
+"Km %s = %.3f, 2.5%% = %.3f, 97.5%% = %.3f
+Vmax = %.3f, 2.5%% = %.3f, 97.5%% = %.3f",              # stating the KmA and Vmax values
+name.1,
+Km,Km.2.5,Km.97.5,
+Vmax, Vmax.2.5, Vmax.97.5)) +
     ggthemes::theme_few()                                                       # use the minimalist theme
 
 
@@ -210,5 +222,5 @@ Michaelis.Menten = function(EK.data,plot.options) {
 
 
   # Return parameters
-  return(list(Km,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df))
+  return(list(Km,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df, confints = confints))
 }
