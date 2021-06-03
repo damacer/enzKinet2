@@ -38,7 +38,11 @@ EK.main = function(file, model,plot.options) {
     params = enzKinet2::Ping.pong(EK.data,plot.options)
 
 
-  }else {
+  } else if (model == "Hill") {
+    params = enzKinet2::Hill(EK.data, plot.options)
+
+
+  } else {
     stop("Model not recognised")
   }
 
