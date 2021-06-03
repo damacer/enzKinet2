@@ -66,7 +66,7 @@ Hill = function(EK.data,plot.options) {
   # Estimate starting parameters for regression
   Km.est = median(EK.data$A, na.rm = T) # use the median of measurements for Km values
   Vmax.est = max(EK.data$V0, na.rm = T) # use maximum measured value for V0
-  n.est = 2
+  n.est = 1
   ests = list(Km = Km.est,              # create a named list of estimates
               Vmax = Vmax.est,
               n = n.est)

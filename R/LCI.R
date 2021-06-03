@@ -171,11 +171,16 @@ LCI = function(EK.data,plot.options) {
   # Confidence interval
   confints = nlstools::confint2(model)
   Km.2.5 = confints[1]
-  Km.97.5 = confints[2]
-  Ki.2.5 = confints[3]
-  Ki.97.5 = confints[4]
-  Vmax.2.5 = confints[5]
+  Ki.2.5 = confints[2]
+  Vmax.2.5 = confints[3]
+  Km.97.5 = confints[4]
+  Ki.97.5 = confints[5]
   Vmax.97.5 = confints[6]
+
+  EK.data$V0.lb = Vmax.2.5*EK.data$A /
+    (Km.97.5*(1 + EK.data$I/Ki.2.5) + EK.data$A)
+  EK.data$V0.ub = Vmax.97.5*EK.data$A /
+    (Km.2.5*(1 + EK.data$I/Ki.97.5) + EK.data$A)
 
 
   # Lineweaver-Burk

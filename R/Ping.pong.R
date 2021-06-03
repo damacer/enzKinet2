@@ -177,11 +177,16 @@ Ping.pong = function(EK.data,plot.options) {
   # Confidence interval
   confints = nlstools::confint2(model)
   KmA.2.5 = confints[1]
-  KmA.97.5 = confints[2]
-  KmB.2.5 = confints[3]
-  KmB.97.5 = confints[4]
-  Vmax.2.5 = confints[5]
+  KmB.2.5 = confints[2]
+  Vmax.2.5 = confints[3]
+  KmA.97.5 = confints[4]
+  KmB.97.5 = confints[5]
   Vmax.97.5 = confints[6]
+
+  EK.data$V0.lb = Vmax.2.5*EK.data$A*EK.data$B /
+    (KmA.97.5*EK.data$A + KmB.97.5*EK.data$B + EK.data$A*EK.data$B)
+  EK.data$V0.ub = Vmax.97.5*EK.data$A*EK.data$B /
+    (KmA.2.5*EK.data$A + KmB.2.5*EK.data$B + EK.data$A*EK.data$B)
 
 
   # Lineweaver-Burk

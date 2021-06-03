@@ -53,6 +53,10 @@ Directplot = function(EK.data, fit.data, params, labels, title, AB) {
     ggplot2::geom_vline(xintercept = Km,
                         linetype = "dashed",
                         colour = "red") +
+    ggplot2::geom_ribbon(EK.data,
+                         mapping = ggplot2::aes(x = EK.data[,col1], ymin = V0.lb, ymax = V0.ub),
+                         alpha = 0.2,
+                         inherit.aes = F) +
     ggplot2::xlab(x.lab) +
     ggplot2::ylab(y.lab) +
     ggplot2::ggtitle(title) +
