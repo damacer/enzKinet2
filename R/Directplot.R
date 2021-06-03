@@ -25,8 +25,12 @@ Directplot = function(EK.data, fit.data, params, labels, title, AB) {
   }
 
   Km = params$Km
+  Km.2.5 = params$Km.2.5
+  Km.97.5 = params$Km.97.5
   name = params$name
   Vmax = params$Vmax
+  Vmax.2.5 = params$Vmax.2.5
+  Vmax.97.5 = params$Vmax.97.5
 
   x.lab = labels[[1]]
   y.lab = labels[[2]]
@@ -56,8 +60,11 @@ Directplot = function(EK.data, fit.data, params, labels, title, AB) {
     ggplot2::annotate(geom = "text",
                       x = median(EK.data[,col1]),
                       y = max(EK.data[,3]),
-                      label = sprintf("Km %s = %.3f\nVmax = %.3f",
-                                      name, Km, Vmax)) +
+                      label = sprintf(
+"Km %s = %.3f, 2.5%% = %.3f, 97.5%% = %.3f
+Vmax = %.3f, 2.5%% = %.3f, 97.5%% = %.3f",
+name, Km, Km.2.5, Km.97.5,
+Vmax, Vmax.2.5, Vmax.97.5)) +
     ggthemes::theme_few()
 
   print(plot)

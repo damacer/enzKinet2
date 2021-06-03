@@ -168,6 +168,16 @@ LCI = function(EK.data,plot.options) {
   print("Model simulated over range")
 
 
+  # Confidence interval
+  confints = nlstools::confint2(model)
+  Km.2.5 = confints[1]
+  Km.97.5 = confints[2]
+  Ki.2.5 = confints[3]
+  Ki.97.5 = confints[4]
+  Vmax.2.5 = confints[5]
+  Vmax.97.5 = confints[6]
+
+
   # Lineweaver-Burk
   EK.data$A.inv = 1/EK.data$A   # invert A concentrations
   EK.data$V0.inv = 1/EK.data$V0 # invert V0 velocities
@@ -206,7 +216,9 @@ LCI = function(EK.data,plot.options) {
 
 
   # Figure 1 - enzyme kinetics, substrate one
-  fig1.params = list(Km = Km, Vmax = Vmax, name = name.1)
+  fig1.params = list(Km = Km, Km.2.5 = Km.2.5, Km.97.5 = Km.97.5,
+                     Vmax = Vmax, Vmax.2.5 = Vmax.2.5, Vmax.97.5 = Vmax.97.5,
+                     name = name.1)
   fig1.labs = list(x.lab1, y.lab)
   enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A")
 

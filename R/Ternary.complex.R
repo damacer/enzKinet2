@@ -191,6 +191,18 @@ Ternary.complex = function(EK.data,plot.options) {
   print("Model simulated over range")
 
 
+  # Confidence interval
+  confints = nlstools::confint2(model)
+  KmA.2.5 = confints[1]
+  KmA.97.5 = confints[2]
+  KmB.2.5 = confints[3]
+  KmB.97.5 = confints[4]
+  Ksat.2.5 = confints[5]
+  Ksat.97.5 = confints[6]
+  Vmax.2.5 = confints[7]
+  Vmax.97.5 = confints[8]
+
+
   # Lineweaver-Burk
   EK.data$A.inv = 1/EK.data$A   # invert A concentrations
   EK.data$B.inv = 1/EK.data$B
@@ -244,7 +256,9 @@ Ternary.complex = function(EK.data,plot.options) {
 
 
   # Figure 1 - enzyme kinetics, substrate one
-  fig1.params = list(Km = KmA, Vmax = Vmax, name = name.1)
+  fig1.params = list(Km = KmA, Km.2.5 = KmA.2.5, Km.97.5 = KmA.97.5,
+                     Vmax = Vmax, Vmax.2.5 = Vmax.2.5, Vmax.97.5 = Vmax.97.5,
+                     name = name.1)
   fig1.labs = list(x.lab1, y.lab)
   enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A")
 
@@ -253,7 +267,9 @@ Ternary.complex = function(EK.data,plot.options) {
   LWB.plot.A = enzKinet2::LWBplot(EK.data, A.LWB.df, fig2.labs, title.2, "A")
 
   # Figure 3 - enzyme kinetics, substrate two
-  fig3.params = list(Km = KmB, Vmax = Vmax, name = name.2)
+  fig3.params = list(Km = KmB, Km.2.5 = KmB.2.5, Km.97.5 = KmB.97.5,
+                     Vmax = Vmax, Vmax.2.5 = Vmax.2.5, Vmax.97.5 = Vmax.97.5,
+                     name = name.1)
   fig3.labs = list(x.lab2, y.lab)
   enz.plot.B = enzKinet2::Directplot(EK.data, B.fit.df, fig3.params, fig3.labs, title.1, "B")
 
