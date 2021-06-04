@@ -288,9 +288,9 @@ Ternary.complex = function(EK.data,plot.options) {
                     ggplot2::aes(A, Resids)) +
     ggplot2::geom_point() +
     ggplot2::xlab(x.lab1) +
-                    ggplot2::ylab(sprintf("Velocity error, %s",y.units)) +
-                    ggplot2::ggtitle("Residual error of model") +
-                    ggthemes::theme_few()
+    ggplot2::ylab(sprintf("Velocity error, %s",y.units)) +
+    ggplot2::ggtitle("Residual error of model") +
+    ggthemes::theme_few()
 
 
   # Get stats
@@ -308,5 +308,5 @@ Ternary.complex = function(EK.data,plot.options) {
 
 
   # Return parameters
-  return(list(KmA,KmB,Ksat,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats,A.fit.df,B.fit.df))
+  return(list(KmA,KmB,Ksat,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats,A.fit.df,B.fit.df,confints))
 }

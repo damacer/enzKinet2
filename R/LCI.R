@@ -257,5 +257,5 @@ LCI = function(EK.data,plot.options) {
 
 
   # Return parameters
-  return(list(Km,Ki,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df))
+  return(list(Km,Ki,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,confints))
 }

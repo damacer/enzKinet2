@@ -229,5 +229,5 @@ Vmax, Vmax.2.5, Vmax.97.5)) +
 
 
   # Return parameters
-  return(list(Km,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df))
+  return(list(Km,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,confints))
 }

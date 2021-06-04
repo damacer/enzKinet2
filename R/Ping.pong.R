@@ -289,5 +289,5 @@ Ping.pong = function(EK.data,plot.options) {
 
 
   # Return parameters
-  return(list(KmA,KmB,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats,A.fit.df,B.fit.df))
+  return(list(KmA,KmB,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats,A.fit.df,B.fit.df,confints))
 }

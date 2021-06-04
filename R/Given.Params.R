@@ -140,6 +140,15 @@ Given.Params = function(params,model) {
     res.plot = params[[5]]
     stats = params[[6]]
     fit.data = params[[7]]
+    confints = params[[8]]
+
+    Km.2.5 = confints[1]
+    Vmax.2.5 = confints[2]
+    Km.97.5 = confints[3]
+    Vmax.97.5 = confints[4]
+
+    model.data$V0.lb = Vmax.2.5*model.data$A/(Km.97.5 + model.data$A)
+    model.data$V0.ub = Vmax.97.5*model.data$A/(Km.2.5 + model.data$A)
   }
   else if (model == "LCI") {
     params = LCI(model.data,plot.options)
@@ -155,6 +164,19 @@ Given.Params = function(params,model) {
     res.plot = params[[6]]
     stats = params[[7]]
     fit.data = params[[8]]
+    confints = params[[9]]
+
+    Km.2.5 = confints[1]
+    Ki.2.5 = confints[2]
+    Vmax.2.5 = confints[3]
+    Km.97.5 = confints[4]
+    Ki.97.5 = confints[5]
+    Vmax.97.5 = confints[6]
+
+    model.data$V0.lb = Vmax.2.5*model.data$A /
+      (Km.97.5*(1 + model.data$I/Ki.2.5) + model.data$A)
+    model.data$V0.ub = Vmax.97.5*model.data$A /
+      (Km.2.5*(1 + model.data$I/Ki.97.5) + model.data$A)
   }
   else if (model == "TC") {
     params = Ternary.complex(model.data,plot.options)
@@ -173,6 +195,21 @@ Given.Params = function(params,model) {
     res.plot = params[[9]]
     stats = params[[10]]
     fit.data = params[[11]]
+    confints = params[[13]]
+
+    KmA.2.5 = confints[1]
+    KmB.2.5 = confints[2]
+    Ksat.2.5 = confints[3]
+    Vmax.2.5 = confints[4]
+    KmA.97.5 = confints[5]
+    KmB.97.5 = confints[6]
+    Ksat.97.5 = confints[7]
+    Vmax.97.5 = confints[8]
+
+    model.data$V0.lb = Vmax.2.5*model.data$A*model.data$B /
+      (KmA.97.5*model.data$A + KmB.97.5*model.data$B + model.data$A*model.data$B + Ksat.97.5*KmB.97.5)
+    model.data$V0.ub = Vmax.97.5*model.data$A*model.data$B /
+      (KmA.2.5*model.data$A + KmB.2.5*model.data$B + model.data$A*model.data$B + Ksat.2.5*KmB.2.5)
   }
   else if (model == "PP") {
     params = Ping.pong(model.data,plot.options)
@@ -190,26 +227,22 @@ Given.Params = function(params,model) {
     res.plot = params[[8]]
     stats = params[[9]]
     fit.data = params[[10]]
+    confints = params[[12]]
+
+    KmA.2.5 = confints[1]
+    KmB.2.5 = confints[2]
+    Vmax.2.5 = confints[3]
+    KmA.97.5 = confints[4]
+    KmB.97.5 = confints[5]
+    Vmax.97.5 = confints[6]
+
+    model.data$V0.lb = Vmax.2.5*model.data$A*model.data$B /
+      (KmA.97.5*model.data$A + KmB.97.5*model.data$B + model.data$A*model.data$B)
+    model.data$V0.ub = Vmax.97.5*model.data$A*model.data$B /
+      (KmA.2.5*model.data$A + KmB.2.5*model.data$B + model.data$A*model.data$B)
   }
 
   print("Apparent fit complete")
-
-
-  # Confidence interval
-  # confints = nlstools::confint2(model)
-  # KmA.2.5 = confints[1]
-  # KmB.2.5 = confints[2]
-  # Ksat.2.5 = confints[3]
-  # Vmax.2.5 = confints[4]
-  # KmA.97.5 = confints[5]
-  # KmB.97.5 = confints[6]
-  # Ksat.97.5 = confints[7]
-  # Vmax.97.5 = confints[8]
-  #
-  # EK.data$V0.lb = Vmax.2.5*EK.data$A*EK.data$B /
-  #   (KmA.97.5*EK.data$A + KmB.97.5*EK.data$B + EK.data$A*EK.data$B + Ksat.97.5*KmB.97.5)
-  # EK.data$V0.ub = Vmax.97.5*EK.data$A*EK.data$B /
-  #   (KmA.2.5*EK.data$A + KmB.2.5*EK.data$B + EK.data$A*EK.data$B + Ksat.2.5*KmB.2.5)
 
 
 
@@ -229,6 +262,10 @@ Given.Params = function(params,model) {
       ggplot2::geom_vline(xintercept = KmA,                                        # add a horizontal line for KmA
                           linetype = "dashed",
                           colour = "red") +
+      ggplot2::geom_ribbon(model.data,
+                           mapping = ggplot2::aes(x = A, ymin = V0.lb, ymax = V0.ub),
+                           alpha = 0.2,
+                           inherit.aes = F) +
       ggplot2::xlab(sprintf("Cs1")) +
       ggplot2::ylab("Velocity") +
       ggplot2::ggtitle("Enzyme Kinetics") +
@@ -254,6 +291,12 @@ Given.Params = function(params,model) {
       ggplot2::geom_vline(xintercept = KmA,                                       # add a horizontal line for KmA
                           linetype = "dashed",
                           colour = "red") +
+      ggplot2::geom_ribbon(model.data,
+                           mapping = ggplot2::aes(x = A,
+                                                  ymin = V0.lb, ymax = V0.ub,
+                                                  colour = as.factor(B)),
+                           alpha = 0.2,
+                           inherit.aes = F) +
       ggplot2::xlab(sprintf("Cs1")) +
       ggplot2::ylab("Velocity") +
       ggplot2::ggtitle("Enzyme Kinetics") +
