@@ -29,7 +29,8 @@ Imports:
     broom,
     modelr,
     minpack.lm,
-    rlist
+    rlist,
+    nlstools
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
