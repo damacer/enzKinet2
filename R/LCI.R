@@ -18,7 +18,7 @@
 #' Plots - A vs Vmax, 1/A vs 1/Vmax, residuals
 #' @export
 
-LCI = function(EK.data,plot.options) {
+LCI = function(EK.data,plot.options,conf.level) {
   print ("Starting LCI")
 
   ## Setup ----
@@ -169,7 +169,7 @@ LCI = function(EK.data,plot.options) {
 
 
   # Confidence interval
-  confints = nlstools::confint2(model)
+  confints = nlstools::confint2(model, level = conf.level)
   Km.2.5 = confints[1]
   Ki.2.5 = confints[2]
   Vmax.2.5 = confints[3]

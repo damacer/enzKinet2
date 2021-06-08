@@ -14,7 +14,7 @@
 #'
 #' @export
 
-EK.main = function(file, model,plot.options) {
+EK.main = function(file, model,plot.options, conf.level) {
   print("Starting EK.main")
 
   # Read file
@@ -23,23 +23,23 @@ EK.main = function(file, model,plot.options) {
 
   # Run Analysis
   if (model == "MM") {
-    params = enzKinet2::Michaelis.Menten(EK.data,plot.options)
+    params = enzKinet2::Michaelis.Menten(EK.data,plot.options, conf.level)
 
 
   } else if (model == "LCI") {
-    params = enzKinet2::LCI(EK.data,plot.options)
+    params = enzKinet2::LCI(EK.data,plot.options, conf.level)
 
 
   } else if (model == "TC") {
-    params = enzKinet2::Ternary.complex(EK.data,plot.options)
+    params = enzKinet2::Ternary.complex(EK.data,plot.options, conf.level)
 
 
   } else if (model == "PP") {
-    params = enzKinet2::Ping.pong(EK.data,plot.options)
+    params = enzKinet2::Ping.pong(EK.data,plot.options, conf.level)
 
 
   } else if (model == "Hill") {
-    params = enzKinet2::Hill(EK.data, plot.options)
+    params = enzKinet2::Hill(EK.data, plot.options, conf.level)
 
 
   } else {

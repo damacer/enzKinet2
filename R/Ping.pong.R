@@ -18,7 +18,7 @@
 #' Plots - A vs Vmax, 1/A vs 1/Vmax, B vs Vmax, 1/B vs 1/Vmax, residuals
 #' @export
 
-Ping.pong = function(EK.data,plot.options) {
+Ping.pong = function(EK.data,plot.options,conf.level) {
   print("Starting Ping.pong")
 
   ## Setup ----
@@ -175,7 +175,7 @@ Ping.pong = function(EK.data,plot.options) {
 
 
   # Confidence interval
-  confints = nlstools::confint2(model)
+  confints = nlstools::confint2(model, level = conf.level)
   KmA.2.5 = confints[1]
   KmB.2.5 = confints[2]
   Vmax.2.5 = confints[3]

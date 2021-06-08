@@ -22,7 +22,7 @@
 #'
 #' @export
 
-Ternary.complex = function(EK.data,plot.options) {
+Ternary.complex = function(EK.data,plot.options,conf.level) {
   print("starting Ternary.complex")
 
   ## Setup ----
@@ -192,7 +192,7 @@ Ternary.complex = function(EK.data,plot.options) {
 
 
   # Confidence interval
-  confints = nlstools::confint2(model)
+  confints = nlstools::confint2(model, level = conf.level)
   KmA.2.5 = confints[1]
   KmB.2.5 = confints[2]
   Ksat.2.5 = confints[3]

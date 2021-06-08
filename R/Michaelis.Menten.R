@@ -16,7 +16,7 @@
 #' Plots - A vs V0, 1/A vs 1/V0, and A vs residuals
 #' @export
 
-Michaelis.Menten = function(EK.data,plot.options) {
+Michaelis.Menten = function(EK.data,plot.options,conf.level) {
   print("Starting Michaelis.Menten")
 
   ## Setup ----
@@ -120,7 +120,7 @@ Michaelis.Menten = function(EK.data,plot.options) {
 
 
   # Confidence interval
-  confints = nlstools::confint2(model)
+  confints = nlstools::confint2(model, level = conf.level)
   Km.2.5 = confints[1]
   Vmax.2.5 = confints[2]
   Km.97.5 = confints[3]

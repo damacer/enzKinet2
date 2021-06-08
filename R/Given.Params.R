@@ -11,7 +11,7 @@
 #' @return list(plot)
 #' @export
 
-Given.Params = function(params,model) {
+Given.Params = function(params,model,conf.level) {
   print("Starting Given.Params")
 
   ## Setup
@@ -128,7 +128,7 @@ Given.Params = function(params,model) {
   # Apparent Fit
   plot.options = list(options = 1)
   if (model == "MM") {
-    params = Michaelis.Menten(model.data,plot.options)
+    params = Michaelis.Menten(model.data,plot.options,conf.level)
 
     if (length(params) == 1) {
       return(c(F,params))
@@ -151,7 +151,7 @@ Given.Params = function(params,model) {
     model.data$V0.ub = Vmax.97.5*model.data$A/(Km.2.5 + model.data$A)
   }
   else if (model == "LCI") {
-    params = LCI(model.data,plot.options)
+    params = LCI(model.data,plot.options,conf.level)
 
     if (params[[1]] == F) {
       return(c(F,params))
@@ -179,7 +179,7 @@ Given.Params = function(params,model) {
       (Km.2.5*(1 + model.data$I/Ki.97.5) + model.data$A)
   }
   else if (model == "TC") {
-    params = Ternary.complex(model.data,plot.options)
+    params = Ternary.complex(model.data,plot.options,conf.level)
 
     if (length(params) == 1) {
       return(c(F,params))
@@ -212,7 +212,7 @@ Given.Params = function(params,model) {
       (KmA.2.5*model.data$A + KmB.2.5*model.data$B + model.data$A*model.data$B + Ksat.2.5*KmB.2.5)
   }
   else if (model == "PP") {
-    params = Ping.pong(model.data,plot.options)
+    params = Ping.pong(model.data,plot.options,conf.level)
 
     if (length(params) == 1) {
       return(c(F,params))
