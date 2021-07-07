@@ -192,21 +192,22 @@ Ternary.complex = function(EK.data,plot.options,conf.level) {
 
 
   # Confidence interval
-  confints = nlstools::confint2(model, level = conf.level)
-  KmA.2.5 = confints[1]
-  KmB.2.5 = confints[2]
-  Ksat.2.5 = confints[3]
-  Vmax.2.5 = confints[4]
-  KmA.97.5 = confints[5]
-  KmB.97.5 = confints[6]
-  Ksat.97.5 = confints[7]
-  Vmax.97.5 = confints[8]
+  if (conf.level != 0) {
+    confints = nlstools::confint2(model, level = conf.level)
+    KmA.2.5 = confints[1]
+    KmB.2.5 = confints[2]
+    Ksat.2.5 = confints[3]
+    Vmax.2.5 = confints[4]
+    KmA.97.5 = confints[5]
+    KmB.97.5 = confints[6]
+    Ksat.97.5 = confints[7]
+    Vmax.97.5 = confints[8]
 
-  EK.data$V0.lb = Vmax.2.5*EK.data$A*EK.data$B /
-    (KmA.97.5*EK.data$A + KmB.97.5*EK.data$B + EK.data$A*EK.data$B + Ksat.97.5*KmB.97.5)
-  EK.data$V0.ub = Vmax.97.5*EK.data$A*EK.data$B /
-    (KmA.2.5*EK.data$A + KmB.2.5*EK.data$B + EK.data$A*EK.data$B + Ksat.2.5*KmB.2.5)
-
+    EK.data$V0.lb = Vmax.2.5*EK.data$A*EK.data$B /
+      (KmA.97.5*EK.data$A + KmB.97.5*EK.data$B + EK.data$A*EK.data$B + Ksat.97.5*KmB.97.5)
+    EK.data$V0.ub = Vmax.97.5*EK.data$A*EK.data$B /
+      (KmA.2.5*EK.data$A + KmB.2.5*EK.data$B + EK.data$A*EK.data$B + Ksat.2.5*KmB.2.5)
+  }
 
   # Lineweaver-Burk
   EK.data$A.inv = 1/EK.data$A   # invert A concentrations

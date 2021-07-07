@@ -120,15 +120,16 @@ Michaelis.Menten = function(EK.data,plot.options,conf.level) {
 
 
   # Confidence interval
-  confints = nlstools::confint2(model, level = conf.level)
-  Km.2.5 = confints[1]
-  Vmax.2.5 = confints[2]
-  Km.97.5 = confints[3]
-  Vmax.97.5 = confints[4]
+  if (conf.level != 0) {
+    confints = nlstools::confint2(model, level = conf.level)
+    Km.2.5 = confints[1]
+    Vmax.2.5 = confints[2]
+    Km.97.5 = confints[3]
+    Vmax.97.5 = confints[4]
 
-  EK.data$V0.lb = Vmax.2.5*EK.data$A/(Km.97.5 + EK.data$A)
-  EK.data$V0.ub = Vmax.97.5*EK.data$A/(Km.2.5 + EK.data$A)
-
+    EK.data$V0.lb = Vmax.2.5*EK.data$A/(Km.97.5 + EK.data$A)
+    EK.data$V0.ub = Vmax.97.5*EK.data$A/(Km.2.5 + EK.data$A)
+  }
 
   # Lineweaver-Burk
   EK.data$A.inv = 1/EK.data$A   # invert A concentrations
@@ -169,24 +170,28 @@ Michaelis.Menten = function(EK.data,plot.options,conf.level) {
     ggplot2::geom_vline(xintercept = Km,                                        # add a horizontal line for KmA
                         linetype = "dashed",
                         colour = "red") +
-    ggplot2::geom_ribbon(EK.data,
-                         mapping = ggplot2::aes(x = A, ymin = V0.lb, ymax = V0.ub),
-                         alpha = 0.2,
-                         inherit.aes = F) +
     ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
     ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
     ggplot2::ggtitle(title.1) +
     ggplot2::labs(colour = "Legend") +                                          # rename the legend
-    ggplot2::annotate(geom = "text",                                            # add a text annotation
-                      x = median(A.range),                                      # in the approximate middle
-                      y = median(Vmax/2),
-                      label = sprintf(
-"Km %s = %.3f, 2.5%% = %.3f, 97.5%% = %.3f
-Vmax = %.3f, 2.5%% = %.3f, 97.5%% = %.3f",              # stating the KmA and Vmax values
-name.1,
-Km,Km.2.5,Km.97.5,
-Vmax, Vmax.2.5, Vmax.97.5)) +
     ggthemes::theme_few()                                                       # use the minimalist theme
+
+  if (conf.level != 0) {
+    enz.plot.A +
+      ggplot2::geom_ribbon(EK.data,
+                           mapping = ggplot2::aes(x = A, ymin = V0.lb, ymax = V0.ub),
+                           alpha = 0.2,
+                           inherit.aes = F) +
+      ggplot2::annotate(geom = "text",                                            # add a text annotation
+                        x = median(A.range),                                      # in the approximate middle
+                        y = median(Vmax/2),
+                        label = sprintf(
+"Km %s = %.3f, (%.3f - %.3f, %.1f%%)
+Vmax = %.3f, (%.3f - %.3f, %.1f%%)",              # stating the KmA and Vmax values
+name.1,
+Km,Km.2.5,Km.97.5, conf.level*100,
+Vmax, Vmax.2.5, Vmax.97.5, conf.level*100))
+  }
 
 
   # Figure 2 - Lineweaver-Burk, substrate one
@@ -229,5 +234,9 @@ Vmax, Vmax.2.5, Vmax.97.5)) +
 
 
   # Return parameters
-  return(list(Km,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,confints))
+  if (conf.level != 0) {
+    return(list(Km,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,confints))
+  } else {
+    return(list(Km,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,0))
+  }
 }

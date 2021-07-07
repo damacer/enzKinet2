@@ -19,7 +19,7 @@
 #' @export
 
 LCI = function(EK.data,plot.options,conf.level) {
-  print ("Starting LCI")
+  print("Starting LCI")
 
   ## Setup ----
   # Standardise column names
@@ -169,19 +169,27 @@ LCI = function(EK.data,plot.options,conf.level) {
 
 
   # Confidence interval
-  confints = nlstools::confint2(model, level = conf.level)
-  Km.2.5 = confints[1]
-  Ki.2.5 = confints[2]
-  Vmax.2.5 = confints[3]
-  Km.97.5 = confints[4]
-  Ki.97.5 = confints[5]
-  Vmax.97.5 = confints[6]
+  if (conf.level != 0) {
+    confints = nlstools::confint2(model, level = conf.level)
+    Km.2.5 = confints[1]
+    Ki.2.5 = confints[2]
+    Vmax.2.5 = confints[3]
+    Km.97.5 = confints[4]
+    Ki.97.5 = confints[5]
+    Vmax.97.5 = confints[6]
 
-  EK.data$V0.lb = Vmax.2.5*EK.data$A /
-    (Km.97.5*(1 + EK.data$I/Ki.2.5) + EK.data$A)
-  EK.data$V0.ub = Vmax.97.5*EK.data$A /
-    (Km.2.5*(1 + EK.data$I/Ki.97.5) + EK.data$A)
-
+    EK.data$V0.lb = Vmax.2.5*EK.data$A /
+      (Km.97.5*(1 + EK.data$I/Ki.2.5) + EK.data$A)
+    EK.data$V0.ub = Vmax.97.5*EK.data$A /
+      (Km.2.5*(1 + EK.data$I/Ki.97.5) + EK.data$A)
+  } else {
+    Km.2.5 = F
+    Ki.2.5 = F
+    Vmax.2.5 = F
+    Km.97.5 = F
+    Ki.2.5 = F
+    Vmax.97.5 = F
+  }
 
   # Lineweaver-Burk
   EK.data$A.inv = 1/EK.data$A   # invert A concentrations
@@ -257,5 +265,9 @@ LCI = function(EK.data,plot.options,conf.level) {
 
 
   # Return parameters
-  return(list(Km,Ki,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,confints))
+  if (conf.level != 0) {
+    return(list(Km,Ki,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,confints))
+  } else {
+    return(list(Km,Ki,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,0))
+  }
 }
