@@ -202,19 +202,27 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
 
 
   # Confidence interval
-  confints = nlstools::confint2(model, level = conf.level)
-  KmA.2.5 = confints[1]
-  KmB.2.5 = confints[2]
-  Vmax.2.5 = confints[3]
-  KmA.97.5 = confints[4]
-  KmB.97.5 = confints[5]
-  Vmax.97.5 = confints[6]
+  if (conf.level != 0) {
+    confints = nlstools::confint2(model, level = conf.level)
+    KmA.2.5 = confints[1]
+    KmB.2.5 = confints[2]
+    Vmax.2.5 = confints[3]
+    KmA.97.5 = confints[4]
+    KmB.97.5 = confints[5]
+    Vmax.97.5 = confints[6]
 
-  EK.data$V0.lb = Vmax.2.5*EK.data$A*EK.data$B /
-    (KmA.97.5*EK.data$A + KmB.97.5*EK.data$B + EK.data$A*EK.data$B)
-  EK.data$V0.ub = Vmax.97.5*EK.data$A*EK.data$B /
-    (KmA.2.5*EK.data$A + KmB.2.5*EK.data$B + EK.data$A*EK.data$B)
-
+    EK.data$V0.lb = Vmax.2.5*EK.data$A*EK.data$B /
+      (KmA.97.5*EK.data$A + KmB.97.5*EK.data$B + EK.data$A*EK.data$B)
+    EK.data$V0.ub = Vmax.97.5*EK.data$A*EK.data$B /
+      (KmA.2.5*EK.data$A + KmB.2.5*EK.data$B + EK.data$A*EK.data$B)
+  } else {
+    KmA.2.5 = F
+    KmB.2.5 = F
+    Vmax.2.5 = F
+    KmA.97.5 = F
+    KmB.97.5 = F
+    Vmax.97.5 = F
+  }
 
   # Lineweaver-Burk
   EK.data$A.inv = 1/EK.data$A   # invert A concentrations
@@ -316,5 +324,9 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
 
 
   # Return parameters
-  return(list(KmA,KmB,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats,A.fit.df,B.fit.df,confints))
+  if (conf.level != 0) {
+    return(list(KmA,KmB,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats,A.fit.df,B.fit.df,confints))
+  } else {
+    return(list(KmA,KmB,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats,A.fit.df,B.fit.df))
+  }
 }

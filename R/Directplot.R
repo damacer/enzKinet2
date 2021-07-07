@@ -53,25 +53,39 @@ Directplot = function(EK.data, fit.data, params, labels, title, AB) {
     ggplot2::geom_vline(xintercept = Km,
                         linetype = "dashed",
                         colour = "red") +
-    ggplot2::geom_ribbon(EK.data,
-                         mapping = ggplot2::aes(x = EK.data[,col1],
-                                                ymin = V0.lb, ymax = V0.ub,
-                                                colour = as.factor(EK.data[,col2])),
-                         alpha = 0.2,
-                         inherit.aes = F) +
     ggplot2::xlab(x.lab) +
     ggplot2::ylab(y.lab) +
     ggplot2::ggtitle(title) +
     ggplot2::labs(colour = "Legend") +
-    ggplot2::annotate(geom = "text",
-                      x = median(EK.data[,col1]),
-                      y = max(EK.data[,3]),
-                      label = sprintf(
+    ggthemes::theme_few()
+
+  if (Km.2.5 == F) {
+    plot = plot +
+      ggplot2::annotate(geom = "text",
+                        x = median(EK.data[,col1]),
+                        y = max(EK.data[,3]),
+                        label = sprintf(
+"Km %s = %.3f
+Vmax = %.3f",
+name, Km,
+Vmax))
+  } else {
+    plot = plot +
+      ggplot2::geom_ribbon(EK.data,
+                           mapping = ggplot2::aes(x = EK.data[,col1],
+                                                  ymin = V0.lb, ymax = V0.ub,
+                                                  colour = as.factor(EK.data[,col2])),
+                           alpha = 0.2,
+                           inherit.aes = F) +
+      ggplot2::annotate(geom = "text",
+                        x = median(EK.data[,col1]),
+                        y = max(EK.data[,3]),
+                        label = sprintf(
 "Km %s = %.3f, 2.5%% = %.3f, 97.5%% = %.3f
 Vmax = %.3f, 2.5%% = %.3f, 97.5%% = %.3f",
 name, Km, Km.2.5, Km.97.5,
-Vmax, Vmax.2.5, Vmax.97.5)) +
-    ggthemes::theme_few()
+Vmax, Vmax.2.5, Vmax.97.5))
+  }
 
   print(plot)
   return(plot)
