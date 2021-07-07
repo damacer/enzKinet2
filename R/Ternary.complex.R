@@ -67,14 +67,41 @@ Ternary.complex = function(EK.data,plot.options,conf.level) {
     y.lab = sprintf("Velocity")
     y.lab.inv = sprintf("1/V0")
   } else if (plot.options$options == 2) { # use custom options
-    title.1 = plot.options$title.1
-    title.2 = plot.options$title.2
-    x.lab1 = sprintf("%s, %s", name.1, x.units)
-    x.lab2 = sprintf("%s, %s", name.2, x.units)
-    x.lab1.inv = sprintf("1/%s, 1/%s", name.1, x.units)
-    x.lab2.inv = sprintf("1/%s, 1/%s", name.2, x.units)
-    y.lab = sprintf("Velocity, %s", y.units)
-    y.lab.inv = sprintf("1/V0, 1/%s", y.units)
+    if (plot.options$title.1 != "") {
+      title.1 = plot.options$title.1
+    } else {
+      title.1 = "Enzyme Kinetics \nDirect plot"
+    }
+
+    if (plot.options$title.2 != "") {
+      title.2 = plot.options$title.2
+    } else {
+      title.2 = "Enzyme Kinetics \nLineweaver-Burk"
+    }
+
+    if (x.units != "") {
+      x.lab1 = sprintf("%s, %s", name.1, x.units)
+      x.lab1.inv = sprintf("1/%s, 1/%s", name.1, x.units)
+    } else {
+      x.lab1 = sprintf("%s", name.1)
+      x.lab1.inv = sprintf("1/%s", name.1)
+    }
+
+    if (x.units != "") {
+      x.lab2 = sprintf("%s, %s", name.2, x.units)
+      x.lab2.inv = sprintf("1/%s, 1/%s", name.2, x.units)
+    } else {
+      x.lab2 = sprintf("%s", name.2)
+      x.lab2.inv = sprintf("1/%s", name.2)
+    }
+
+    if (y.units != "") {
+      y.lab = sprintf("Velocity, %s", y.units)
+      y.lab.inv = sprintf("1/V0, 1/%s", y.units)
+    } else {
+      y.lab = sprintf("Velocity")
+      y.lab.inv = sprintf("1/V0")
+    }
   }
 
 

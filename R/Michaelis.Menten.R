@@ -52,10 +52,29 @@ Michaelis.Menten = function(EK.data,plot.options,conf.level) {
     x.units = ""
     y.units = ""
   } else if (options.counter == 2) {
-    title.1 = plot.options$title.1
-    title.2 = plot.options$title.2
-    x.units = plot.options$x.units
-    y.units = plot.options$y.units
+    if (plot.options$title.1 != "") {
+      title.1 = plot.options$title.1
+    } else {
+      title.1 = "Enzyme Kinetics \nDirect plot"
+    }
+
+    if (plot.options$title.2 != "") {
+      title.2 = plot.options$title.2
+    } else {
+      title.2 = "Enzyme Kinetics \nLineweaver-Burk"
+    }
+
+    if (plot.options$x.units != "") {
+      x.units = plot.options$x.units
+    } else {
+      x.units = ""
+    }
+
+    if (plot.options$y.units != "") {
+      y.units = plot.options$y.units
+    } else {
+      y.units = ""
+    }
   }
 
 
