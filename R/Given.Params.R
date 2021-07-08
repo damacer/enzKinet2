@@ -14,7 +14,7 @@
 Given.Params = function(params,model,conf.level) {
   print("Starting Given.Params")
 
-  ## Setup
+  ## Setup ----
   measurements = params$measurements
   spacing = params$spacing
   KmA = params$KmA
@@ -142,15 +142,23 @@ Given.Params = function(params,model,conf.level) {
     fit.data = params[[7]]
     confints = params[[8]]
 
-    Km.2.5 = confints[1]
-    Vmax.2.5 = confints[2]
-    Km.97.5 = confints[3]
-    Vmax.97.5 = confints[4]
+    if (conf.level != 0) {
+      Km.2.5 = confints[1]
+      Vmax.2.5 = confints[2]
+      Km.97.5 = confints[3]
+      Vmax.97.5 = confints[4]
 
-    model.data$V0.lb = Vmax.2.5*model.data$A/(Km.97.5 + model.data$A)
-    model.data$V0.ub = Vmax.97.5*model.data$A/(Km.2.5 + model.data$A)
-  }
-  else if (model == "LCI") {
+      model.data$V0.lb = Vmax.2.5*model.data$A/(Km.97.5 + model.data$A)
+      model.data$V0.ub = Vmax.97.5*model.data$A/(Km.2.5 + model.data$A)
+
+    } else {
+      Km.2.5 = F
+      Vmax.2.5 = F
+      Km.97.5 = F
+      Vmax.97.5 = F
+    }
+
+  } else if (model == "LCI") {
     params = LCI(model.data,plot.options,conf.level)
 
     if (params[[1]] == F) {
@@ -166,19 +174,28 @@ Given.Params = function(params,model,conf.level) {
     fit.data = params[[8]]
     confints = params[[9]]
 
-    Km.2.5 = confints[1]
-    Ki.2.5 = confints[2]
-    Vmax.2.5 = confints[3]
-    Km.97.5 = confints[4]
-    Ki.97.5 = confints[5]
-    Vmax.97.5 = confints[6]
+    if (conf.level != 0) {
+      Km.2.5 = confints[1]
+      Ki.2.5 = confints[2]
+      Vmax.2.5 = confints[3]
+      Km.97.5 = confints[4]
+      Ki.97.5 = confints[5]
+      Vmax.97.5 = confints[6]
 
-    model.data$V0.lb = Vmax.2.5*model.data$A /
-      (Km.97.5*(1 + model.data$I/Ki.2.5) + model.data$A)
-    model.data$V0.ub = Vmax.97.5*model.data$A /
-      (Km.2.5*(1 + model.data$I/Ki.97.5) + model.data$A)
-  }
-  else if (model == "TC") {
+      model.data$V0.lb = Vmax.2.5*model.data$A /
+        (Km.97.5*(1 + model.data$I/Ki.2.5) + model.data$A)
+      model.data$V0.ub = Vmax.97.5*model.data$A /
+        (Km.2.5*(1 + model.data$I/Ki.97.5) + model.data$A)
+    } else {
+      Km.2.5 = F
+      Ki.2.5 = F
+      Vmax.2.5 = F
+      Km.97.5 = F
+      Ki.97.5 = F
+      Vmax.97.5 = F
+    }
+
+  } else if (model == "TC") {
     params = Ternary.complex(model.data,plot.options,conf.level)
 
     if (length(params) == 1) {
@@ -197,21 +214,32 @@ Given.Params = function(params,model,conf.level) {
     fit.data = params[[11]]
     confints = params[[13]]
 
-    KmA.2.5 = confints[1]
-    KmB.2.5 = confints[2]
-    Ksat.2.5 = confints[3]
-    Vmax.2.5 = confints[4]
-    KmA.97.5 = confints[5]
-    KmB.97.5 = confints[6]
-    Ksat.97.5 = confints[7]
-    Vmax.97.5 = confints[8]
+    if (conf.level != 0) {
+      KmA.2.5 = confints[1]
+      KmB.2.5 = confints[2]
+      Ksat.2.5 = confints[3]
+      Vmax.2.5 = confints[4]
+      KmA.97.5 = confints[5]
+      KmB.97.5 = confints[6]
+      Ksat.97.5 = confints[7]
+      Vmax.97.5 = confints[8]
 
-    model.data$V0.lb = Vmax.2.5*model.data$A*model.data$B /
-      (KmA.97.5*model.data$A + KmB.97.5*model.data$B + model.data$A*model.data$B + Ksat.97.5*KmB.97.5)
-    model.data$V0.ub = Vmax.97.5*model.data$A*model.data$B /
-      (KmA.2.5*model.data$A + KmB.2.5*model.data$B + model.data$A*model.data$B + Ksat.2.5*KmB.2.5)
-  }
-  else if (model == "PP") {
+      model.data$V0.lb = Vmax.2.5*model.data$A*model.data$B /
+        (KmA.97.5*model.data$A + KmB.97.5*model.data$B + model.data$A*model.data$B + Ksat.97.5*KmB.97.5)
+      model.data$V0.ub = Vmax.97.5*model.data$A*model.data$B /
+        (KmA.2.5*model.data$A + KmB.2.5*model.data$B + model.data$A*model.data$B + Ksat.2.5*KmB.2.5)
+    } else {
+      KmA.2.5 = F
+      KmB.2.5 = F
+      Ksat.2.5 = F
+      Vmax.2.5 = F
+      KmA.97.5 = F
+      KmB.97.5 = F
+      Ksat.97.5 = F
+      Vmax.97.5 = F
+    }
+
+  } else if (model == "PP") {
     params = Ping.pong(model.data,plot.options,conf.level)
 
     if (length(params) == 1) {
@@ -229,17 +257,26 @@ Given.Params = function(params,model,conf.level) {
     fit.data = params[[10]]
     confints = params[[12]]
 
-    KmA.2.5 = confints[1]
-    KmB.2.5 = confints[2]
-    Vmax.2.5 = confints[3]
-    KmA.97.5 = confints[4]
-    KmB.97.5 = confints[5]
-    Vmax.97.5 = confints[6]
+    if (conf.level != 0) {
+      KmA.2.5 = confints[1]
+      KmB.2.5 = confints[2]
+      Vmax.2.5 = confints[3]
+      KmA.97.5 = confints[4]
+      KmB.97.5 = confints[5]
+      Vmax.97.5 = confints[6]
 
-    model.data$V0.lb = Vmax.2.5*model.data$A*model.data$B /
-      (KmA.97.5*model.data$A + KmB.97.5*model.data$B + model.data$A*model.data$B)
-    model.data$V0.ub = Vmax.97.5*model.data$A*model.data$B /
-      (KmA.2.5*model.data$A + KmB.2.5*model.data$B + model.data$A*model.data$B)
+      model.data$V0.lb = Vmax.2.5*model.data$A*model.data$B /
+        (KmA.97.5*model.data$A + KmB.97.5*model.data$B + model.data$A*model.data$B)
+      model.data$V0.ub = Vmax.97.5*model.data$A*model.data$B /
+        (KmA.2.5*model.data$A + KmB.2.5*model.data$B + model.data$A*model.data$B)
+    } else {
+      KmA.2.5 = F
+      KmB.2.5 = F
+      Vmax.2.5 = F
+      KmA.97.5 = F
+      KmB.97.5 = F
+      Vmax.97.5 = F
+    }
   }
 
   print("Apparent fit complete")
@@ -262,11 +299,7 @@ Given.Params = function(params,model,conf.level) {
       ggplot2::geom_vline(xintercept = KmA,                                        # add a horizontal line for KmA
                           linetype = "dashed",
                           colour = "red") +
-      ggplot2::geom_ribbon(model.data,
-                           mapping = ggplot2::aes(x = A, ymin = V0.lb, ymax = V0.ub),
-                           alpha = 0.2,
-                           inherit.aes = F) +
-      ggplot2::xlab(sprintf("Cs1")) +
+      ggplot2::xlab(sprintf("CsA")) +
       ggplot2::ylab("Velocity") +
       ggplot2::ggtitle("Enzyme Kinetics") +
       ggplot2::labs(colour = "Legend") +                                          # rename the legend
@@ -276,6 +309,14 @@ Given.Params = function(params,model,conf.level) {
                         label = sprintf("Km Apparent = %.3f\nVmax Apparent = %.3f",              # stating the KmA and Vmax values
                                         Km.app,Vmax.app)) +
       ggthemes::theme_few()
+
+    if (conf.level != 0) {
+      enz.plot.A = enz.plot.A +
+        ggplot2::geom_ribbon(model.data,
+                             mapping = ggplot2::aes(x = A, ymin = V0.lb, ymax = V0.ub),
+                             alpha = 0.2,
+                             inherit.aes = F)
+    }
   }
   else {
     enz.plot.A =                                                                  # create a ggplot
@@ -291,13 +332,7 @@ Given.Params = function(params,model,conf.level) {
       ggplot2::geom_vline(xintercept = KmA,                                       # add a horizontal line for KmA
                           linetype = "dashed",
                           colour = "red") +
-      ggplot2::geom_ribbon(model.data,
-                           mapping = ggplot2::aes(x = A,
-                                                  ymin = V0.lb, ymax = V0.ub,
-                                                  colour = as.factor(B)),
-                           alpha = 0.2,
-                           inherit.aes = F) +
-      ggplot2::xlab(sprintf("Cs1")) +
+      ggplot2::xlab(sprintf("CsA")) +
       ggplot2::ylab("Velocity") +
       ggplot2::ggtitle("Enzyme Kinetics") +
       ggplot2::labs(colour = "Legend") +                                          # rename the legend
@@ -307,6 +342,16 @@ Given.Params = function(params,model,conf.level) {
                         label = sprintf("Km Apparent = %.3f\nVmax Apparent = %.3f",              # stating the KmA and Vmax values
                                         KmA.app,Vmax.app)) +
       ggthemes::theme_few()                                                       # use the minimalist theme
+
+    if (conf.level != 0) {
+      enz.plot.A = enz.plot.A +
+        ggplot2::geom_ribbon(model.data,
+                             mapping = ggplot2::aes(x = A,
+                                                    ymin = V0.lb, ymax = V0.ub,
+                                                    colour = as.factor(B)),
+                             alpha = 0.2,
+                             inherit.aes = F)
+    }
   }
 
   if (model == "MM" | model == "LCI") {
