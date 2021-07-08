@@ -174,6 +174,8 @@ Given.Params = function(params,model,conf.level) {
     fit.data = params[[8]]
     confints = params[[9]]
 
+    names(fit.data)[2] = "B" # convert to be in-line with TC and PP models (reduces need to rewrite code)
+
     if (conf.level != 0) {
       Km.2.5 = confints[1]
       Ki.2.5 = confints[2]
@@ -183,9 +185,10 @@ Given.Params = function(params,model,conf.level) {
       Vmax.97.5 = confints[6]
 
       model.data$V0.lb = Vmax.2.5*model.data$A /
-        (Km.97.5*(1 + model.data$I/Ki.2.5) + model.data$A)
+        (Km.97.5*(1 + model.data$B/Ki.2.5) + model.data$A)
       model.data$V0.ub = Vmax.97.5*model.data$A /
-        (Km.2.5*(1 + model.data$I/Ki.97.5) + model.data$A)
+        (Km.2.5*(1 + model.data$B/Ki.97.5) + model.data$A)
+
     } else {
       Km.2.5 = F
       Ki.2.5 = F
