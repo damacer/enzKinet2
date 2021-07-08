@@ -327,6 +327,6 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
   if (conf.level != 0) {
     return(list(KmA,KmB,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats,A.fit.df,B.fit.df,confints))
   } else {
-    return(list(KmA,KmB,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats,A.fit.df,B.fit.df))
+    return(list(KmA,KmB,Vmax,enz.plot.A,enz.plot.B,LWB.plot.A,LWB.plot.B,res.plot,stats,A.fit.df,B.fit.df, 0))
   }
 }
