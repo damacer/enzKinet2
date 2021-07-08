@@ -198,7 +198,7 @@ Given.Params = function(params,model,conf.level) {
   } else if (model == "TC") {
     params = Ternary.complex(model.data,plot.options,conf.level)
 
-    if (length(params) == 1) {
+    if (params[1] == F) {
       return(c(F,params))
     }
 
@@ -242,7 +242,7 @@ Given.Params = function(params,model,conf.level) {
   } else if (model == "PP") {
     params = Ping.pong(model.data,plot.options,conf.level)
 
-    if (length(params) == 1) {
+    if (params[1] == F) {
       return(c(F,params))
     }
 
