@@ -25,12 +25,12 @@ Directplot = function(EK.data, fit.data, params, labels, title, AB) {
   }
 
   Km = params$Km
-  Km.2.5 = params$Km.2.5
-  Km.97.5 = params$Km.97.5
+  Km.lb = params$Km.lb
+  Km.ub = params$Km.ub
   name = params$name
   Vmax = params$Vmax
-  Vmax.2.5 = params$Vmax.2.5
-  Vmax.97.5 = params$Vmax.97.5
+  Vmax.lb = params$Vmax.lb
+  Vmax.ub = params$Vmax.ub
 
   x.lab = labels[[1]]
   y.lab = labels[[2]]
@@ -59,7 +59,7 @@ Directplot = function(EK.data, fit.data, params, labels, title, AB) {
     ggplot2::labs(colour = "Legend") +
     ggthemes::theme_few()
 
-  if (Km.2.5 == F) {
+  if (Km.lb == F) {
     plot = plot +
       ggplot2::annotate(geom = "text",
                         x = median(EK.data[,col1]),
@@ -83,8 +83,8 @@ Vmax))
                         label = sprintf(
 "Km %s = %.3f, 2.5%% = %.3f, 97.5%% = %.3f
 Vmax = %.3f, 2.5%% = %.3f, 97.5%% = %.3f",
-name, Km, Km.2.5, Km.97.5,
-Vmax, Vmax.2.5, Vmax.97.5))
+name, Km, Km.lb, Km.ub,
+Vmax, Vmax.lb, Vmax.ub))
   }
 
   print(plot)

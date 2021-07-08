@@ -198,24 +198,24 @@ LCI = function(EK.data,plot.options,conf.level) {
   # Confidence interval
   if (conf.level != 0) {
     confints = nlstools::confint2(model, level = conf.level)
-    Km.2.5 = confints[1]
-    Ki.2.5 = confints[2]
-    Vmax.2.5 = confints[3]
-    Km.97.5 = confints[4]
-    Ki.97.5 = confints[5]
-    Vmax.97.5 = confints[6]
+    Km.lb = confints[1]
+    Ki.lb = confints[2]
+    Vmax.lb = confints[3]
+    Km.ub = confints[4]
+    Ki.ub = confints[5]
+    Vmax.ub = confints[6]
 
-    EK.data$V0.lb = Vmax.2.5*EK.data$A /
-      (Km.97.5*(1 + EK.data$I/Ki.2.5) + EK.data$A)
-    EK.data$V0.ub = Vmax.97.5*EK.data$A /
-      (Km.2.5*(1 + EK.data$I/Ki.97.5) + EK.data$A)
+    EK.data$V0.lb = Vmax.lb*EK.data$A /
+      (Km.ub*(1 + EK.data$I/Ki.lb) + EK.data$A)
+    EK.data$V0.ub = Vmax.ub*EK.data$A /
+      (Km.lb*(1 + EK.data$I/Ki.ub) + EK.data$A)
   } else {
-    Km.2.5 = F
-    Ki.2.5 = F
-    Vmax.2.5 = F
-    Km.97.5 = F
-    Ki.2.5 = F
-    Vmax.97.5 = F
+    Km.lb = F
+    Ki.lb = F
+    Vmax.lb = F
+    Km.ub = F
+    Ki.lb = F
+    Vmax.ub = F
   }
 
   # Lineweaver-Burk
@@ -256,8 +256,8 @@ LCI = function(EK.data,plot.options,conf.level) {
 
 
   # Figure 1 - enzyme kinetics, substrate one
-  fig1.params = list(Km = Km, Km.2.5 = Km.2.5, Km.97.5 = Km.97.5,
-                     Vmax = Vmax, Vmax.2.5 = Vmax.2.5, Vmax.97.5 = Vmax.97.5,
+  fig1.params = list(Km = Km, Km.lb = Km.lb, Km.ub = Km.ub,
+                     Vmax = Vmax, Vmax.lb = Vmax.lb, Vmax.ub = Vmax.ub,
                      name = name.1)
   fig1.labs = list(x.lab1, y.lab)
   enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A")

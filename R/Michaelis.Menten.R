@@ -141,13 +141,13 @@ Michaelis.Menten = function(EK.data,plot.options,conf.level) {
   # Confidence interval
   if (conf.level != 0) {
     confints = nlstools::confint2(model, level = conf.level)
-    Km.2.5 = confints[1]
-    Vmax.2.5 = confints[2]
-    Km.97.5 = confints[3]
-    Vmax.97.5 = confints[4]
+    Km.lb = confints[1]
+    Vmax.lb = confints[2]
+    Km.ub = confints[3]
+    Vmax.ub = confints[4]
 
-    EK.data$V0.lb = Vmax.2.5*EK.data$A/(Km.97.5 + EK.data$A)
-    EK.data$V0.ub = Vmax.97.5*EK.data$A/(Km.2.5 + EK.data$A)
+    EK.data$V0.lb = Vmax.lb*EK.data$A/(Km.ub + EK.data$A)
+    EK.data$V0.ub = Vmax.ub*EK.data$A/(Km.lb + EK.data$A)
   }
 
   # Lineweaver-Burk
@@ -208,8 +208,8 @@ Michaelis.Menten = function(EK.data,plot.options,conf.level) {
 "Km %s = %.3f, (%.3f - %.3f, %.1f%%)
 Vmax = %.3f, (%.3f - %.3f, %.1f%%)",              # stating the KmA and Vmax values
 name.1,
-Km,Km.2.5,Km.97.5, conf.level*100,
-Vmax, Vmax.2.5, Vmax.97.5, conf.level*100))
+Km,Km.lb,Km.ub, conf.level*100,
+Vmax, Vmax.lb, Vmax.ub, conf.level*100))
   }
 
 

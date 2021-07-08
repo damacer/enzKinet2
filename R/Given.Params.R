@@ -143,19 +143,19 @@ Given.Params = function(params,model,conf.level) {
     confints = params[[8]]
 
     if (conf.level != 0) {
-      Km.2.5 = confints[1]
-      Vmax.2.5 = confints[2]
-      Km.97.5 = confints[3]
-      Vmax.97.5 = confints[4]
+      Km.lb = confints[1]
+      Vmax.lb = confints[2]
+      Km.ub = confints[3]
+      Vmax.ub = confints[4]
 
-      model.data$V0.lb = Vmax.2.5*model.data$A/(Km.97.5 + model.data$A)
-      model.data$V0.ub = Vmax.97.5*model.data$A/(Km.2.5 + model.data$A)
+      model.data$V0.lb = Vmax.lb*model.data$A/(Km.ub + model.data$A)
+      model.data$V0.ub = Vmax.ub*model.data$A/(Km.lb + model.data$A)
 
     } else {
-      Km.2.5 = F
-      Vmax.2.5 = F
-      Km.97.5 = F
-      Vmax.97.5 = F
+      Km.lb = F
+      Vmax.lb = F
+      Km.ub = F
+      Vmax.ub = F
     }
 
   } else if (model == "LCI") {
@@ -177,25 +177,25 @@ Given.Params = function(params,model,conf.level) {
     names(fit.data)[2] = "B" # convert to be in-line with TC and PP models (reduces need to rewrite code)
 
     if (conf.level != 0) {
-      Km.2.5 = confints[1]
-      Ki.2.5 = confints[2]
-      Vmax.2.5 = confints[3]
-      Km.97.5 = confints[4]
-      Ki.97.5 = confints[5]
-      Vmax.97.5 = confints[6]
+      Km.lb = confints[1]
+      Ki.lb = confints[2]
+      Vmax.lb = confints[3]
+      Km.ub = confints[4]
+      Ki.ub = confints[5]
+      Vmax.ub = confints[6]
 
-      model.data$V0.lb = Vmax.2.5*model.data$A /
-        (Km.97.5*(1 + model.data$B/Ki.2.5) + model.data$A)
-      model.data$V0.ub = Vmax.97.5*model.data$A /
-        (Km.2.5*(1 + model.data$B/Ki.97.5) + model.data$A)
+      model.data$V0.lb = Vmax.lb*model.data$A /
+        (Km.ub*(1 + model.data$B/Ki.lb) + model.data$A)
+      model.data$V0.ub = Vmax.ub*model.data$A /
+        (Km.lb*(1 + model.data$B/Ki.ub) + model.data$A)
 
     } else {
-      Km.2.5 = F
-      Ki.2.5 = F
-      Vmax.2.5 = F
-      Km.97.5 = F
-      Ki.97.5 = F
-      Vmax.97.5 = F
+      Km.lb = F
+      Ki.lb = F
+      Vmax.lb = F
+      Km.ub = F
+      Ki.ub = F
+      Vmax.ub = F
     }
 
   } else if (model == "TC") {
@@ -218,28 +218,28 @@ Given.Params = function(params,model,conf.level) {
     confints = params[[13]]
 
     if (conf.level != 0) {
-      KmA.2.5 = confints[1]
-      KmB.2.5 = confints[2]
-      Ksat.2.5 = confints[3]
-      Vmax.2.5 = confints[4]
-      KmA.97.5 = confints[5]
-      KmB.97.5 = confints[6]
-      Ksat.97.5 = confints[7]
-      Vmax.97.5 = confints[8]
+      KmA.lb = confints[1]
+      KmB.lb = confints[2]
+      Ksat.lb = confints[3]
+      Vmax.lb = confints[4]
+      KmA.ub = confints[5]
+      KmB.ub = confints[6]
+      Ksat.ub = confints[7]
+      Vmax.ub = confints[8]
 
-      model.data$V0.lb = Vmax.2.5*model.data$A*model.data$B /
-        (KmA.97.5*model.data$A + KmB.97.5*model.data$B + model.data$A*model.data$B + Ksat.97.5*KmB.97.5)
-      model.data$V0.ub = Vmax.97.5*model.data$A*model.data$B /
-        (KmA.2.5*model.data$A + KmB.2.5*model.data$B + model.data$A*model.data$B + Ksat.2.5*KmB.2.5)
+      model.data$V0.lb = Vmax.lb*model.data$A*model.data$B /
+        (KmA.ub*model.data$A + KmB.ub*model.data$B + model.data$A*model.data$B + Ksat.ub*KmB.ub)
+      model.data$V0.ub = Vmax.ub*model.data$A*model.data$B /
+        (KmA.lb*model.data$A + KmB.lb*model.data$B + model.data$A*model.data$B + Ksat.lb*KmB.lb)
     } else {
-      KmA.2.5 = F
-      KmB.2.5 = F
-      Ksat.2.5 = F
-      Vmax.2.5 = F
-      KmA.97.5 = F
-      KmB.97.5 = F
-      Ksat.97.5 = F
-      Vmax.97.5 = F
+      KmA.lb = F
+      KmB.lb = F
+      Ksat.lb = F
+      Vmax.lb = F
+      KmA.ub = F
+      KmB.ub = F
+      Ksat.ub = F
+      Vmax.ub = F
     }
 
   } else if (model == "PP") {
@@ -261,24 +261,24 @@ Given.Params = function(params,model,conf.level) {
     confints = params[[12]]
 
     if (conf.level != 0) {
-      KmA.2.5 = confints[1]
-      KmB.2.5 = confints[2]
-      Vmax.2.5 = confints[3]
-      KmA.97.5 = confints[4]
-      KmB.97.5 = confints[5]
-      Vmax.97.5 = confints[6]
+      KmA.lb = confints[1]
+      KmB.lb = confints[2]
+      Vmax.lb = confints[3]
+      KmA.ub = confints[4]
+      KmB.ub = confints[5]
+      Vmax.ub = confints[6]
 
-      model.data$V0.lb = Vmax.2.5*model.data$A*model.data$B /
-        (KmA.97.5*model.data$A + KmB.97.5*model.data$B + model.data$A*model.data$B)
-      model.data$V0.ub = Vmax.97.5*model.data$A*model.data$B /
-        (KmA.2.5*model.data$A + KmB.2.5*model.data$B + model.data$A*model.data$B)
+      model.data$V0.lb = Vmax.lb*model.data$A*model.data$B /
+        (KmA.ub*model.data$A + KmB.ub*model.data$B + model.data$A*model.data$B)
+      model.data$V0.ub = Vmax.ub*model.data$A*model.data$B /
+        (KmA.lb*model.data$A + KmB.lb*model.data$B + model.data$A*model.data$B)
     } else {
-      KmA.2.5 = F
-      KmB.2.5 = F
-      Vmax.2.5 = F
-      KmA.97.5 = F
-      KmB.97.5 = F
-      Vmax.97.5 = F
+      KmA.lb = F
+      KmB.lb = F
+      Vmax.lb = F
+      KmA.ub = F
+      KmB.ub = F
+      Vmax.ub = F
     }
   }
 

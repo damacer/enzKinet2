@@ -204,24 +204,24 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
   # Confidence interval
   if (conf.level != 0) {
     confints = nlstools::confint2(model, level = conf.level)
-    KmA.2.5 = confints[1]
-    KmB.2.5 = confints[2]
-    Vmax.2.5 = confints[3]
-    KmA.97.5 = confints[4]
-    KmB.97.5 = confints[5]
-    Vmax.97.5 = confints[6]
+    KmA.lb = confints[1]
+    KmB.lb = confints[2]
+    Vmax.lb = confints[3]
+    KmA.ub = confints[4]
+    KmB.ub = confints[5]
+    Vmax.ub = confints[6]
 
-    EK.data$V0.lb = Vmax.2.5*EK.data$A*EK.data$B /
-      (KmA.97.5*EK.data$A + KmB.97.5*EK.data$B + EK.data$A*EK.data$B)
-    EK.data$V0.ub = Vmax.97.5*EK.data$A*EK.data$B /
-      (KmA.2.5*EK.data$A + KmB.2.5*EK.data$B + EK.data$A*EK.data$B)
+    EK.data$V0.lb = Vmax.lb*EK.data$A*EK.data$B /
+      (KmA.ub*EK.data$A + KmB.ub*EK.data$B + EK.data$A*EK.data$B)
+    EK.data$V0.ub = Vmax.ub*EK.data$A*EK.data$B /
+      (KmA.lb*EK.data$A + KmB.lb*EK.data$B + EK.data$A*EK.data$B)
   } else {
-    KmA.2.5 = F
-    KmB.2.5 = F
-    Vmax.2.5 = F
-    KmA.97.5 = F
-    KmB.97.5 = F
-    Vmax.97.5 = F
+    KmA.lb = F
+    KmB.lb = F
+    Vmax.lb = F
+    KmA.ub = F
+    KmB.ub = F
+    Vmax.ub = F
   }
 
   # Lineweaver-Burk
@@ -277,8 +277,8 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
 
 
   # Figure 1 - enzyme kinetics, substrate one
-  fig1.params = list(Km = KmA, Km.2.5 = KmA.2.5, Km.97.5 = KmA.97.5,
-                     Vmax = Vmax, Vmax.2.5 = Vmax.2.5, Vmax.97.5 = Vmax.97.5,
+  fig1.params = list(Km = KmA, Km.lb = KmA.lb, Km.ub = KmA.ub,
+                     Vmax = Vmax, Vmax.lb = Vmax.lb, Vmax.ub = Vmax.ub,
                      name = name.1)
   fig1.labs = list(x.lab1, y.lab)
   enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A")
@@ -288,8 +288,8 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
   LWB.plot.A = enzKinet2::LWBplot(EK.data, A.LWB.df, fig2.labs, title.2, "A")
 
   # Figure 3 - enzyme kinetics, substrate two
-  fig3.params = list(Km = KmB, Km.2.5 = KmB.2.5, Km.97.5 = KmB.97.5,
-                     Vmax = Vmax, Vmax.2.5 = Vmax.2.5, Vmax.97.5 = Vmax.97.5,
+  fig3.params = list(Km = KmB, Km.lb = KmB.lb, Km.ub = KmB.ub,
+                     Vmax = Vmax, Vmax.lb = Vmax.lb, Vmax.ub = Vmax.ub,
                      name = name.1)
   fig3.labs = list(x.lab2, y.lab)
   enz.plot.B = enzKinet2::Directplot(EK.data, B.fit.df, fig3.params, fig3.labs, title.1, "B")
