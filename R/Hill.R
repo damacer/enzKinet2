@@ -16,7 +16,7 @@
 #' Plots - A vs V0, 1/A vs 1/V0, and A vs residuals
 #' @export
 
-Hill = function(EK.data,plot.options) {
+Hill = function(EK.data,plot.options, conf.level) {
   print("Starting Hill")
 
   ## Setup ----
@@ -52,12 +52,30 @@ Hill = function(EK.data,plot.options) {
     x.units = ""
     y.units = ""
   } else if (options.counter == 2) {
-    title.1 = plot.options$title.1
-    title.2 = plot.options$title.2
-    x.units = plot.options$x.units
-    y.units = plot.options$y.units
-  }
+    if (plot.options$title.1 != "") {
+      title.1 = plot.options$title.1
+    } else {
+      title.1 = "Enzyme Kinetics \nDirect plot"
+    }
 
+    if (plot.options$title.2 != "") {
+      title.2 = plot.options$title.2
+    } else {
+      title.2 = "Enzyme Kinetics \nLineweaver-Burk"
+    }
+
+    if (plot.options$x.units != "") {
+      x.units = plot.options$x.units
+    } else {
+      x.units = ""
+    }
+
+    if (plot.options$y.units != "") {
+      y.units = plot.options$y.units
+    } else {
+      y.units = ""
+    }
+  }
 
   # Define model
   formu = formula(V0 ~ Vmax*A^n/(Km^n + A^n))
@@ -70,7 +88,6 @@ Hill = function(EK.data,plot.options) {
   ests = list(Km = Km.est,              # create a named list of estimates
               Vmax = Vmax.est,
               n = n.est)
-
 
   # Range for fitted model
   A.low = min(EK.data$A)                             # lowest value of A which the model will be valid for
@@ -116,10 +133,32 @@ Hill = function(EK.data,plot.options) {
   EK.data$V0.fit = Vmax*EK.data$A^n/(Km^n + EK.data$A^n) # calculate fitted results at the same points as the experimental data
 
   A.fit.df = data.frame(A = A.range,               # dataframe for results of the fitted model using A as the range for each B concentration
-                        V0 = Vmax*A.range / (Km + A.range))
+                        V0 = Vmax*A.range^n / (Km^n + A.range^n))
 
 
   print("Model simulated over range")
+
+
+  # Confidence interval
+  if (conf.level != 0) {
+    confints = nlstools::confint2(model, level = conf.level)
+    Km.lb = confints[1]
+    Vmax.lb = confints[2]
+    n.lb = confints[3]
+    Km.ub = confints[4]
+    Vmax.ub = confints[5]
+    n.ub = confints[6]
+
+    EK.data$V0.lb = Vmax.lb*EK.data$A^n.lb/(Km.ub^n.ub + EK.data$A^n.ub)
+    EK.data$V0.ub = Vmax.ub*EK.data$A^n.ub/(Km.lb^n.lb + EK.data$A^n.lb)
+  } else {
+    Km.lb = F
+    Vmax.lb = F
+    n.lb = F
+    Km.ub = F
+    Vmax.ub = F
+    n.ub = F
+  }
 
 
   # Lineweaver-Burk
@@ -144,7 +183,7 @@ Hill = function(EK.data,plot.options) {
 
 
   ## Results ----
-  cat(sprintf("Km is %.3f, \nVmax is %.3f\n, \nn is %.3f", Km, Vmax, n)) # print a statement about results, extend as necessary
+  cat(sprintf("Km is %.3f, \nVmax is %.3f,\nn is %.3f\n", Km, Vmax, n)) # print a statement about results, extend as necessary
 
 
   # Figure 1 - enzyme kinetics, substrate one
@@ -213,5 +252,9 @@ Hill = function(EK.data,plot.options) {
 
 
   # Return parameters
-  return(list(Km,Vmax,n,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df))
+  if (conf.level != 0) {
+    return(list(Km,Vmax,n,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,confints))
+  } else {
+    return(list(Km,Vmax,n,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,0))
+  }
 }
