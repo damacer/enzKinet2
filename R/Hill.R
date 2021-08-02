@@ -123,7 +123,7 @@ Hill = function(EK.data,plot.options, conf.level) {
 
   Km = unname(coef(model)["Km"])                                  # extract fitted KmA value
   Vmax = unname(coef(model)["Vmax"])                              # extract fitted Vmax value
-  n = unname(coef(model)["h.co"])                                    # extract fitted h.co value
+  h.co = unname(coef(model)["h.co"])                                    # extract fitted h.co value
 
 
   print("Parameter fits found")
