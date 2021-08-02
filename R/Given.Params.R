@@ -23,6 +23,7 @@ Given.Params = function(params,model,conf.level) {
   Vmax = params$Vmax
   A.min = params$Arange[1]
   A.max = params$Arange[2]
+  h.co = params$h.co
   if (spacing == "lin") {
     A.range = pracma::linspace(A.min, A.max, n = measurements)
   } else if (spacing == "log") {
@@ -102,10 +103,16 @@ Given.Params = function(params,model,conf.level) {
     }
   }
 
+  else if (model == "Hill") {
+    model.data = data.frame(A = A.range,
+                            V0 = Vmax*A.range^h.co/(KmA^h.co + A.range^h.co))
+    print(model.data)
+  }
+
   print("Data created")
 
   # Noise
-  if (model == "MM") {
+  if (model == "MM" || model == "Hill") {
     noise.vec =  rnorm(measurements, mean = 0, sd = 1)
   }
   else {
@@ -280,6 +287,42 @@ Given.Params = function(params,model,conf.level) {
       KmB.ub = F
       Vmax.ub = F
     }
+  } else if (model == "Hill") {
+    params = Hill(model.data,plot.options,conf.level)
+
+    if (params[1] == F) {
+      return(c(F,params))
+    }
+
+    Km.app = params[[1]]
+    Vmax.app = params[[2]]
+    h.co.app = params[[3]]
+    enz.plot.A = params[[4]]
+    LWB.plot.A = params[[5]]
+    res.plot = params[[6]]
+    stats = params[[7]]
+    fit.data = params[[8]]
+    confints = params[[9]]
+
+    if (conf.level != 0) {
+      Km.lb = confints[1]
+      Vmax.lb = confints[2]
+      h.co.lb = confints[3]
+      Km.ub = confints[4]
+      Vmax.ub = confints[5]
+      h.co.ub = confints[6]
+
+      model.data$V0.lb = Vmax.lb*model.data$A^h.co.lb/(Km.ub^h.co.ub + model.data$A^h.co.ub)
+      model.data$V0.ub = Vmax.ub*model.data$A^h.co.ub/(Km.lb^h.co.lb + model.data$A^h.co.lb)
+
+    } else {
+      Km.lb = F
+      Vmax.lb = F
+      h.co.lb = F
+      Km.ub = F
+      Vmax.ub = F
+      h.co.ub = F
+    }
   }
 
   print("Apparent fit complete")
@@ -288,7 +331,7 @@ Given.Params = function(params,model,conf.level) {
 
 
   ## Results ----
-  if (model == "MM") {
+  if (model == "MM" || model == "Hill") {
     enz.plot.A =                                                                  # create a ggplot
       ggplot2::ggplot(model.data,                                                    # using EK.data
                       ggplot2::aes(A, V0)) +                                       # plot A vs V0
@@ -357,7 +400,7 @@ Given.Params = function(params,model,conf.level) {
     }
   }
 
-  if (model == "MM" | model == "LCI") {
+  if (model == "MM" | model == "LCI" | model == "Hill") {
     plots = list(enz.plot.A, LWB.plot.A, res.plot, stats)
   }
   else if (model == "TC" | model == "PP") {

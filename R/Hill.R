@@ -78,16 +78,16 @@ Hill = function(EK.data,plot.options, conf.level) {
   }
 
   # Define model
-  formu = formula(V0 ~ Vmax*A^n/(Km^n + A^n))
+  formu = formula(V0 ~ Vmax*A^h.co/(Km^h.co + A^h.co))
 
 
   # Estimate starting parameters for regression
   Km.est = median(EK.data$A, na.rm = T) # use the median of measurements for Km values
   Vmax.est = max(EK.data$V0, na.rm = T) # use maximum measured value for V0
-  n.est = 1
+  h.co.est = 2
   ests = list(Km = Km.est,              # create a named list of estimates
               Vmax = Vmax.est,
-              n = n.est)
+              h.co = h.co.est)
 
   # Range for fitted model
   A.low = min(EK.data$A)                             # lowest value of A which the model will be valid for
@@ -98,7 +98,7 @@ Hill = function(EK.data,plot.options, conf.level) {
 
 
   # NLS control parameters
-  nlc = nls.control(maxiter = 1e5, tol = 1e-5) # set regression controls
+  nlc = nls.control(maxiter = 1e5, tol = 1e-5, warnOnly = T) # set regression controls
 
 
   print("Setup complete")
@@ -123,17 +123,17 @@ Hill = function(EK.data,plot.options, conf.level) {
 
   Km = unname(coef(model)["Km"])                                  # extract fitted KmA value
   Vmax = unname(coef(model)["Vmax"])                              # extract fitted Vmax value
-  n = unname(coef(model)["n"])                                    # extract fitted n value
+  n = unname(coef(model)["h.co"])                                    # extract fitted h.co value
 
 
   print("Parameter fits found")
 
 
   # Create data from fitted parameters
-  EK.data$V0.fit = Vmax*EK.data$A^n/(Km^n + EK.data$A^n) # calculate fitted results at the same points as the experimental data
+  EK.data$V0.fit = Vmax*EK.data$A^h.co/(Km^h.co + EK.data$A^h.co) # calculate fitted results at the same points as the experimental data
 
   A.fit.df = data.frame(A = A.range,               # dataframe for results of the fitted model using A as the range for each B concentration
-                        V0 = Vmax*A.range^n / (Km^n + A.range^n))
+                        V0 = Vmax*A.range^h.co / (Km^h.co + A.range^h.co))
 
 
   print("Model simulated over range")
@@ -144,20 +144,20 @@ Hill = function(EK.data,plot.options, conf.level) {
     confints = nlstools::confint2(model, level = conf.level)
     Km.lb = confints[1]
     Vmax.lb = confints[2]
-    n.lb = confints[3]
+    h.co.lb = confints[3]
     Km.ub = confints[4]
     Vmax.ub = confints[5]
-    n.ub = confints[6]
+    h.co.ub = confints[6]
 
-    EK.data$V0.lb = Vmax.lb*EK.data$A^n.lb/(Km.ub^n.ub + EK.data$A^n.ub)
-    EK.data$V0.ub = Vmax.ub*EK.data$A^n.ub/(Km.lb^n.lb + EK.data$A^n.lb)
+    EK.data$V0.lb = Vmax.lb*EK.data$A^h.co.lb/(Km.ub^h.co.ub + EK.data$A^h.co.ub)
+    EK.data$V0.ub = Vmax.ub*EK.data$A^h.co.ub/(Km.lb^h.co.lb + EK.data$A^h.co.lb)
   } else {
     Km.lb = F
     Vmax.lb = F
-    n.lb = F
+    h.co.lb = F
     Km.ub = F
     Vmax.ub = F
-    n.ub = F
+    h.co.ub = F
   }
 
 
@@ -167,7 +167,7 @@ Hill = function(EK.data,plot.options, conf.level) {
 
   # A as range
   A.LWB.df = data.frame(A.inv = 1/A.range,
-                        V0.inv = Km^n/(Vmax*A.range^n) + 1/Vmax)
+                        V0.inv = Km^h.co/(Vmax*A.range^h.co) + 1/Vmax)
 
 
   print("Lineweaver-Burk performed")
@@ -183,7 +183,7 @@ Hill = function(EK.data,plot.options, conf.level) {
 
 
   ## Results ----
-  cat(sprintf("Km is %.3f, \nVmax is %.3f,\nn is %.3f\n", Km, Vmax, n)) # print a statement about results, extend as necessary
+  cat(sprintf("Km is %.3f, \nVmax is %.3f,\nh.co is %.3f\n", Km, Vmax, h.co)) # print a statement about results, extend as necessary
 
 
   # Figure 1 - enzyme kinetics, substrate one
@@ -242,7 +242,7 @@ Hill = function(EK.data,plot.options, conf.level) {
   RMSE = modelr::rmse(model, EK.data)
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
-  stats = list(Model = "MM",
+  stats = list(Model = "Hill",
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,
