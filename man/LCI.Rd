@@ -4,7 +4,7 @@
 \alias{LCI}
 \title{Linear Competitive Inhibition Model}
 \usage{
-LCI(EK.data, plot.options)
+LCI(EK.data, plot.options, conf.level)
 }
 \arguments{
 \item{EK.data}{a dataframe containing the enzyme kinetics data- three

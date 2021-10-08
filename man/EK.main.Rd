@@ -4,7 +4,7 @@
 \alias{EK.main}
 \title{Enzyme Kinetics for Website Implementation}
 \usage{
-EK.main(file, model, plot.options)
+EK.main(file, model, plot.options, conf.level)
 }
 \arguments{
 \item{file}{a .csv file containing enzyme kinetics data}

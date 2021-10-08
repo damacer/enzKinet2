@@ -260,11 +260,11 @@ LCI = function(EK.data,plot.options,conf.level) {
                      Vmax = Vmax, Vmax.lb = Vmax.lb, Vmax.ub = Vmax.ub,
                      name = name.1)
   fig1.labs = list(x.lab1, y.lab)
-  enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A")
+  enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A", "Inhibitor")
 
   # Figure 2 - Lineweaver-Burk, substrate one
   fig2.labs = list(x.lab1.inv, y.lab.inv)
-  LWB.plot.A = enzKinet2::LWBplot(EK.data, A.LWB.df, fig2.labs, title.2, "A")
+  LWB.plot.A = enzKinet2::LWBplot(EK.data, A.LWB.df, fig2.labs, title.2, "A", "Inhibitor")
 
   # Figure 3 - Residuals of model
   res.plot =

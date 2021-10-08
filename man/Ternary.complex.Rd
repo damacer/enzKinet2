@@ -4,7 +4,7 @@
 \alias{Ternary.complex}
 \title{Ternary-Complex Model}
 \usage{
-Ternary.complex(EK.data, plot.options)
+Ternary.complex(EK.data, plot.options, conf.level)
 }
 \arguments{
 \item{EK.data}{a data-frame containing the enzyme kinetics data- three

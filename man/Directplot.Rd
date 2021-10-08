@@ -4,7 +4,7 @@
 \alias{Directplot}
 \title{Direct plot function}
 \usage{
-Directplot(EK.data, fit.data, params, labels, title, AB)
+Directplot(EK.data, fit.data, params, labels, title, AB, legend.name)
 }
 \arguments{
 \item{EK.data}{a data-frame containing the primary data to be plotted}

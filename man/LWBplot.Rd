@@ -4,7 +4,7 @@
 \alias{LWBplot}
 \title{Lineweaver-Burk plot function}
 \usage{
-LWBplot(EK.data, fit.data, labels, title, AB)
+LWBplot(EK.data, fit.data, labels, title, AB, legend.name)
 }
 \arguments{
 \item{EK.data}{a data-frame containing the primary data to be plotted}

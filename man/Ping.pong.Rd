@@ -4,7 +4,7 @@
 \alias{Ping.pong}
 \title{Ping-Pong Model}
 \usage{
-Ping.pong(EK.data, plot.options)
+Ping.pong(EK.data, plot.options, conf.level)
 }
 \arguments{
 \item{EK.data}{a dataframe containing the enzyme kinetics data- three

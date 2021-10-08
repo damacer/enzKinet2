@@ -14,7 +14,7 @@
 #'
 #' @export
 
-LWBplot = function(EK.data, fit.data, labels, title, AB) {
+LWBplot = function(EK.data, fit.data, labels, title, AB, legend.name) {
   if (AB == "A") {
     col1.data = 7
     col2.data = 2
@@ -44,7 +44,7 @@ LWBplot = function(EK.data, fit.data, labels, title, AB) {
     ggplot2::xlab(x.lab) +
     ggplot2::ylab(y.lab) +
     ggplot2::ggtitle(title) +
-    ggplot2::labs(colour = "Legend") +
+    ggplot2::labs(colour = legend.name) +
     ggthemes::theme_few()
 
   print(plot)
