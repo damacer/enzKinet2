@@ -63,6 +63,7 @@ LCI = function(EK.data,plot.options,conf.level) {
     x.lab2.inv = sprintf("1/%s", name.2)
     y.lab = sprintf("Velocity")
     y.lab.inv = sprintf("1/V0")
+    plot.mods = ""
   } else if (plot.options$options == 2) { # use custom options
     if (plot.options$title.1 != "") {
       title.1 = plot.options$title.1
@@ -99,6 +100,7 @@ LCI = function(EK.data,plot.options,conf.level) {
       y.lab = sprintf("Velocity")
       y.lab.inv = sprintf("1/V0")
     }
+    plot.mods = plot.options$plot.mods
   }
   # options.counter = plot.options$options
   # if (options.counter == 1) {
@@ -260,7 +262,7 @@ LCI = function(EK.data,plot.options,conf.level) {
                      Vmax = Vmax, Vmax.lb = Vmax.lb, Vmax.ub = Vmax.ub,
                      name = name.1)
   fig1.labs = list(x.lab1, y.lab)
-  enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A", "Inhibitor")
+  enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A", "Inhibitor", plot.mods)
 
   # Figure 2 - Lineweaver-Burk, substrate one
   fig2.labs = list(x.lab1.inv, y.lab.inv)

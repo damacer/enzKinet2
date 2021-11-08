@@ -15,7 +15,7 @@
 #'
 #' @export
 
-Directplot = function(EK.data, fit.data, params, labels, title, AB, legend.name) {
+Directplot = function(EK.data, fit.data, params, labels, title, AB, legend.name, plot.mods) {
   if (AB == "A") {
     col1 = 1
     col2 = 2
@@ -47,12 +47,6 @@ Directplot = function(EK.data, fit.data, params, labels, title, AB, legend.name)
                                               V0,
                                               colour = as.factor(fit.data[,col2])),
                        inherit.aes = F) +
-    ggplot2::geom_hline(yintercept = Vmax,
-                       linetype = "dashed",
-                       colour = "green") +
-    ggplot2::geom_vline(xintercept = Km,
-                        linetype = "dashed",
-                        colour = "red") +
     ggplot2::xlab(x.lab) +
     ggplot2::ylab(y.lab) +
     ggplot2::ggtitle(title) +
@@ -60,15 +54,19 @@ Directplot = function(EK.data, fit.data, params, labels, title, AB, legend.name)
     ggthemes::theme_few()
 
   if (Km.lb == F) {
-    plot = plot +
-      ggplot2::annotate(geom = "text",
-                        x = median(EK.data[,col1]),
-                        y = max(EK.data[,3]),
-                        label = sprintf(
+    if ("res.on.plots" %in% plot.mods) {
+      plot = plot +
+        ggplot2::annotate(geom = "text",
+                          x = 1.01*Km,
+                          y = 0.99*max(EK.data[,3]),
+                          hjust = 0,
+                          vjust = 1,
+                          label = sprintf(
 "Km %s = %.3f
 Vmax = %.3f",
 name, Km,
 Vmax))
+    }
   } else {
     plot = plot +
       ggplot2::geom_ribbon(EK.data,
@@ -76,15 +74,32 @@ Vmax))
                                                   ymin = V0.lb, ymax = V0.ub,
                                                   colour = as.factor(EK.data[,col2])),
                            alpha = 0.2,
-                           inherit.aes = F) +
-      ggplot2::annotate(geom = "text",
-                        x = median(EK.data[,col1]),
-                        y = max(EK.data[,3]),
-                        label = sprintf(
+                           inherit.aes = F)
+    if ("res.on.plots" %in% plot.mods) {
+      plot = plot +
+        ggplot2::annotate(geom = "text",
+                          x = median(EK.data[,col1]),
+                          y = max(EK.data[,3]),
+                          label = sprintf(
 "Km %s = %.3f, 2.5%% = %.3f, 97.5%% = %.3f
 Vmax = %.3f, 2.5%% = %.3f, 97.5%% = %.3f",
 name, Km, Km.lb, Km.ub,
 Vmax, Vmax.lb, Vmax.ub))
+    }
+  }
+
+  if ("Km.line" %in% plot.mods) {
+    plot = plot +
+      ggplot2::geom_vline(xintercept = Km,
+                          linetype = "dashed",
+                          colour = "red")
+  }
+
+  if ("Vmax.line" %in% plot.mods) {
+    plot = plot +
+      ggplot2::geom_hline(yintercept = Vmax,
+                          linetype = "dashed",
+                          colour = "green")
   }
 
   print(plot)

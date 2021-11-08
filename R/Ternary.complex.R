@@ -66,6 +66,7 @@ Ternary.complex = function(EK.data,plot.options,conf.level) {
     x.lab2.inv = sprintf("1/%s", name.2)
     y.lab = sprintf("Velocity")
     y.lab.inv = sprintf("1/V0")
+    plot.mods = ""
   } else if (plot.options$options == 2) { # use custom options
     if (plot.options$title.1 != "") {
       title.1 = plot.options$title.1
@@ -102,6 +103,7 @@ Ternary.complex = function(EK.data,plot.options,conf.level) {
       y.lab = sprintf("Velocity")
       y.lab.inv = sprintf("1/V0")
     }
+    plot.mods = plot.options$plot.mods
   }
 
 
@@ -302,7 +304,7 @@ Ternary.complex = function(EK.data,plot.options,conf.level) {
                      Vmax = Vmax, Vmax.lb = Vmax.lb, Vmax.ub = Vmax.ub,
                      name = name.1)
   fig1.labs = list(x.lab1, y.lab)
-  enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A", x.lab2)
+  enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, title.1, "A", x.lab2, plot.mods)
 
   # Figure 2 - Lineweaver-Burk, substrate one
   fig2.labs = list(x.lab1.inv, y.lab.inv)
@@ -313,7 +315,7 @@ Ternary.complex = function(EK.data,plot.options,conf.level) {
                      Vmax = Vmax, Vmax.lb = Vmax.lb, Vmax.ub = Vmax.ub,
                      name = name.1)
   fig3.labs = list(x.lab2, y.lab)
-  enz.plot.B = enzKinet2::Directplot(EK.data, B.fit.df, fig3.params, fig3.labs, title.1, "B", x.lab1)
+  enz.plot.B = enzKinet2::Directplot(EK.data, B.fit.df, fig3.params, fig3.labs, title.1, "B", x.lab1, plot.mods)
 
   # Figure 4 - Lineweaver-Burk, substrate two
   fig4.labs = list(x.lab2.inv, y.lab.inv)

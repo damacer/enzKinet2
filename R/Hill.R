@@ -51,6 +51,7 @@ Hill = function(EK.data,plot.options, conf.level) {
     title.2 = "Enzyme Kinetics \nLineweaver-Burk"
     x.units = ""
     y.units = ""
+    plot.mods = ""
   } else if (options.counter == 2) {
     if (plot.options$title.1 != "") {
       title.1 = plot.options$title.1
@@ -75,6 +76,8 @@ Hill = function(EK.data,plot.options, conf.level) {
     } else {
       y.units = ""
     }
+
+    plot.mods = plot.options$plot.mods
   }
 
   # Define model
@@ -194,22 +197,39 @@ Hill = function(EK.data,plot.options, conf.level) {
     ggplot2::geom_line(A.fit.df,                                                # then, using A.fit.df
                        mapping = ggplot2::aes(A, V0),                           # add a line of A vs V0
                        inherit.aes = F) +
-    ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
-                        linetype = "dashed",
-                        colour = "green") +
-    ggplot2::geom_vline(xintercept = Km,                                        # add a horizontal line for KmA
-                        linetype = "dashed",
-                        colour = "red") +
     ggplot2::xlab(sprintf("%s, %s",name.1,x.units)) +
     ggplot2::ylab(sprintf("Velocity, %s",y.units)) +
     ggplot2::ggtitle(title.1) +
     ggplot2::labs(colour = "Legend") +                                          # rename the legend
-    ggplot2::annotate(geom = "text",                                            # add a text annotation
-                      x = median(A.range),                                      # in the approximate middle
-                      y = median(Vmax/2),
-                      label = sprintf("Km %s = %.3f\nVmax = %.3f",              # stating the KmA and Vmax values
-                                      name.1,Km,Vmax)) +
     ggthemes::theme_few()                                                       # use the minimalist theme
+
+  if ("Km.line" %in% plot.mods) {
+    enz.plot.A = enz.plot.A +
+      ggplot2::geom_vline(xintercept = Km,                                      # add a horizontal line for KmA
+                          linetype = "dashed",
+                          colour = "red")
+  }
+
+  if ("Vmax.line" %in% plot.mods) {
+    enz.plot.A = enz.plot.A +
+      ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
+                          linetype = "dashed",
+                          colour = "green")
+  }
+
+  if ("res.on.plots" %in% plot.mods) {
+    enz.plot.A = enz.plot.A +
+      ggplot2::annotate(geom = "text",                                            # add a text annotation
+                        x = 1.01*Km,                                      # in the approximate middle
+                        y = 0.99*max(EK.data$V0),
+                        hjust = 0,
+                        vjust = 1,
+                        label = sprintf(
+"Km %s = %.3f,
+h = %.3f,
+Vmax = %.3f",
+name.1, Km, h.co, Vmax))                                                              # stating the KmA and Vmax values
+  }
 
 
   # Figure 2 - Lineweaver-Burk, substrate one
