@@ -65,7 +65,7 @@ TEMPLATE2S = function(EK.data, plot.options) {
     title.1 = "Enzyme Kinetics \nDirect plot"
     title.2 = "Enzyme Kinetics \nLineweaver-Burk"
     x.lab1 = sprintf("%s", name.1)
-    x.lab2 = sprintf("%s", name.1)
+    x.lab2 = sprintf("%s", name.2)
     y.lab = sprintf("Velocity")
   } else if (plot.options$options == 2) { # use custom options
     title.1 = plot.options$title.1
@@ -252,7 +252,7 @@ TEMPLATE2S = function(EK.data, plot.options) {
   # Figure 1 - enzyme kinetics, substrate one
   fig1.params = list(Km = KmA, Vmax = Vmax, name = name.1)
   fig1.labs = list(x.lab1, y.lab)
-  enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, "A")
+  enz.plot.A = enzKinet2::Directplot(EK.data, A.fit.df, fig1.params, fig1.labs, "A", x.lab2)
 
 
   # Get stats

@@ -381,13 +381,18 @@ Given.Params = function(params,model,conf.level) {
       ggplot2::xlab(sprintf("CsA")) +
       ggplot2::ylab("Velocity") +
       ggplot2::ggtitle("Enzyme Kinetics") +
-      ggplot2::labs(colour = "Legend") +                                          # rename the legend
       ggplot2::annotate(geom = "text",                                            # add a text annotation
                         x = median(A.range),                                      # in the approximate middle
                         y = median(Vmax/2),
                         label = sprintf("Km Apparent = %.3f\nVmax Apparent = %.3f",              # stating the KmA and Vmax values
                                         KmA.app,Vmax.app)) +
       ggthemes::theme_few()                                                       # use the minimalist theme
+
+    if (model == "LCI") { # rename the legend
+      enz.plot.A = enz.plot.A + ggplot2::labs(colour = "Inhibitor")
+    } else {
+      enz.plot.A = enz.plot.A + ggplot2::labs(colour = "B")
+    }
 
     if (conf.level != 0) {
       enz.plot.A = enz.plot.A +

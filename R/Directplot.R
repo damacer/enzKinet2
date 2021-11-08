@@ -15,7 +15,7 @@
 #'
 #' @export
 
-Directplot = function(EK.data, fit.data, params, labels, title, AB) {
+Directplot = function(EK.data, fit.data, params, labels, title, AB, legend.name) {
   if (AB == "A") {
     col1 = 1
     col2 = 2
@@ -56,7 +56,7 @@ Directplot = function(EK.data, fit.data, params, labels, title, AB) {
     ggplot2::xlab(x.lab) +
     ggplot2::ylab(y.lab) +
     ggplot2::ggtitle(title) +
-    ggplot2::labs(colour = "Legend") +
+    ggplot2::labs(colour = legend.name) +
     ggthemes::theme_few()
 
   if (Km.lb == F) {

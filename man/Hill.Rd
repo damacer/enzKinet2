@@ -4,7 +4,7 @@
 \alias{Hill}
 \title{Hill Model}
 \usage{
-Hill(EK.data, plot.options)
+Hill(EK.data, plot.options, conf.level)
 }
 \arguments{
 \item{EK.data}{a dataframe containing the enzyme kinetics data- two columns,

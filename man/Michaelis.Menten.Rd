@@ -4,7 +4,7 @@
 \alias{Michaelis.Menten}
 \title{Michaelis-Menten Model}
 \usage{
-Michaelis.Menten(EK.data, plot.options)
+Michaelis.Menten(EK.data, plot.options, conf.level)
 }
 \arguments{
 \item{EK.data}{a dataframe containing the enzyme kinetics data- two columns,
