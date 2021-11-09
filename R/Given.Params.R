@@ -11,7 +11,7 @@
 #' @return list(plot)
 #' @export
 
-Given.Params = function(params,model,conf.level) {
+Given.Params = function(params,model,conf.level,plot.mods) {
   print("Starting Given.Params")
 
   ## Setup ----
@@ -339,21 +339,10 @@ Given.Params = function(params,model,conf.level) {
       ggplot2::geom_line(fit.data,
                          mapping = ggplot2::aes(A,V0),
                          inherit.aes = F) +
-      ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
-                          linetype = "dashed",
-                          colour = "green") +
-      ggplot2::geom_vline(xintercept = KmA,                                        # add a horizontal line for KmA
-                          linetype = "dashed",
-                          colour = "red") +
       ggplot2::xlab(sprintf("CsA")) +
       ggplot2::ylab("Velocity") +
       ggplot2::ggtitle("Enzyme Kinetics") +
       ggplot2::labs(colour = "Legend") +                                          # rename the legend
-      ggplot2::annotate(geom = "text",                                            # add a text annotation
-                        x = median(A.range),                                      # in the approximate middle
-                        y = median(Vmax/2),
-                        label = sprintf("Km Apparent = %.3f\nVmax Apparent = %.3f",              # stating the KmA and Vmax values
-                                        Km.app,Vmax.app)) +
       ggthemes::theme_few()
 
     if (conf.level != 0) {
@@ -363,6 +352,32 @@ Given.Params = function(params,model,conf.level) {
                              alpha = 0.2,
                              inherit.aes = F)
     }
+
+    if ("Km.line" %in% plot.mods) {
+      enz.plot.A = enz.plot.A +
+        ggplot2::geom_vline(xintercept = Km,                                      # add a horizontal line for KmA
+                            linetype = "dashed",
+                            colour = "red")
+    }
+
+    if ("Vmax.line" %in% plot.mods) {
+      enz.plot.A = enz.plot.A +
+        ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
+                            linetype = "dashed",
+                            colour = "green")
+    }
+
+    if ("res.on.plots" %in% plot.mods & conf.level == 0) {
+      enz.plot.A = enz.plot.A +
+        ggplot2::annotate(geom = "text",                                            # add a text annotation
+                          x = 1.01*Km,                                      # in the approximate middle
+                          y = 0.99*max(EK.data$V0),
+                          hjust = 0,
+                          vjust = 1,
+                          label = sprintf(
+"Km %s = %.3f
+Vmax = %.3f",
+name.1, Km, Vmax))                                                              # stating the KmA and Vmax values
   }
   else {
     enz.plot.A =                                                                  # create a ggplot
@@ -372,20 +387,9 @@ Given.Params = function(params,model,conf.level) {
       ggplot2::geom_line(fit.data,
                          mapping = ggplot2::aes(A, V0, colour = as.factor(B)),
                          inherit.aes = F) +
-      ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
-                          linetype = "dashed",
-                          colour = "green") +
-      ggplot2::geom_vline(xintercept = KmA,                                       # add a horizontal line for KmA
-                          linetype = "dashed",
-                          colour = "red") +
       ggplot2::xlab(sprintf("CsA")) +
       ggplot2::ylab("Velocity") +
       ggplot2::ggtitle("Enzyme Kinetics") +
-      ggplot2::annotate(geom = "text",                                            # add a text annotation
-                        x = median(A.range),                                      # in the approximate middle
-                        y = median(Vmax/2),
-                        label = sprintf("Km Apparent = %.3f\nVmax Apparent = %.3f",              # stating the KmA and Vmax values
-                                        KmA.app,Vmax.app)) +
       ggthemes::theme_few()                                                       # use the minimalist theme
 
     if (model == "LCI") { # rename the legend
@@ -402,6 +406,33 @@ Given.Params = function(params,model,conf.level) {
                                                     colour = as.factor(B)),
                              alpha = 0.2,
                              inherit.aes = F)
+    }
+
+    if ("Km.line" %in% plot.mods) {
+      enz.plot.A = enz.plot.A +
+        ggplot2::geom_vline(xintercept = Km,                                      # add a horizontal line for KmA
+                            linetype = "dashed",
+                            colour = "red")
+    }
+
+    if ("Vmax.line" %in% plot.mods) {
+      enz.plot.A = enz.plot.A +
+        ggplot2::geom_hline(yintercept = Vmax,                                      # add a horizontal line for Vmax
+                            linetype = "dashed",
+                            colour = "green")
+    }
+
+    if ("res.on.plots" %in% plot.mods & conf.level == 0) {
+      enz.plot.A = enz.plot.A +
+        ggplot2::annotate(geom = "text",                                            # add a text annotation
+                          x = 1.01*Km,                                      # in the approximate middle
+                          y = 0.99*max(EK.data$V0),
+                          hjust = 0,
+                          vjust = 1,
+                          label = sprintf(
+"Km %s = %.3f
+Vmax = %.3f",
+name.1, Km, Vmax))                                                              # stating the KmA and Vmax values
     }
   }
 
