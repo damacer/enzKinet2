@@ -355,7 +355,7 @@ Given.Params = function(params,model,conf.level,plot.mods) {
 
     if ("Km.line" %in% plot.mods) {
       enz.plot.A = enz.plot.A +
-        ggplot2::geom_vline(xintercept = Km,                                      # add a horizontal line for KmA
+        ggplot2::geom_vline(xintercept = KmA,                                      # add a horizontal line for KmA
                             linetype = "dashed",
                             colour = "red")
     }
@@ -370,14 +370,15 @@ Given.Params = function(params,model,conf.level,plot.mods) {
     if ("res.on.plots" %in% plot.mods & conf.level == 0) {
       enz.plot.A = enz.plot.A +
         ggplot2::annotate(geom = "text",                                            # add a text annotation
-                          x = 1.01*Km,                                      # in the approximate middle
-                          y = 0.99*max(EK.data$V0),
+                          x = 1.01*KmA,                                      # in the approximate middle
+                          y = 0.99*Vmax,
                           hjust = 0,
                           vjust = 1,
                           label = sprintf(
-"Km %s = %.3f
+"Km = %.3f
 Vmax = %.3f",
-name.1, Km, Vmax))                                                              # stating the KmA and Vmax values
+Km.app, Vmax.app))                                                              # stating the KmA and Vmax values
+    }
   }
   else {
     enz.plot.A =                                                                  # create a ggplot
@@ -410,7 +411,7 @@ name.1, Km, Vmax))                                                              
 
     if ("Km.line" %in% plot.mods) {
       enz.plot.A = enz.plot.A +
-        ggplot2::geom_vline(xintercept = Km,                                      # add a horizontal line for KmA
+        ggplot2::geom_vline(xintercept = KmA,                                      # add a horizontal line for KmA
                             linetype = "dashed",
                             colour = "red")
     }
@@ -425,14 +426,14 @@ name.1, Km, Vmax))                                                              
     if ("res.on.plots" %in% plot.mods & conf.level == 0) {
       enz.plot.A = enz.plot.A +
         ggplot2::annotate(geom = "text",                                            # add a text annotation
-                          x = 1.01*Km,                                      # in the approximate middle
-                          y = 0.99*max(EK.data$V0),
+                          x = 1.01*KmA,                                      # in the approximate middle
+                          y = 0.99*Vmax,
                           hjust = 0,
                           vjust = 1,
                           label = sprintf(
-"Km %s = %.3f
+"Km = %.3f
 Vmax = %.3f",
-name.1, Km, Vmax))                                                              # stating the KmA and Vmax values
+KmA.app, Vmax.app))                                                              # stating the KmA and Vmax values
     }
   }
 
