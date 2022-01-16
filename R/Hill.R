@@ -263,6 +263,12 @@ name.1, Km, h.co, Vmax))                                                        
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
   stats = list(Model = "Hill",
+               KmA = Km,
+               KmB = NA,
+               KI = NA,
+               Ksat = NA,
+               h = h.co,
+               Vmax = Vmax,
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,

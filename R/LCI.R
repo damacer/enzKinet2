@@ -285,6 +285,12 @@ LCI = function(EK.data,plot.options,conf.level) {
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
   stats = list(Model = "LCI",
+               KmA = Km,
+               KmB = NA,
+               KI = Ki,
+               Ksat = NA,
+               h =  NA,
+               Vmax = Vmax,
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,

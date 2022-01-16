@@ -272,6 +272,12 @@ Vmax, Vmax.lb, Vmax.ub, conf.level*100))
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
   stats = list(Model = "MM",
+               KmA = Km,
+               KmB = NA,
+               KI = NA,
+               Ksat = NA,
+               h = NA,
+               Vmax = Vmax,
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,

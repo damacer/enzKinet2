@@ -338,6 +338,12 @@ Ternary.complex = function(EK.data,plot.options,conf.level) {
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
   stats = list(Model = "TC",
+               KmA = KmA,
+               KmB = KmB,
+               KI = NA,
+               Ksat = Ksat,
+               h = NA,
+               Vmax = Vmax,
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,
