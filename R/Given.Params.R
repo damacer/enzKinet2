@@ -438,10 +438,10 @@ KmA.app, Vmax.app))                                                             
   }
 
   if (model == "MM" | model == "LCI" | model == "Hill") {
-    plots = list(enz.plot.A, LWB.plot.A, res.plot, stats)
+    plots = list(enz.plot.A, LWB.plot.A, res.plot, stats, fit.data)
   }
   else if (model == "TC" | model == "PP") {
-    plots = list(enz.plot.A, enz.plot.B, LWB.plot.A, LWB.plot.B, res.plot, stats)
+    plots = list(enz.plot.A, enz.plot.B, LWB.plot.A, LWB.plot.B, res.plot, stats, fit.data)
   }
 
   print("Plots created, returning")
