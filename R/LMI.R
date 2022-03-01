@@ -122,7 +122,7 @@ LMI = function(EK.data,plot.options,conf.level) {
 
   # Estimate starting parameters for regression
   Km.est = median(EK.data$A, na.rm = T)  # use the median of measurements for Km values
-  Kic.est = median(EK.data$I, na.rm = T)
+  Ki.est = median(EK.data$I, na.rm = T)
   Vmax.est = max(EK.data$V0, na.rm = T)  # use maximum measured value for V0
   ests = list(Km = Km.est,               # create a named list of estimates
               Kic = Ki.est,
