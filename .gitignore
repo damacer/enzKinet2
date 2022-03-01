@@ -1,1 +1,6 @@
 .Rproj.user
+*.Rd
+*.Rd
+man/Given.Params.Rd
+man/Directplot.Rd
+NAMESPACE

@@ -174,7 +174,7 @@ LNCI = function(EK.data,plot.options,conf.level) {
   # Create data from fitted parameters
   EK.data$V0.fit =                      # calculate fitted results at the same points as the experimental data
     Vmax*EK.data$A /
-    (Km*(1 + EK.data$I/Ki) + EK.data$A)
+    ((1 + EK.data$I/Ki)*(Km + EK.data$A))
 
   # A as range for each I concentration
   A.seqA = rep(A.range, times = length(num.I))     # vector containing A.range repeated num.B.range times
@@ -186,7 +186,7 @@ LNCI = function(EK.data,plot.options,conf.level) {
   for (I.conc in I.concs) {
     V0.range =                                   # calculate fitted V0
       Vmax*A.range /
-      (Km*(1 + I.conc/Ki) + A.range)
+      ((1 + I.conc/Ki)*(Km + A.range))
       start.pos = 1 + num.A*counter        # starting index
       end.pos = num.A*(1 + counter)        # ending index
       A.fit.df[start.pos:end.pos, "V0"] = V0.range # place data in the V0 column
@@ -208,9 +208,9 @@ LNCI = function(EK.data,plot.options,conf.level) {
     Vmax.ub = confints[6]
 
     EK.data$V0.lb = Vmax.lb*EK.data$A /
-      (Km.ub*(1 + EK.data$I/Ki.lb) + EK.data$A)
+      ((1 + EK.data$I/Ki.lb)*(Km.ub + EK.data$A))
     EK.data$V0.ub = Vmax.ub*EK.data$A /
-      (Km.lb*(1 + EK.data$I/Ki.ub) + EK.data$A)
+      ((1 + EK.data$I/Ki.ub)*(Km.lb + EK.data$A))
   } else {
     Km.lb = F
     Ki.lb = F
@@ -232,8 +232,8 @@ LNCI = function(EK.data,plot.options,conf.level) {
   counter = 0
   for (I.conc in I.concs) {
     V0.inv.I =                                       # inverted LNCI equation
-      (Km*(1 + I.conc/Ki)) /
-      (A.range*Vmax) + 1/Vmax
+      (Km*(1 + I.conc/Ki))/(A.range*Vmax) +
+      (1 + I.conc/Ki)/Vmax
     start.pos = 1 + num.A*counter                    # starting index
     end.pos = num.A*(1 + counter)                    # ending index
     A.LWB.df[start.pos:end.pos, "V0.inv"] = V0.inv.I # place data in the V0.inv column

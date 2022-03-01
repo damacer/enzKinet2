@@ -117,7 +117,7 @@ LUCI = function(EK.data,plot.options,conf.level) {
 
 
   # Define model
-  formu = formula(V0 ~ (Vmax*A/(Km + A(1 + I/Ki))))
+  formu = formula(V0 ~ (Vmax*A/(Km + A*(1 + I/Ki))))
 
 
   # Estimate starting parameters for regression
@@ -174,7 +174,7 @@ LUCI = function(EK.data,plot.options,conf.level) {
   # Create data from fitted parameters
   EK.data$V0.fit =                      # calculate fitted results at the same points as the experimental data
     Vmax*EK.data$A /
-    (Km*(1 + EK.data$I/Ki) + EK.data$A)
+    (Km + EK.data$A*(1 + EK.data$I/Ki))
 
   # A as range for each I concentration
   A.seqA = rep(A.range, times = length(num.I))     # vector containing A.range repeated num.B.range times
@@ -186,7 +186,7 @@ LUCI = function(EK.data,plot.options,conf.level) {
   for (I.conc in I.concs) {
     V0.range =                                   # calculate fitted V0
       Vmax*A.range /
-      (Km*(1 + I.conc/Ki) + A.range)
+      (Km + A.range*(1 + I.conc/Ki))
       start.pos = 1 + num.A*counter        # starting index
       end.pos = num.A*(1 + counter)        # ending index
       A.fit.df[start.pos:end.pos, "V0"] = V0.range # place data in the V0 column
@@ -208,9 +208,9 @@ LUCI = function(EK.data,plot.options,conf.level) {
     Vmax.ub = confints[6]
 
     EK.data$V0.lb = Vmax.lb*EK.data$A /
-      (Km.ub*(1 + EK.data$I/Ki.lb) + EK.data$A)
+      (Km.ub + EK.data$A*(1 + EK.data$I/Ki.lb))
     EK.data$V0.ub = Vmax.ub*EK.data$A /
-      (Km.lb*(1 + EK.data$I/Ki.ub) + EK.data$A)
+      (Km.lb + EK.data$A*(1 + EK.data$I/Ki.ub))
   } else {
     Km.lb = F
     Ki.lb = F
@@ -232,8 +232,7 @@ LUCI = function(EK.data,plot.options,conf.level) {
   counter = 0
   for (I.conc in I.concs) {
     V0.inv.I =                                       # inverted LUCI equation
-      (Km*(1 + I.conc/Ki)) /
-      (A.range*Vmax) + 1/Vmax
+      Km/(A.range*Vmax) + (1 + I.conc/Ki)/Vmax
     start.pos = 1 + num.A*counter                    # starting index
     end.pos = num.A*(1 + counter)                    # ending index
     A.LWB.df[start.pos:end.pos, "V0.inv"] = V0.inv.I # place data in the V0.inv column

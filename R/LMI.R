@@ -117,15 +117,16 @@ LMI = function(EK.data,plot.options,conf.level) {
 
 
   # Define model
-  formu = formula(V0 ~ (Vmax*A/(Km*(1 + I/Ki) + A(1 + I/Ki)))) THIS IS WRONG AND NEEDS FIXING
+  formu = formula(V0 ~ (Vmax*A/(Km*(1 + I/Kic) + A*(1 + I/Kiu))))
 
 
   # Estimate starting parameters for regression
   Km.est = median(EK.data$A, na.rm = T)  # use the median of measurements for Km values
-  Ki.est = median(EK.data$I, na.rm = T)
+  Kic.est = median(EK.data$I, na.rm = T)
   Vmax.est = max(EK.data$V0, na.rm = T)  # use maximum measured value for V0
   ests = list(Km = Km.est,               # create a named list of estimates
-              Ki = Ki.est,
+              Kic = Ki.est,
+              Kiu = Ki.est,
               Vmax = Vmax.est)
 
 
@@ -164,7 +165,8 @@ LMI = function(EK.data,plot.options,conf.level) {
   }
 
   Km = unname(coef(model)["Km"])                                  # extract fitted KmA value
-  Ki = unname(coef(model)["Ki"])                                  # extract fitted Ksat value
+  Kic = unname(coef(model)["Kic"])                                  # extract fitted Kic value
+  Kiu = unname(coef(model)["Kiu"])                                  # extract fitted Kic value
   Vmax = unname(coef(model)["Vmax"])                              # extract fitted Vmax value
 
 
@@ -174,7 +176,7 @@ LMI = function(EK.data,plot.options,conf.level) {
   # Create data from fitted parameters
   EK.data$V0.fit =                      # calculate fitted results at the same points as the experimental data
     Vmax*EK.data$A /
-    (Km*(1 + EK.data$I/Ki) + EK.data$A)
+    (Km*(1 + EK.data$I/Kic) + EK.data$A*(1 + I/Kiu))
 
   # A as range for each I concentration
   A.seqA = rep(A.range, times = length(num.I))     # vector containing A.range repeated num.B.range times
@@ -186,7 +188,7 @@ LMI = function(EK.data,plot.options,conf.level) {
   for (I.conc in I.concs) {
     V0.range =                                   # calculate fitted V0
       Vmax*A.range /
-      (Km*(1 + I.conc/Ki) + A.range)
+      (Km*(1 + I.conc/Kic) + A.range*(1 + I/Kiu))
       start.pos = 1 + num.A*counter        # starting index
       end.pos = num.A*(1 + counter)        # ending index
       A.fit.df[start.pos:end.pos, "V0"] = V0.range # place data in the V0 column
@@ -201,22 +203,26 @@ LMI = function(EK.data,plot.options,conf.level) {
   if (conf.level != 0) {
     confints = nlstools::confint2(model, level = conf.level)
     Km.lb = confints[1]
-    Ki.lb = confints[2]
-    Vmax.lb = confints[3]
-    Km.ub = confints[4]
-    Ki.ub = confints[5]
-    Vmax.ub = confints[6]
+    Kic.lb = confints[2]
+    Kiu.lb = confints[3]
+    Vmax.lb = confints[4]
+    Km.ub = confints[5]
+    Kic.ub = confints[6]
+    Kiu.ub = confints[7]
+    Vmax.ub = confints[8]
 
     EK.data$V0.lb = Vmax.lb*EK.data$A /
-      (Km.ub*(1 + EK.data$I/Ki.lb) + EK.data$A)
+      (Km.ub*(1 + EK.data$I/Kic.lb) + EK.data$A*(1 + I/Kiu.lb))
     EK.data$V0.ub = Vmax.ub*EK.data$A /
-      (Km.lb*(1 + EK.data$I/Ki.ub) + EK.data$A)
+      (Km.lb*(1 + EK.data$I/Kic.ub) + EK.data$A*(1 + I/Kiu.ub))
   } else {
     Km.lb = F
-    Ki.lb = F
+    Kic.lb = F
+    Kiu.lb = F
     Vmax.lb = F
     Km.ub = F
-    Ki.lb = F
+    Kic.ub = F
+    Kiu.ub = F
     Vmax.ub = F
   }
 
@@ -232,8 +238,8 @@ LMI = function(EK.data,plot.options,conf.level) {
   counter = 0
   for (I.conc in I.concs) {
     V0.inv.I =                                       # inverted LMI equation
-      (Km*(1 + I.conc/Ki)) /
-      (A.range*Vmax) + 1/Vmax
+      (Km*(1 + I.conc/Kic)) /
+      (A.range*Vmax) + (1 + I/Kiu)/Vmax
     start.pos = 1 + num.A*counter                    # starting index
     end.pos = num.A*(1 + counter)                    # ending index
     A.LWB.df[start.pos:end.pos, "V0.inv"] = V0.inv.I # place data in the V0.inv column
@@ -254,7 +260,7 @@ LMI = function(EK.data,plot.options,conf.level) {
 
 
   ## Results ----
-  cat(sprintf("Km is %.3f, \nKi is %.3f, \nVmax is %.3f\n", Km, Ki, Vmax)) # print a statement about results, extend as necessary
+  cat(sprintf("Km is %.3f, \nKic is %.3f, \nKiu is %.3f, \nVmax is %.3f\n", Km, Kic, Kiu, Vmax)) # print a statement about results, extend as necessary
 
 
   # Figure 1 - enzyme kinetics, substrate one
@@ -287,7 +293,8 @@ LMI = function(EK.data,plot.options,conf.level) {
   stats = list(Model = "LMI",
                KmA = Km,
                KmB = NA,
-               KI = Ki,
+               KI = Kic,
+               KI2 = Kiu,
                Ksat = NA,
                h =  NA,
                Vmax = Vmax,
@@ -301,8 +308,8 @@ LMI = function(EK.data,plot.options,conf.level) {
 
   # Return parameters
   if (conf.level != 0) {
-    return(list(Km,Ki,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,confints))
+    return(list(Km,Kic,Kiu,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,confints))
   } else {
-    return(list(Km,Ki,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,0))
+    return(list(Km,Kic,Kiu,Vmax,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,0))
   }
 }

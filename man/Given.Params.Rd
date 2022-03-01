@@ -4,7 +4,7 @@
 \alias{Given.Params}
 \title{Given Parameters function}
 \usage{
-Given.Params(params, model, conf.level)
+Given.Params(params, model, conf.level, plot.mods)
 }
 \arguments{
 \item{params}{a named list of parameters}

@@ -30,6 +30,18 @@ EK.main = function(file, model,plot.options, conf.level) {
     params = enzKinet2::LCI(EK.data,plot.options, conf.level)
 
 
+  } else if (model == "LMI") {
+    params = enzKinet2::LMI(EK.data,plot.options, conf.level)
+
+
+  } else if (model == "LUCI") {
+    params = enzKinet2::LUCI(EK.data,plot.options, conf.level)
+
+
+  } else if (model == "LNCI") {
+    params = enzKinet2::LNCI(EK.data,plot.options, conf.level)
+
+
   } else if (model == "TC") {
     params = enzKinet2::Ternary.complex(EK.data,plot.options, conf.level)
 
