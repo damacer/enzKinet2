@@ -249,8 +249,8 @@ Vmax, Vmax.lb, Vmax.ub, conf.level*100))
     ggplot2::geom_line(A.LWB.df,                                                # then, using A.LWB.df
                        mapping = ggplot2::aes(A.inv, V0.inv),                   # add a line of 1/A vs 1/V0
                        inherit.aes = F) +
-    ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
-    ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
+    ggplot2::xlab(sprintf("1/%s",name.1)) +
+    ggplot2::ylab(sprintf("1/V0")) +
     ggplot2::ggtitle(title.2) +
     ggthemes::theme_few()
 
