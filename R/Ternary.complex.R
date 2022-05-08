@@ -109,7 +109,7 @@ Ternary.complex = function(EK.data,plot.options,conf.level) {
 
   # Define model
   formu = formula(V0 ~ (Vmax*A*B /
-                          (KmA*A + KmB*B + A*B + Ksat*KmB)))
+                          (KmB*A + KmA*B + A*B + Ksat*KmB)))
 
 
   # Estimate starting parameters for regression

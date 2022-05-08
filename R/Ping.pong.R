@@ -104,7 +104,7 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
 
   # Define model
   formu = formula(V0 ~ (Vmax*A*B /
-                          (KmA*A + KmB*B + A*B)))
+                          (KmA*B + KmB*A + A*B)))
 
 
   # Estimate starting parameters for regression
