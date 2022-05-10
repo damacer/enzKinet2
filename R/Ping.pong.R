@@ -165,7 +165,7 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
 
   # Create data from fitted parameters
   EK.data$V0.fit = Vmax*EK.data$A*EK.data$B /                     # calculate fitted results at the same points as the experimental data
-    (KmA*EK.data$A + KmB*EK.data$B + EK.data$A*EK.data$B)
+    (KmA*EK.data$B + KmB*EK.data$A + EK.data$A*EK.data$B)
 
   # A as range for each B concentration
   A.seqA = rep(A.range, times = length(num.B))     # vector containing A.range repeated num.B times
@@ -176,7 +176,7 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
   counter = 0
   for (B.conc in B.concs) {
     V0.range = Vmax*A.range*B.conc /
-      (KmA*A.range + KmB*B.conc + A.range*B.conc)                               # calculate fitted V0
+      (KmB*A.range + KmA*B.conc + A.range*B.conc)                               # calculate fitted V0
     start.pos = 1 + num.A*counter                                               # starting index
     end.pos = num.A*(1 + counter)                                               # ending index
     A.fit.df[start.pos:end.pos, "V0"] = V0.range                                # place data in the V0 column
@@ -192,7 +192,7 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
   counter = 0
   for (A.conc in A.concs) {
     V0.range = Vmax*A.conc*B.range /
-      (KmA*A.conc + KmB*B.range + A.conc*B.range)                               # calculate fitted V0
+      (KmB*A.conc + KmA*B.range + A.conc*B.range)                               # calculate fitted V0
     start.pos = 1 + num.A*counter                                               # starting index
     end.pos = num.A*(1 + counter)                                               # ending index
     B.fit.df[start.pos:end.pos, "V0"] = V0.range                                # place data in the V0 column
@@ -214,9 +214,9 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
     Vmax.ub = confints[6]
 
     EK.data$V0.lb = Vmax.lb*EK.data$A*EK.data$B /
-      (KmA.ub*EK.data$A + KmB.ub*EK.data$B + EK.data$A*EK.data$B)
+      (KmB.ub*EK.data$A + KmA.ub*EK.data$B + EK.data$A*EK.data$B)
     EK.data$V0.ub = Vmax.ub*EK.data$A*EK.data$B /
-      (KmA.lb*EK.data$A + KmB.lb*EK.data$B + EK.data$A*EK.data$B)
+      (KmB.lb*EK.data$A + KmA.lb*EK.data$B + EK.data$A*EK.data$B)
   } else {
     KmA.lb = F
     KmB.lb = F
@@ -238,7 +238,7 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
                         V0.inv = NA)
   counter = 0
   for (B.conc in B.concs) {
-    V0.inv.B = (KmA*A.range + KmB*B.conc + A.range*B.conc) /
+    V0.inv.B = (KmB*A.range + KmA*B.conc + A.range*B.conc) /
       (Vmax*A.range*B.conc)
     start.pos = 1 + num.A*counter                                             # starting index
     end.pos = num.A*(1 + counter)                                             # ending index
@@ -253,7 +253,7 @@ Ping.pong = function(EK.data,plot.options,conf.level) {
                         V0.inv = NA)
   counter = 0
   for (A.conc in A.concs) {
-    V0.inv.B = (KmA*A.conc + KmB*B.range + A.conc*B.range) /
+    V0.inv.B = (KmB*A.conc + KmA*B.range + A.conc*B.range) /
       (Vmax*A.conc*B.range)
     start.pos = 1 + num.B*counter                                               # starting index
     end.pos = num.B*(1 + counter)                                               # ending index
