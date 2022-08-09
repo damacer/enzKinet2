@@ -106,7 +106,6 @@ Given.Params = function(params,model,conf.level,plot.mods) {
   else if (model == "Hill") {
     model.data = data.frame(A = A.range,
                             V0 = Vmax*A.range^h.co/(KmA^h.co + A.range^h.co))
-    print(model.data)
   }
 
   print("Data created")
@@ -165,7 +164,8 @@ Given.Params = function(params,model,conf.level,plot.mods) {
       Vmax.ub = F
     }
 
-  } else if (model == "LCI") {
+  }
+  else if (model == "LCI") {
     params = LCI(model.data,plot.options,conf.level)
 
     if (params[[1]] == F) {
@@ -205,7 +205,8 @@ Given.Params = function(params,model,conf.level,plot.mods) {
       Vmax.ub = F
     }
 
-  } else if (model == "TC") {
+  }
+  else if (model == "TC") {
     params = Ternary.complex(model.data,plot.options,conf.level)
 
     if (params[1] == F) {
@@ -249,7 +250,8 @@ Given.Params = function(params,model,conf.level,plot.mods) {
       Vmax.ub = F
     }
 
-  } else if (model == "PP") {
+  }
+  else if (model == "PP") {
     params = Ping.pong(model.data,plot.options,conf.level)
 
     if (params[1] == F) {
@@ -287,11 +289,12 @@ Given.Params = function(params,model,conf.level,plot.mods) {
       KmB.ub = F
       Vmax.ub = F
     }
-  } else if (model == "Hill") {
+  }
+  else if (model == "Hill") {
     params = Hill(model.data,plot.options,conf.level)
 
     if (params[1] == F) {
-      return(c(F,params))
+      return(params)
     }
 
     Km.app = params[[1]]

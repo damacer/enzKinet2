@@ -81,7 +81,7 @@ Hill = function(EK.data,plot.options, conf.level) {
   }
 
   # Define model
-  formu = formula(V0 ~ Vmax*A^h.co/(Km^h.co + A^h.co))
+  formu = formula(V0 ~ Vmax*(A^h.co)/(Km^h.co + A^h.co))
 
 
   # Estimate starting parameters for regression
@@ -114,13 +114,18 @@ Hill = function(EK.data,plot.options, conf.level) {
   model = tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
     expr = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
     error = function(cond) {
-      print(cond)
+      #print(cond)
+      #print(type_of(cond))
+      #message(cond)
       return(cond)
     }
   )
 
-
   if (!is.list(model)) {
+    return(model)
+  }
+  else if (as_string(class(model)[1]) == "simpleError") {
+    model = c(F,F,model)
     return(model)
   }
 
