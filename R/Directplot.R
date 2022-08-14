@@ -67,7 +67,8 @@ Vmax = %.3f",
 name, Km,
 Vmax))
     }
-  } else {
+  }
+  else {
     plot = plot +
       ggplot2::geom_ribbon(EK.data,
                            mapping = ggplot2::aes(x = EK.data[,col1],

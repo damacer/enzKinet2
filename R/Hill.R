@@ -124,7 +124,8 @@ Hill = function(EK.data,plot.options, conf.level) {
   if (!is.list(model)) {
     return(model)
   }
-  else if (as_string(class(model)[1]) == "simpleError") {
+
+  else if (toString(class(model)[1]) == "simpleError") {
     model = c(F,F,model)
     return(model)
   }

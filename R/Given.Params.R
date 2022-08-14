@@ -382,6 +382,19 @@ Given.Params = function(params,model,conf.level,plot.mods) {
 Vmax = %.3f",
 Km.app, Vmax.app))                                                              # stating the KmA and Vmax values
     }
+    else if ("res.on.plots" %in% plot.mods & conf.level != 0) {
+      enz.plot.A = enz.plot.A +
+        ggplot2::annotate(geom = "text",
+                          x = 1.01*KmA,
+                          y = 0.99*Vmax,
+                          hjust = 0,
+                          vjust = 1,
+                          label = sprintf(
+"Km = %.3f, 2.5%% = %.3f, 97.5%% = %.3f
+Vmax = %.3f, 2.5%% = %.3f, 97.5%% = %.3f",
+Km.app, Km.lb, Km.ub,
+Vmax.app, Vmax.lb, Vmax.ub))
+    }
   }
   else {
     enz.plot.A =                                                                  # create a ggplot
@@ -398,8 +411,11 @@ Km.app, Vmax.app))                                                              
 
     if (model == "LCI") { # rename the legend
       enz.plot.A = enz.plot.A + ggplot2::labs(colour = "Inhibitor")
-    } else {
+    }
+    else {
       enz.plot.A = enz.plot.A + ggplot2::labs(colour = "B")
+      Km.lb = KmA.lb
+      Km.ub = KmA.ub
     }
 
     if (conf.level != 0) {
@@ -437,6 +453,19 @@ Km.app, Vmax.app))                                                              
 "Km = %.3f
 Vmax = %.3f",
 KmA.app, Vmax.app))                                                              # stating the KmA and Vmax values
+    }
+    else if ("res.on.plots" %in% plot.mods & conf.level != 0) {
+      enz.plot.A = enz.plot.A +
+        ggplot2::annotate(geom = "text",
+                          x = 1.01*KmA,
+                          y = 0.99*Vmax,
+                          hjust = 0,
+                          vjust = 1,
+                          label = sprintf(
+"Km = %.3f, 2.5%% = %.3f, 97.5%% = %.3f
+Vmax = %.3f, 2.5%% = %.3f, 97.5%% = %.3f",
+KmA.app, Km.lb, Km.ub,
+Vmax.app, Vmax.lb, Vmax.ub))
     }
   }
 
