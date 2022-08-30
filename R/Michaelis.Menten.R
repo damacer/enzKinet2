@@ -267,24 +267,30 @@ Vmax, Vmax.lb, Vmax.ub, conf.level*100))
 
 
   # Get stats
+  standard.error = unname(summary(model)$coefficients[,2])
   R2 = modelr::rsquare(model,EK.data)
   RMSE = modelr::rmse(model, EK.data)
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
   stats = list(Model = "MM",
                KmA = Km,
+               KmA.se = standard.error[1],
                KmB = NA,
+               KmB.se = NA,
                KI = NA,
+               KI.se = NA,
                Ksat = NA,
+               Ksat.se = NA,
                h = NA,
+               h.se = NA,
                Vmax = Vmax,
+               Vmax.se = standard.error[2],
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,
                AIC = Glance$AIC,
                BIC = Glance$BIC,
                logLik = Glance$logLik)
-
 
   # Return parameters
   if (conf.level != 0) {

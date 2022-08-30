@@ -333,17 +333,25 @@ Ternary.complex = function(EK.data,plot.options,conf.level) {
 
 
   # Get stats
+  standard.error = unname(summary(model)$coefficients[,2])
+  print(summary(model)$coefficients[,2])
   R2 = modelr::rsquare(model,EK.data)
   RMSE = modelr::rmse(model, EK.data)
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
   stats = list(Model = "TC",
                KmA = KmA,
+               KmA.err = standard.error[1],
                KmB = KmB,
+               KmB.err = standard.error[2],
                KI = NA,
+               KI.err = NA,
                Ksat = Ksat,
+               Ksat.err = standard.error[3],
                h = NA,
+               h.err = NA,
                Vmax = Vmax,
+               Vmax.err = standard.error[4],
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,

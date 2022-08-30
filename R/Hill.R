@@ -264,17 +264,25 @@ name.1, Km, h.co, Vmax))                                                        
 
 
   # Get stats
+  standard.error = unname(summary(model)$coefficients[,2])
+  print(summary(model)$coefficients[,2])
   R2 = modelr::rsquare(model,EK.data)
   RMSE = modelr::rmse(model, EK.data)
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
   stats = list(Model = "Hill",
                KmA = Km,
+               KmA.se = standard.error[1],
                KmB = NA,
+               KmB.se = NA,
                KI = NA,
+               KI.se = NA,
                Ksat = NA,
+               Ksat.se = NA,
                h = h.co,
+               h.se = standard.error[2],
                Vmax = Vmax,
+               Vmax.se = standard.error[3],
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,
