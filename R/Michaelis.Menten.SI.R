@@ -1,9 +1,9 @@
 ## Function file for enzKinet2 package
 
-#' Hill Model
+#' Michaelis-Menten Model with Substrate inhibition
 #'
-#' @author Daniel Mak
-#' 03/06/2021
+#' @author Haig Bishop
+#' 23/06/2024
 #'
 #' This function analyses enzyme kinetics data and reports on the results
 #' @param EK.data a dataframe containing the enzyme kinetics data- two columns,
@@ -11,13 +11,13 @@
 #' @param plot.options a list of plot options to use. Must include numeric
 #' variable "options", which decides on the use of the base options
 #' (options = 1) or the custom options (options = 2)
-#' @return list(Km, Vmax, model, stats)
-#' Prints- Km and Vmax
+#' @return list(Km, Vmax, Ksi, model, stats)
+#' Prints- Km, Vmax and Ksi
 #' Plots - A vs V0, 1/A vs 1/V0, and A vs residuals
 #' @export
 
-Hill = function(EK.data,plot.options, conf.level) {
-  print("Starting Hill")
+Michaelis.Menten.SI = function(EK.data,plot.options,conf.level) {
+  print("Starting Michaelis.Menten.SI")
 
   ## Setup ----
   # Standardise column names
@@ -76,22 +76,24 @@ Hill = function(EK.data,plot.options, conf.level) {
     } else {
       y.units = ""
     }
-
     plot.mods = plot.options$plot.mods
   }
 
   # Define model
-  formu = formula(V0 ~ Vmax*(A^h.co)/(Km^h.co + A^h.co))
+  formu = formula(V0 ~ Vmax*A/(Km + A + A**2/Ksi))
 
 
   # Estimate starting parameters for regression
   Km.est = median(EK.data$A, na.rm = T) # use the median of measurements for Km values
   Vmax.est = max(EK.data$V0, na.rm = T) # use maximum measured value for V0
-  h.co.est = 2
+  Ksi.est = max(EK.data$A, na.rm = T) # use maximum measured value for A, plus 1, cubed
   ests = list(Km = Km.est,              # create a named list of estimates
               Vmax = Vmax.est,
-              h.co = h.co.est)
+              Ksi = Ksi.est)
 
+  print(Km.est)
+  print(Vmax.est)
+  print(Ksi.est)
   # Range for fitted model
   A.low = min(EK.data$A)                             # lowest value of A which the model will be valid for
   A.high = max(EK.data$A)                            # highest value of A which the model will be valid for
@@ -101,48 +103,39 @@ Hill = function(EK.data,plot.options, conf.level) {
 
 
   # NLS control parameters
-  nlc = nls.control(maxiter = 1e5, tol = 1e-5, warnOnly = T) # set regression controls
+  nlc = nls.control(maxiter = 1e5, tol = 1e-5) # set regression controls
 
 
   print("Setup complete")
-
-
-
 
   ## Process ----
   # Non-linear least square regression
   model = tryCatch(                                                          # prevent code from breaking in case where the data cannot be fit
     expr = nls(formu, data = EK.data, start = ests, control = nlc), # perform regression
     error = function(cond) {
-      #print(cond)
-      #print(type_of(cond))
-      #message(cond)
+      print(cond)
       return(cond)
     }
   )
+
 
   if (!is.list(model)) {
     return(model)
   }
 
-  else if (toString(class(model)[1]) == "simpleError") {
-    model = c(F,F,model)
-    return(model)
-  }
-
   Km = unname(coef(model)["Km"])                                  # extract fitted KmA value
   Vmax = unname(coef(model)["Vmax"])                              # extract fitted Vmax value
-  h.co = unname(coef(model)["h.co"])                                    # extract fitted h.co value
+  Ksi = unname(coef(model)["Ksi"])                                # extract fitted Ksi value
 
 
   print("Parameter fits found")
 
 
   # Create data from fitted parameters
-  EK.data$V0.fit = Vmax*EK.data$A^h.co/(Km^h.co + EK.data$A^h.co) # calculate fitted results at the same points as the experimental data
+  EK.data$V0.fit = Vmax*EK.data$A/(Km + EK.data$A + (EK.data$A * EK.data$A)/Ksi) # calculate fitted results at the same points as the experimental data
 
   A.fit.df = data.frame(A = A.range,               # dataframe for results of the fitted model using A as the range for each B concentration
-                        V0 = Vmax*A.range^h.co / (Km^h.co + A.range^h.co))
+                        V0 = Vmax*A.range / (Km + A.range + (A.range * A.range)/Ksi))
 
 
   print("Model simulated over range")
@@ -153,22 +146,14 @@ Hill = function(EK.data,plot.options, conf.level) {
     confints = nlstools::confint2(model, level = conf.level)
     Km.lb = confints[1]
     Vmax.lb = confints[2]
-    h.co.lb = confints[3]
+    Ksi.lb = confints[3]
     Km.ub = confints[4]
     Vmax.ub = confints[5]
-    h.co.ub = confints[6]
+    Ksi.ub = confints[6]
 
-    EK.data$V0.lb = Vmax.lb*EK.data$A^h.co.lb/(Km.ub^h.co.ub + EK.data$A^h.co.ub)
-    EK.data$V0.ub = Vmax.ub*EK.data$A^h.co.ub/(Km.lb^h.co.lb + EK.data$A^h.co.lb)
-  } else {
-    Km.lb = F
-    Vmax.lb = F
-    h.co.lb = F
-    Km.ub = F
-    Vmax.ub = F
-    h.co.ub = F
+    EK.data$V0.lb = Vmax.lb*EK.data$A/(Km.ub + EK.data$A + (EK.data$A * EK.data$A)/Ksi.ub)
+    EK.data$V0.ub = Vmax.ub*EK.data$A/(Km.lb + EK.data$A + (EK.data$A * EK.data$A)/Ksi.lb)
   }
-
 
   # Lineweaver-Burk
   EK.data$A.inv = 1/EK.data$A   # invert A concentrations
@@ -176,7 +161,7 @@ Hill = function(EK.data,plot.options, conf.level) {
 
   # A as range
   A.LWB.df = data.frame(A.inv = 1/A.range,
-                        V0.inv = Km^h.co/(Vmax*A.range^h.co) + 1/Vmax)
+                        V0.inv = Km/(Vmax*A.range) + 1/Vmax + A.range/(Vmax*Ksi))
 
 
   print("Lineweaver-Burk performed")
@@ -192,7 +177,7 @@ Hill = function(EK.data,plot.options, conf.level) {
 
 
   ## Results ----
-  cat(sprintf("Km is %.3f, \nVmax is %.3f,\nh.co is %.3f\n", Km, Vmax, h.co)) # print a statement about results, extend as necessary
+  cat(sprintf("Km is %.3f, \nVmax is %.3f, \nKsi is %.3f\n", Km, Vmax, Ksi)) # print a statement about results, extend as necessary
 
 
   # Figure 1 - enzyme kinetics, substrate one
@@ -223,7 +208,7 @@ Hill = function(EK.data,plot.options, conf.level) {
                           colour = "green")
   }
 
-  if ("res.on.plots" %in% plot.mods) {
+  if ("res.on.plots" %in% plot.mods & conf.level == 0) {
     enz.plot.A = enz.plot.A +
       ggplot2::annotate(geom = "text",                                            # add a text annotation
                         x = 1.01*Km,                                      # in the approximate middle
@@ -231,10 +216,34 @@ Hill = function(EK.data,plot.options, conf.level) {
                         hjust = 0,
                         vjust = 1,
                         label = sprintf(
-"Km %s = %.3f,
-h = %.3f,
-Vmax = %.3f",
-name.1, Km, h.co, Vmax))                                                              # stating the KmA and Vmax values
+"Km %s = %.3f
+Vmax = %.3f
+Ksi = %.3f",
+name.1, Km, Vmax, Ksi))                                                              # stating the KmA, Vmax and Ksi values
+  }
+
+  if (conf.level != 0) {
+    enz.plot.A = enz.plot.A +
+      ggplot2::geom_ribbon(EK.data,
+                           mapping = ggplot2::aes(x = A, ymin = V0.lb, ymax = V0.ub),
+                           alpha = 0.2,
+                           inherit.aes = F)
+    if ("res.on.plots" %in% plot.mods) {
+      enz.plot.A = enz.plot.A +
+        ggplot2::annotate(geom = "text",                                            # add a text annotation
+                          x = 1.01*Km,                                      # in the approximate middle
+                          y = 0.99*max(EK.data$V0),
+                          hjust = 0,
+                          vjust = 1,
+                          label = sprintf(
+"Km %s = %.3f, (%.3f - %.3f, %.1f%%)
+Vmax = %.3f, (%.3f - %.3f, %.1f%%)
+Ksi = %.3f, (%.3f - %.3f, %.1f%%)",              # stating the KmA, Vmax and Ksi values
+name.1,
+Km,Km.lb,Km.ub, conf.level*100,
+Vmax, Vmax.lb, Vmax.ub, conf.level*100,
+Ksi, Ksi.lb, Ksi.ub, conf.level*100))
+    }
   }
 
 
@@ -246,8 +255,8 @@ name.1, Km, h.co, Vmax))                                                        
     ggplot2::geom_line(A.LWB.df,                                                # then, using A.LWB.df
                        mapping = ggplot2::aes(A.inv, V0.inv),                   # add a line of 1/A vs 1/V0
                        inherit.aes = F) +
-    ggplot2::xlab(sprintf("1/%s, 1/%s",name.1,x.units)) +
-    ggplot2::ylab(sprintf("1/V0, 1/%s",y.units)) +
+    ggplot2::xlab(sprintf("1/%s",name.1)) +
+    ggplot2::ylab(sprintf("1/V0")) +
     ggplot2::ggtitle(title.2) +
     ggthemes::theme_few()
 
@@ -265,12 +274,11 @@ name.1, Km, h.co, Vmax))                                                        
 
   # Get stats
   standard.error = unname(summary(model)$coefficients[,2])
-  print(summary(model)$coefficients[,2])
   R2 = modelr::rsquare(model,EK.data)
   RMSE = modelr::rmse(model, EK.data)
   MAE = modelr::mae(model, EK.data)
   Glance = broom::glance(model)
-  stats = list(Model = "Hill",
+  stats = list(Model = "MMSI",
                KmA = Km,
                KmA.se = standard.error[1],
                KmB = NA,
@@ -279,12 +287,12 @@ name.1, Km, h.co, Vmax))                                                        
                KI.se = NA,
                Ksat = NA,
                Ksat.se = NA,
-               h = h.co,
-               h.se = standard.error[2],
+               h = NA,
+               h.se = NA,
                Vmax = Vmax,
-               Vmax.se = standard.error[3],
-               Ksi = NA,
-               Ksi.se = NA,
+               Vmax.se = standard.error[2],
+               Ksi = Ksi,
+               Ksi.se = standard.error[3],
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,
@@ -292,11 +300,10 @@ name.1, Km, h.co, Vmax))                                                        
                BIC = Glance$BIC,
                logLik = Glance$logLik)
 
-
   # Return parameters
   if (conf.level != 0) {
-    return(list(Km,Vmax,n,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,confints))
+    return(list(Km,Vmax,Ksi,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,confints))
   } else {
-    return(list(Km,Vmax,n,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,0))
+    return(list(Km,Vmax,Ksi,enz.plot.A,LWB.plot.A,res.plot,stats,A.fit.df,0))
   }
 }

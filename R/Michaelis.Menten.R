@@ -285,6 +285,8 @@ Vmax, Vmax.lb, Vmax.ub, conf.level*100))
                h.se = NA,
                Vmax = Vmax,
                Vmax.se = standard.error[2],
+               Ksi = NA,
+               Ksi.se = NA,
                R2 = R2,
                RMSE = RMSE,
                MAE = MAE,

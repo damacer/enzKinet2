@@ -3,6 +3,7 @@
 enzKinet2 is an R package useful for the analysis of enzyme kinetics. It includes functions for calculating and plotting various models, including but not limited to:
 
 - Michaelis-Menten
+- Michaelis-Menten with substrate inhibition
 - Competitive inhibition
 - Mixed inhibition
 - Ternary-complex

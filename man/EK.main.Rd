@@ -11,11 +11,12 @@ EK.main(file, model, plot.options, conf.level)
 
 \item{model}{the name of the model to be used}
 
-\item{plot.options}{a list containing plot options. Must include options = 1
-or 2.}
+\item{plot.options}{a list containing plot options. Must include options = 1 or 2.}
+
+\item{conf.level}{the confidence level for the parameter estimates}
 }
 \value{
-
+A list of parameter estimates obtained from the specified enzyme kinetics model
 }
 \description{
 Enzyme Kinetics for Website Implementation

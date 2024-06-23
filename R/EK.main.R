@@ -8,9 +8,9 @@
 #' This function provides top-level control for the enzKinet package
 #' @param file a .csv file containing enzyme kinetics data
 #' @param model the name of the model to be used
-#' @param plot.options a list containing plot options. Must include options = 1
-#' or 2.
-#' @return
+#' @param plot.options a list containing plot options. Must include options = 1 or 2.
+#' @param conf.level the confidence level for the parameter estimates
+#' @return A list of parameter estimates obtained from the specified enzyme kinetics model
 #'
 #' @export
 
@@ -25,10 +25,11 @@ EK.main = function(file, model,plot.options, conf.level) {
   if (model == "MM") {
     params = enzKinet2::Michaelis.Menten(EK.data,plot.options, conf.level)
 
+  } else if (model == "MMSI") {
+    params = enzKinet2::Michaelis.Menten.SI(EK.data,plot.options, conf.level)
 
   } else if (model == "LCI") {
     params = enzKinet2::LCI(EK.data,plot.options, conf.level)
-
 
   } else if (model == "LMI") {
     params = enzKinet2::LMI(EK.data,plot.options, conf.level)
