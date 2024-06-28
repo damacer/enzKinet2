@@ -1,13 +1,9 @@
 # enzKinet2
 
-enzKinet2 is an R package useful for the analysis of enzyme kinetics. It includes functions for calculating and plotting various models, including but not limited to:
+enzKinet2 is an R package useful for the analysis of enzyme kinetics. This is version 2 of the package, which to begin with is just a refactor, but in future will include more features. It includes functions for calculating and plotting various models, including:
 
 - Michaelis-Menten
-- Michaelis-Menten with substrate inhibition
-- Competitive inhibition
-- Mixed inhibition
-- Ternary-complex
-- Ping-pong
+- Michaelis-Menten with Substrate Inhibition
 
 
 ## Installation
@@ -30,22 +26,47 @@ Once installed, you can load the package and start using its functions to analyz
 # Import the package
 library(enzKinet2)
 
-# Pick a model, define input file and plot options
-model.name = "MM"
-input.path = "path/to/data.csv"
-plot.options = list(title.1 = "Enzyme Kinetics \nDirect plot",
-                  title.2 = "Enzyme Kinetics \nLineweaver-Burk",
-                  x.units = "",
-                  y.units = "",
-                  plot.mods = "",
-                  options = 1)
-conf.level = 0.95
+# Define some parameters for the Michaelis-Menten model
+params <- list(KmA = 0.5, Vmax = 2.0)
 
-# Run the model
-params = enzKinet2::EK.main(input.path, model.name, plot.options, conf.level)
+# Define the range of x
+x.min <- 0
+x.max <- 10
 
-# Print the parameter outputs
-print(params)
+# Generate a curve for the model
+curve.df <- make_curve(model = "MM", params = params, x.min = x.min, x.max = x.max)
+
+# Generate synthetic data for the model with some noise
+synthetic.data <- simulate_data(model = "MM", params = params, x.min = x.min, 
+                                x.max = x.max, noise_level = 0.05)
+
+# Create a plot of both the curve and the synthetic data
+plot <- make_plot(model = "MM", data.df = synthetic.data, curve.df = curve.df)
+
+# Show the plot
+print(plot)
+
+# Transform the synthetic data, so the model no longer fits it
+synthetic.data$V0 <- synthetic.data$V0 * 1.2
+
+# Create a plot to see how the model fits the new data
+plot <- make_plot(model = "MM", data.df = synthetic.data, curve.df = curve.df)
+
+# Show the plot
+print(plot)
+
+# Fit the model to the new data 
+fitted.params <- fit_model(model = "MM", data.df = synthetic.data, start.params = params)
+
+# Generate a curve to visualise the new model
+fitted.curve.df <- make_curve(model = "MM", params = fitted.params, x.min = x.min, x.max = x.max)
+
+# Create a plot to see how the new model fits the new data
+plot <- make_plot(model = "MM", data.df = synthetic.data, curve.df = fitted.curve.df)
+
+# Show the plot
+print(plot)
+
 ```
 
 
@@ -53,6 +74,10 @@ print(params)
 Enzyme Kinetics Analysis (EKA) is a web application that provides an easy to use inferface for the enzKinet2 package. EKA can be accessed [here](https://enzyme-kinetics.shinyapps.io/enzkinet_webpage/).
 #### Academic Paper
 For more detailed information on EKA, you can refer to our academic [paper](https://iubmb.onlinelibrary.wiley.com/doi/10.1002/bmb.21823).
+
+
+## EnzKinet2 Version 1
+The enzkinet2 package had a previous version. This previous version is found in the GitHub repo. It functioned differently this version of enzKinet2, and was suited to work with the current version of the EKA website, which will be upgraded later this year.
 
 
 ## Contact

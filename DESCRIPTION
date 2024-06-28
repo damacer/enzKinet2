@@ -1,36 +1,27 @@
 Package: enzKinet2
 Title: Models for Enzyme Kinetic Analysis
-Version: 1.0.1.0
+Version: 1.0.2.0
 Authors@R: 
     person(given = "Daniel",
            family = "Mak",
-           role = c("aut", "cre"),
+           role = c("aut"),
            email = "dam121@uclive.ac.nz",
-           comment = c(ORCID = "0000-0002-3355-0696"))
-Description: This package contains models of enzyme kinetics. Users input data
-    into their model of choice, and the analysis will be performed for them. The
-    models will return graphs of experimental data overlaid with the model
-    output, as well as a plot of residuals. Parameter estimates are also
-    returned base on the model used (Km, Vmax, etc.).
-    This particular update is for website application, thus removes the graphs,
-    plots, and print statements that were present in the original enzKinet
-    package.
+           comment = c(ORCID = "0000-0002-3355-0696")),
+    person(given = "Haig",
+           family = "Bishop",
+           role = c("aut", "cre"),
+           email = "haig.bishop@pg.canterbury.ac.nz",
+           comment = c(ORCID = "0000-0003-4118-3598"))
+Description: This package contains models of enzyme kinetics. It includes 
+    functions to fit models to data, returning parameters (Km, Vmax, etc.). 
+    It also enables simulation of data, given parameters.
 License: use_gpl3_license()
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Imports:
-    pacman,
-    tidyverse,
-    pracma,
+    ggplot2,
     ggthemes,
-    gridExtra,
-    broom,
-    modelr,
-    minpack.lm,
-    rlist,
-    nlstools
-Suggests: 
-    testthat (>= 3.0.0)
+    pracma
 Config/testthat/edition: 3
