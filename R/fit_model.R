@@ -97,6 +97,7 @@ fit_model <- function(model, data.df, start.params, override_data_point_check = 
         names(fitted.params) <- names(coef(fit))
     }, error = function(e) {
         message("Model fitting failed: ", e$message)
+        message("Failiure to fit could be explained by noiseless data or poor starting parameters.")
         fitted.params <- NULL
     })
     # ===============================
