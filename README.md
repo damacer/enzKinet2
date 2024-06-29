@@ -8,6 +8,9 @@ enzKinet2 is an R package useful for the analysis of enzyme kinetics. This is ve
 - Uncompetitive Inhibition (UCI)
 - Non-competitive Inhibition (NCI)
 - Mixed Inhibition (MI)
+- Ternary Complex (TC)
+- Hill (HILL)
+- Ping-Pong (PP)
 
 
 ## Installation
