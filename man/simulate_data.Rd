@@ -11,7 +11,7 @@ simulate_data(
   x.max,
   z.values = NULL,
   n_samples = 24,
-  noise_level = 0,
+  noise_level = 0.05,
   noise_type = "relative"
 )
 }

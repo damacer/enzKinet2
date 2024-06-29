@@ -81,7 +81,7 @@ For more detailed information on EKA, you can refer to our academic [paper](http
 
 
 ## EnzKinet2 Version 1
-The enzkinet2 package had a previous version. This previous version is found in the GitHub repo. It functioned differently this version of enzKinet2, and was suited to work with the current version of the EKA website, which will be upgraded later this year.
+The enzKinet2 package had a previous version. This previous version is found in the GitHub repo. It functioned differently this version of enzKinet2, and was suited to work with the current version of the EKA website, which will be upgraded later this year.
 
 
 ## Contact

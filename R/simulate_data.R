@@ -18,7 +18,7 @@
 #' 
 #' @export
 
-simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_samples = 24, noise_level = 0, noise_type = "relative") {
+simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_samples = 24, noise_level = 0.05, noise_type = "relative") {
     
     # Error Handling ================
     # Check if model is valid
