@@ -11,16 +11,17 @@
 #' @param params The parameters for the model (Including Km, Vmax, Ksi, etc.)
 #' @param x.min Defines the range of x values to cover.
 #' @param x.max Defines the range of x values to cover.
+#' @param z.values Defines the z values to cover (NULL if not used)
 #' @param n_samples The resolution of the curve (128 is almost always enough)
 #' @return curve.df
 #' 
 #' @export
 
-make_curve <- function(model, params, x.min, x.max, n_samples = 128) {
+make_curve <- function(model, params, x.min, x.max, z.values = NULL, n_samples = 128) {
     
     # Make use of simulate_data to generate data with 0 noise
-    curve.df <- simulate_data(model, params, x.min, x.max, noise_level = 0, 
-                             n_samples = n_samples)
+    curve.df <- simulate_data(model, params, x.min, x.max, z.values = z.values, 
+                              noise_level = 0, n_samples = n_samples)
     
     return(curve.df)
 }

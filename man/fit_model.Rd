@@ -4,7 +4,7 @@
 \alias{fit_model}
 \title{Fit Model}
 \usage{
-fit_model(model, data.df, start.params)
+fit_model(model, data.df, start.params, override_data_point_check = FALSE)
 }
 \arguments{
 \item{model}{The chosen model ("MM", "MMSI", etc.)}
@@ -12,6 +12,8 @@ fit_model(model, data.df, start.params)
 \item{data.df}{The data to fit the model to}
 
 \item{start.params}{The unfitted parameters for the model (e.g. Km, Vmax)}
+
+\item{override_data_point_check}{Boolean to override num data points checks.}
 }
 \value{
 fitted.params

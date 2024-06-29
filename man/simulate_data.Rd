@@ -9,6 +9,7 @@ simulate_data(
   params,
   x.min,
   x.max,
+  z.values = NULL,
   n_samples = 24,
   noise_level = 0,
   noise_type = "relative"
@@ -22,6 +23,8 @@ simulate_data(
 \item{x.min}{Defines the range of x values to cover.}
 
 \item{x.max}{Defines the range of x values to cover.}
+
+\item{z.values}{Defines the z values to cover (NULL if not used)}
 
 \item{n_samples}{The number of data points generated.}
 

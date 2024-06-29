@@ -10,6 +10,7 @@
 #' @param params The parameters for the model (Including Km, Vmax, Ksi, etc.)
 #' @param x.min Defines the range of x values to cover.
 #' @param x.max Defines the range of x values to cover.
+#' @param z.values Defines the z values to cover (NULL if not used)
 #' @param n_samples The number of data points generated.
 #' @param noise_level The level of noise (between 0 and 1, inclusive)
 #' @param noise_type The kind of noise ("absolute" or "relative")
@@ -17,12 +18,16 @@
 #' 
 #' @export
 
-simulate_data <- function(model, params, x.min, x.max, n_samples = 24, noise_level = 0, noise_type = "relative") {
+simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_samples = 24, noise_level = 0, noise_type = "relative") {
     
     # Error Handling ================
     # Check if model is valid
     if (!model %in% VALID_MODELS) {
         stop("Invalid model. Please choose a valid model such as 'MM'.")
+    }
+    # Check if params is a list
+    if (!is.list(params)) {
+        stop("params must be a list.")
     }
     # Check if x.min and x.max are numeric
     if (!is.numeric(x.min) || !is.numeric(x.max)) {
@@ -36,9 +41,9 @@ simulate_data <- function(model, params, x.min, x.max, n_samples = 24, noise_lev
     if (x.min >= x.max) {
         stop("x.min must be less than x.max.")
     }
-    # Check if params is a list
-    if (!is.list(params)) {
-        stop("params must be a list.")
+    # Check if n_samples is a positive integer
+    if (!is.numeric(n_samples) || n_samples <= 0 || floor(n_samples) != n_samples) {
+        stop("n_samples must be a positive integer.")
     }
     # Check if noise_level is numeric and between 0 and 1
     if (!is.numeric(noise_level) || noise_level < 0 || noise_level > 1) {
@@ -56,10 +61,11 @@ simulate_data <- function(model, params, x.min, x.max, n_samples = 24, noise_lev
     param.names <- MODEL_PARAMETERS[[model]]
     full.model.name <- PLOT_TITLES[[model]]
     model.params.string <- MODEL_PARAMETER_STRINGS[[model]]
+    num.independent.vars <- length(MODEL_VARIABLES[[model]]) - 1
     
     # Check if required parameters are present
     if (!all(param.names %in% names(params))) {
-        stop("For the " + full.model.name + " model, params must include " + model.params.string + ".")
+        stop(paste("For the", full.model.name, "model, params must include", model.params.string, "."))
     }
     
     # Check if the parameters are numeric and greater than 0
@@ -71,6 +77,15 @@ simulate_data <- function(model, params, x.min, x.max, n_samples = 24, noise_lev
             stop(paste(param, "must be greater than 0."))
         }
     }
+    # If the model has 2 independent variables, check z.values
+    if (num.independent.vars == 2) {
+        if (is.null(z.values) || length(z.values) < 1) {
+            stop("For models with two independent variables, z.values must be provided and contain at least one value.")
+        }
+        if (any(z.values < 0)) {
+            stop("All values in z.values must be greater than or equal to 0.")
+        }
+    }
     # ===================================
     
     
@@ -80,7 +95,7 @@ simulate_data <- function(model, params, x.min, x.max, n_samples = 24, noise_lev
     # Get the model function
     model.function <- MODEL_FUNCTIONS[[model]]
     # Generate a perfect curve
-    synthetic.data <- model.function(params, x.range)
+    synthetic.data <- model.function(params, x.range, z.values)
     # ===================================
     
     
@@ -93,11 +108,11 @@ simulate_data <- function(model, params, x.min, x.max, n_samples = 24, noise_lev
         # If noise_type is relative
         if (noise_type == "relative") {
             # Scale by the data
-            noise <- synthetic.data$V0 * noise
+            noise <- synthetic.data$V * noise
         }
         
         # Add noise to data
-        synthetic.data$V0 <- synthetic.data$V0 + noise
+        synthetic.data$V <- synthetic.data$V + noise
     }
     # ===============================
     

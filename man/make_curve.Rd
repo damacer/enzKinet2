@@ -4,7 +4,7 @@
 \alias{make_curve}
 \title{Make Curve}
 \usage{
-make_curve(model, params, x.min, x.max, n_samples = 128)
+make_curve(model, params, x.min, x.max, z.values = NULL, n_samples = 128)
 }
 \arguments{
 \item{model}{The chosen model ("MM", "MMSI", etc.)}
@@ -14,6 +14,8 @@ make_curve(model, params, x.min, x.max, n_samples = 128)
 \item{x.min}{Defines the range of x values to cover.}
 
 \item{x.max}{Defines the range of x values to cover.}
+
+\item{z.values}{Defines the z values to cover (NULL if not used)}
 
 \item{n_samples}{The resolution of the curve (128 is almost always enough)}
 }

@@ -2,8 +2,12 @@
 
 enzKinet2 is an R package useful for the analysis of enzyme kinetics. This is version 2 of the package, which to begin with is just a refactor, but in future will include more features. It includes functions for calculating and plotting various models, including:
 
-- Michaelis-Menten
-- Michaelis-Menten with Substrate Inhibition
+- Michaelis-Menten (MM)
+- Michaelis-Menten with Substrate Inhibition (MMSI)
+- Competitive Inhibition (CI)
+- Uncompetitive Inhibition (UCI)
+- Non-competitive Inhibition (NCI)
+- Mixed Inhibition (MI)
 
 
 ## Installation
@@ -27,7 +31,7 @@ Once installed, you can load the package and start using its functions to analyz
 library(enzKinet2)
 
 # Define some parameters for the Michaelis-Menten model
-params <- list(KmA = 0.5, Vmax = 2.0)
+params <- list(Km = 0.5, Vmax = 2.0)
 
 # Define the range of x
 x.min <- 0
@@ -47,7 +51,7 @@ plot <- make_plot(model = "MM", data.df = synthetic.data, curve.df = curve.df)
 print(plot)
 
 # Transform the synthetic data, so the model no longer fits it
-synthetic.data$V0 <- synthetic.data$V0 * 1.2
+synthetic.data$V <- synthetic.data$V * 1.2
 
 # Create a plot to see how the model fits the new data
 plot <- make_plot(model = "MM", data.df = synthetic.data, curve.df = curve.df)
