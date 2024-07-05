@@ -1,12 +1,12 @@
 Package: enzKinet2
 Title: Models for Enzyme Kinetic Analysis
-Version: 1.0.4.1
+Version: 1.0.4.2
 Authors@R: 
     person(given = "Daniel",
            family = "Mak",
            role = c("aut"),
            email = "dam121@uclive.ac.nz",
-           comment = c(ORCID = "0000-0002-3355-0696")),
+           comment = c(ORCID = "0000-0002-3355-0696"))
     person(given = "Haig",
            family = "Bishop",
            role = c("aut", "cre"),

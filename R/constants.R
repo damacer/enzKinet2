@@ -1,9 +1,19 @@
 # constants.R
 
 # Define valid models constant
+#' @export
 VALID_MODELS <- c("MM", "MMSI", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP")
 
+# Define all parameters that are used
+#' @export
+ALL_PARAMETERS <- c("Km", "KmA", "KmB", "Ksi", "Ki", "Kic", "Kiu", "Ksat", "Vmax", "Hill")
+
+# Define all extra independent variables that are used (extra on top of A)
+#' @export
+ALL_EXTRA_INDEPENDENT_VARS <- c("I", "B")
+
 # Define a dictionary for model parameters
+#' @export
 MODEL_PARAMETERS <- list(
     MM = c("Km", "Vmax"),
     MMSI = c("Km", "Vmax", "Ksi"),
@@ -17,6 +27,7 @@ MODEL_PARAMETERS <- list(
 )
 
 # Define a dictionary for model variables
+#' @export
 MODEL_VARIABLES <- list(
     MM = c("A", "V"),
     MMSI = c("A", "V"),
@@ -29,7 +40,22 @@ MODEL_VARIABLES <- list(
     PP = c("A", "V", "B")
 )
 
+# Define a dictionary for model options
+#' @export
+MODEL_OPTIONS <- c(
+    "Michaelis-Menten" = "MM",
+    "Michaelis-Menten with Substrate Inhibition" = "MMSI",
+    "Competitive Inhibition" = "CI",
+    "Uncompetitive Inhibition" = "UCI",
+    "Non-competitive Inhibition" = "NCI",
+    "Mixed Inhibition" = "MI",
+    "Ternary Complex" = "TC",
+    "Hill" = "HILL",
+    "Ping-Pong" = "PP"
+)
+
 # Define a dictionary for plot titles
+#' @export
 PLOT_TITLES <- list(
     MM = "Michaelis-Menten",
     MMSI = "Michaelis-Menten with Substrate Inhibition",
@@ -43,6 +69,7 @@ PLOT_TITLES <- list(
 )
 
 # Define a dictionary for model parameter strings
+#' @export
 MODEL_PARAMETER_STRINGS <- list(
     MM = "Km, Vmax",
     MMSI = "Km, Vmax, and Ksi",
@@ -56,6 +83,7 @@ MODEL_PARAMETER_STRINGS <- list(
 )
 
 # Define a dictionary for model variable strings
+#' @export
 MODEL_VARIABLE_STRINGS <- list(
     MM = "A and V",
     MMSI = "A and V",
