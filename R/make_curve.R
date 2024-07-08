@@ -17,7 +17,7 @@
 #' 
 #' @export
 
-make_curve <- function(model, params, x.min, x.max, z.values = NULL, n_samples = 128) {
+make_curve <- function(model, params, x.min, x.max, z.values = NULL, n_samples = 100) {
     
     # Make use of simulate_data to generate data with 0 noise
     curve.df <- simulate_data(model, params, x.min, x.max, z.values = z.values, 

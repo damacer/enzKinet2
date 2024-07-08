@@ -129,7 +129,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
         for (i in seq_along(curve.dfs)) {
             # Draw the curve
             plot <- plot + 
-                ggplot2::geom_line(data = curve.dfs[[i]], 
+                ggplot2::geom_path(data = curve.dfs[[i]], 
                         ggplot2::aes_string(x = "A", y = "V", color = colours), 
                         inherit.aes = FALSE)
         }
