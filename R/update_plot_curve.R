@@ -5,13 +5,13 @@
 #'
 #' Updates (replaces) the curve in an existing enzyme kinetics plot.
 #' @param plot The existing plot to be updated
-#' @param new_curve.df Data frame with the new curve data
+#' @param curve.df Data frame with the new curve data
 #' @param model The chosen model ("MM", "MMSI", etc.)
 #' @return Updated plot
 #' 
 #' @export
 
-update_plot_curve <- function(model, plot, new_curve.df = NULL) {
+update_plot_curve <- function(model, plot, curve.df = NULL) {
     
     # Error Handling ================
     # Check if model is valid
@@ -41,7 +41,7 @@ update_plot_curve <- function(model, plot, new_curve.df = NULL) {
     plot$layers <- plot$layers[!sapply(plot$layers, function(layer) inherits(layer$geom, "GeomPath"))]
     
     # If a curve(s) was given
-    if (!is.null(new_curve.df)) {
+    if (!is.null(curve.df)) {
         # If using an extra independent variable
         if (length(model.vars) > 2) {
             # Get the name of that var (e.g. "I")
@@ -49,14 +49,14 @@ update_plot_curve <- function(model, plot, new_curve.df = NULL) {
             # Set colours
             colours <- paste0("factor(", extra.independent.variable, ")")
             # Split the dataframe into list of multiple df - one per curve
-            curve.dfs <- split(new_curve.df, new_curve.df[[extra.independent.variable]])
+            curve.dfs <- split(curve.df, curve.df[[extra.independent.variable]])
         } else {
             # No extra independent variable
             extra.independent.variable <- NULL
             # Set colours
             colours <- NULL
             # "Split" the dataframe into a list one one df - because only one curve
-            curve.dfs <- list(new_curve.df)
+            curve.dfs <- list(curve.df)
         }
         
         # Loop through each curve df
