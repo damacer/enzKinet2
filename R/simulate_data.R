@@ -34,7 +34,7 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_sample
         stop("x.min and x.max must be numeric values.")
     }
     # Check if x.min is positive
-    if (x.min > 0) {
+    if (x.min < 0) {
         stop("x.min must be a positive value.")
     }
     # Check if x.min is less than x.max
