@@ -2,15 +2,15 @@
 
 # Define valid models constant
 #' @export
-VALID_MODELS <- c("MM", "MMSI", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "BIND")
+VALID_MODELS <- c("MM", "MMSI", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "SBK", "CBK")
 
 # Define all parameters that are used
 #' @export
 ALL_PARAMETERS <- c("Km", "KmA", "KmB", "Ksi", "Ki", "Kic", "Kiu", "Ksat", "Vmax", "Hill", "KD")
 
-# Define all extra independent variables that are used (extra on top of A)
+# Define all extra independent variables that are used (extra on top of the primary ones like A and FB)
 #' @export
-ALL_EXTRA_INDEPENDENT_VARS <- c("I", "B")
+ALL_EXTRA_INDEPENDENT_VARS <- c("I", "B", "R")
 
 # Define a dictionary for model parameters
 #' @export
@@ -24,7 +24,8 @@ MODEL_PARAMETERS <- list(
     TC = c("KmA", "Vmax", "KmB", "Ksat"),
     HILL = c("Km", "Vmax", "Hill"),
     PP = c("KmA", "Vmax", "KmB"),
-    BIND = c("KD")
+    SBK = c("KD"),
+    CBK = c("KD")
 )
 
 # Define a dictionary for model variables
@@ -41,7 +42,8 @@ MODEL_VARIABLES <- list(
     TC = c("A", "V", "B"),
     HILL = c("A", "V"),
     PP = c("A", "V", "B"),
-    BIND = c("P", "FB")
+    SBK = c("P", "FB"),
+    CBK = c("P", "FB", "R")
 )
 
 # Define a dictionary for model options
@@ -56,7 +58,8 @@ MODEL_OPTIONS <- c(
     "Ternary Complex" = "TC",
     "Hill" = "HILL",
     "Ping-Pong" = "PP",
-    "Simple Binding Kinetics" = "BIND"
+    "Simple Binding Kinetics" = "SBK",
+    "Complex Binding Kinetics" = "CBK"
 )
 
 # Define a dictionary for plot titles
@@ -71,7 +74,8 @@ PLOT_TITLES <- list(
     TC = "Ternary Complex",
     HILL = "Hill",
     PP = "Ping-Pong",
-    BIND = "Simple Binding Kinetics"
+    SBK = "Simple Binding Kinetics",
+    CBK = "Complex Binding Kinetics"
 )
 
 # Define a dictionary for plot axis titles
@@ -80,7 +84,8 @@ AXIS_TITLES <- list(
     V = "Velocity V",
     A = "Substrate Concentration [A]",
     FB = "Fraction Bound FB",
-    P = "Binding Partner in Excess Concentration [P]"
+    P = "Concentration of Binding Partner in Excess [P]",
+    R = "Concentration of Trace Limiting Partner [R]"
 )
 
 # Define a dictionary for model parameter strings
@@ -95,7 +100,8 @@ MODEL_PARAMETER_STRINGS <- list(
     TC = "KmA, Vmax, KmB and Ksat",
     HILL = "Km, Vmax and Hill",
     PP = "KmA, Vmax and KmB",
-    BIND = "KD"
+    SBK = "KD",
+    CBK = "KD"
 )
 
 # Define a dictionary for model variable strings
@@ -110,7 +116,8 @@ MODEL_VARIABLE_STRINGS <- list(
     TC = "A, V and B",
     HILL = "A and V",
     PP = "A, V and B",
-    BIND = "P and FB"
+    SBK = "P and FB",
+    CBK = "P, FB and R"
 )
 
 # Define a dictionary for model formulae
@@ -124,7 +131,8 @@ MODEL_FORMULAE <- list(
     TC = formula(V ~ (Vmax * A * B / (KmB * A + KmA * B + A * B + Ksat * KmB))),
     HILL = formula(V ~ Vmax * (A^Hill) / (Km^Hill + A^Hill)),
     PP = formula(V ~ (Vmax * A * B / (KmA * B + KmB * A + A * B))),
-    BIND = formula(FB ~ (P / (P + KD)))
+    SBK = formula(FB ~ (P / (P + KD))),
+    CBK = formula(FB ~ ((R + P + KD) - sqrt((R + P + KD)^2 - 4 * R * P)) / (2 * R))
 )
 
 
@@ -140,7 +148,8 @@ MODEL_FORMULAE_DISPLAY <- list(
     TC = "V = \\frac{V_{max} \\cdot A \\cdot B}{K_{mB} \\cdot A + K_{mA} \\cdot B + A \\cdot B + K_{sat} \\cdot K_{mB}}",
     HILL = "V = V_{max} \\cdot \\frac{A^{Hill}}{K_m^{Hill} + A^{Hill}}",
     PP = "V = \\frac{V_{max} \\cdot A \\cdot B}{K_{mA} \\cdot B + K_{mB} \\cdot A + A \\cdot B}",
-    BIND = "F_B = \\frac{P}{P + K_D}"
+    SBK = "F_B = \\frac{P}{P + K_D}",
+    CBK = "F_B = \\frac{(R + P + K_D) - \\sqrt{(R + P + K_D)^2 - 4 \\cdot R \\cdot P}}{2 \\cdot R}"
 )
 
 
@@ -255,13 +264,23 @@ MODEL_FUNCTIONS <- list(
         # Return data frame
         return(grid)
     },
-    BIND = function(params, P.range, z.range) {
+    SBK = function(params, P.range, z.range) {
         # Extract parameters
         KD <- params$KD
         # Create a data frame with all combinations of P.range
         grid <- expand.grid(P = P.range)
         # Calculate FB for each combination
         grid$FB <- grid$P / (grid$P + KD)
+        # Return data frame
+        return(grid)
+    },
+    CBK = function(params, P.range, R.range) {
+        # Extract parameters
+        KD <- params$KD
+        # Create a data frame with all combinations of P.range
+        grid <- expand.grid(P = P.range, R = R.range)
+        # Calculate FB for each combination
+        grid$ FB <- ((grid$R + grid$P + KD) - sqrt((grid$R + grid$P + KD)^2 - 4 * grid$R * grid$P)) / (2 * grid$R)
         # Return data frame
         return(grid)
     }

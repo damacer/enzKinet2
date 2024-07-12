@@ -11,7 +11,8 @@ enzKinet2 is an R package useful for the analysis of enzyme kinetics. This is ve
 - Ternary Complex (TC)
 - Hill (HILL)
 - Ping-Pong (PP)
-- Simple Binding Kinetics (BIND)
+- Simple Binding Kinetics (SBK)
+- Complex Binding Kinetics (CBK)
 
 
 ## Installation
