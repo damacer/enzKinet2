@@ -127,6 +127,23 @@ MODEL_FORMULAE <- list(
     BIND = formula(FB ~ (P / (P + KD)))
 )
 
+
+# Define a dictionary for model formulae for display
+#' @export
+MODEL_FORMULAE_DISPLAY <- list(
+    MM = "V = \\frac{V_{max} \\cdot A}{K_m + A}",
+    MMSI = "V = \\frac{V_{max} \\cdot A}{K_m + A + \\frac{A^2}{K_{si}}}",
+    CI = "V = \\frac{V_{max} \\cdot A}{K_m \\left(1 + \\frac{I}{K_i}\\right) + A}",
+    UCI = "V = \\frac{V_{max} \\cdot A}{K_m + A \\left(1 + \\frac{I}{K_i}\\right)}",
+    NCI = "V = \\frac{V_{max} \\cdot A}{\\left(1 + \\frac{I}{K_i}\\right)(K_m + A)}",
+    MI = "V = \\frac{V_{max} \\cdot A}{K_m \\left(1 + \\frac{I}{K_{ic}}\\right) + A \\left(1 + \\frac{I}{K_{iu}}\\right)}",
+    TC = "V = \\frac{V_{max} \\cdot A \\cdot B}{K_{mB} \\cdot A + K_{mA} \\cdot B + A \\cdot B + K_{sat} \\cdot K_{mB}}",
+    HILL = "V = V_{max} \\cdot \\frac{A^{Hill}}{K_m^{Hill} + A^{Hill}}",
+    PP = "V = \\frac{V_{max} \\cdot A \\cdot B}{K_{mA} \\cdot B + K_{mB} \\cdot A + A \\cdot B}",
+    BIND = "F_B = \\frac{P}{P + K_D}"
+)
+
+
 # Define model functions (takes parameters and independent variables - output perfect data)
 MODEL_FUNCTIONS <- list(
     MM = function(params, A.range, z.range) {

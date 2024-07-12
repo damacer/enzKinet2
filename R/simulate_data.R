@@ -103,8 +103,9 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_sample
     # Add noise ============================
     # If any noise
     if (noise_level > 0) {
-        # Make a noisy normal distribution
-        noise <- rnorm(n_samples, mean = 0, sd = 1) * noise_level
+        # Make a noisy normal distribution for each observation
+        num_observations <- nrow(synthetic.data)
+        noise <- rnorm(num_observations, mean = 0, sd = 1) * noise_level
         
         # If noise_type is relative
         if (noise_type == "relative") {
