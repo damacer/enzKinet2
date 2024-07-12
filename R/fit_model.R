@@ -76,7 +76,6 @@ fit_model <- function(model, data.df, start.params, override_data_point_check = 
             stop(paste(param, "must be greater than 0."))
         }
     }
-    # Check how many data points we have
     
     # Define model
     model.formula <- MODEL_FORMULAE[[model]]
@@ -87,7 +86,6 @@ fit_model <- function(model, data.df, start.params, override_data_point_check = 
     # Extract only the needed starting parameters
     start.params <- as.list(start.params[param.names])
     # ===============================
-    
     
     # Fit model =================
     fitted.params <- NULL
@@ -101,7 +99,6 @@ fit_model <- function(model, data.df, start.params, override_data_point_check = 
         fitted.params <- NULL
     })
     # ===============================
-    
     
     # Return the fitted params (NULL if model could not fit)
     return(fitted.params)

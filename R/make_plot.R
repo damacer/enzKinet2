@@ -47,6 +47,8 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
     # Model-specific error handling =======
     # Grab model-specific values
     model.vars <- MODEL_VARIABLES[[model]]
+    dependent.var <- model.vars[2]
+    first.independent.var <- model.vars[1]
     full.model.name <- PLOT_TITLES[[model]]
     model.vars.string <- MODEL_VARIABLE_STRINGS[[model]]
     # If data.df is provided, check if it has the necessary columns (variables)
@@ -68,11 +70,13 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
     
     # Grab the default title from dictionary
     default.title <- PLOT_TITLES[[model]]
+    default.x.axis <- AXIS_TITLES[[first.independent.var]]
+    default.y.axis <- AXIS_TITLES[[dependent.var]]
     
     # Make default plot
     plot <- ggplot2::ggplot() + 
-        ggplot2::xlab(sprintf("Substrate Concentration [A]")) +
-        ggplot2::ylab("Velocity V") +
+        ggplot2::xlab(sprintf(default.x.axis)) +
+        ggplot2::ylab(default.y.axis) +
         ggplot2::ggtitle(default.title) +
         ggplot2::labs(color = "Legend") +
         ggthemes::theme_few()
@@ -111,7 +115,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
             # Add the data points
             plot <- plot + 
                 ggplot2::geom_point(data = data.dfs[[i]], 
-                        ggplot2::aes_string(x = "A", y = "V", color = colours), 
+                        ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
                         inherit.aes = FALSE)
         }
     }
@@ -130,7 +134,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
             # Draw the curve
             plot <- plot + 
                 ggplot2::geom_path(data = curve.dfs[[i]], 
-                        ggplot2::aes_string(x = "A", y = "V", color = colours), 
+                        ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
                         inherit.aes = FALSE)
         }
     }

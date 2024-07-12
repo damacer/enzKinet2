@@ -27,6 +27,8 @@ update_plot_curve <- function(model, plot, curve.df = NULL) {
     # Model-specific error handling =======
     # Grab model-specific values
     model.vars <- MODEL_VARIABLES[[model]]
+    dependent.var <- model.vars[2]
+    first.independent.var <- model.vars[1]
     full.model.name <- PLOT_TITLES[[model]]
     model.vars.string <- MODEL_VARIABLE_STRINGS[[model]]
     # If curve.df is provided, check if it has the necessary columns (variables)
@@ -64,7 +66,7 @@ update_plot_curve <- function(model, plot, curve.df = NULL) {
             # Add curve
             plot <- plot + 
                 ggplot2::geom_path(data = curve.dfs[[i]], 
-                                   ggplot2::aes_string(x = "A", y = "V", color = colours), 
+                                   ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
                                    inherit.aes = FALSE)
         }
     }

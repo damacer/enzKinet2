@@ -4,14 +4,14 @@
 \alias{update_plot_curve}
 \title{Update Plot Curve}
 \usage{
-update_plot_curve(model, plot, new_curve.df = NULL)
+update_plot_curve(model, plot, curve.df = NULL)
 }
 \arguments{
 \item{model}{The chosen model ("MM", "MMSI", etc.)}
 
 \item{plot}{The existing plot to be updated}
 
-\item{new_curve.df}{Data frame with the new curve data}
+\item{curve.df}{Data frame with the new curve data}
 }
 \value{
 Updated plot

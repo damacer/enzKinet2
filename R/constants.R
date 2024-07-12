@@ -2,11 +2,11 @@
 
 # Define valid models constant
 #' @export
-VALID_MODELS <- c("MM", "MMSI", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP")
+VALID_MODELS <- c("MM", "MMSI", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "BIND")
 
 # Define all parameters that are used
 #' @export
-ALL_PARAMETERS <- c("Km", "KmA", "KmB", "Ksi", "Ki", "Kic", "Kiu", "Ksat", "Vmax", "Hill")
+ALL_PARAMETERS <- c("Km", "KmA", "KmB", "Ksi", "Ki", "Kic", "Kiu", "Ksat", "Vmax", "Hill", "KD")
 
 # Define all extra independent variables that are used (extra on top of A)
 #' @export
@@ -23,12 +23,15 @@ MODEL_PARAMETERS <- list(
     MI = c("Km", "Vmax", "Kic", "Kiu"),
     TC = c("KmA", "Vmax", "KmB", "Ksat"),
     HILL = c("Km", "Vmax", "Hill"),
-    PP = c("KmA", "Vmax", "KmB")
+    PP = c("KmA", "Vmax", "KmB"),
+    BIND = c("KD")
 )
 
 # Define a dictionary for model variables
 #' @export
 MODEL_VARIABLES <- list(
+    # Dependent variable always second
+    # Primary independent variable always first
     MM = c("A", "V"),
     MMSI = c("A", "V"),
     CI = c("A", "V", "I"),
@@ -37,7 +40,8 @@ MODEL_VARIABLES <- list(
     MI = c("A", "V", "I"),
     TC = c("A", "V", "B"),
     HILL = c("A", "V"),
-    PP = c("A", "V", "B")
+    PP = c("A", "V", "B"),
+    BIND = c("P", "FB")
 )
 
 # Define a dictionary for model options
@@ -51,7 +55,8 @@ MODEL_OPTIONS <- c(
     "Mixed Inhibition" = "MI",
     "Ternary Complex" = "TC",
     "Hill" = "HILL",
-    "Ping-Pong" = "PP"
+    "Ping-Pong" = "PP",
+    "Simple Binding Kinetics" = "BIND"
 )
 
 # Define a dictionary for plot titles
@@ -65,7 +70,17 @@ PLOT_TITLES <- list(
     MI = "Mixed Inhibition",
     TC = "Ternary Complex",
     HILL = "Hill",
-    PP = "Ping-Pong"
+    PP = "Ping-Pong",
+    BIND = "Simple Binding Kinetics"
+)
+
+# Define a dictionary for plot axis titles
+#' @export
+AXIS_TITLES <- list(
+    V = "Velocity V",
+    A = "Substrate Concentration [A]",
+    FB = "Fraction Bound FB",
+    P = "Binding Partner in Excess Concentration [P]"
 )
 
 # Define a dictionary for model parameter strings
@@ -79,7 +94,8 @@ MODEL_PARAMETER_STRINGS <- list(
     MI = "Km, Vmax, Kic, and Kiu",
     TC = "KmA, Vmax, KmB and Ksat",
     HILL = "Km, Vmax and Hill",
-    PP = "KmA, Vmax and KmB"
+    PP = "KmA, Vmax and KmB",
+    BIND = "KD"
 )
 
 # Define a dictionary for model variable strings
@@ -93,7 +109,8 @@ MODEL_VARIABLE_STRINGS <- list(
     MI = "A, V and I",
     TC = "A, V and B",
     HILL = "A and V",
-    PP = "A, V and B"
+    PP = "A, V and B",
+    BIND = "P and FB"
 )
 
 # Define a dictionary for model formulae
@@ -106,7 +123,8 @@ MODEL_FORMULAE <- list(
     MI = formula(V ~ Vmax * A / (Km * (1 + I / Kic) + A * (1 + I / Kiu))),
     TC = formula(V ~ (Vmax * A * B / (KmB * A + KmA * B + A * B + Ksat * KmB))),
     HILL = formula(V ~ Vmax * (A^Hill) / (Km^Hill + A^Hill)),
-    PP = formula(V ~ (Vmax * A * B / (KmA * B + KmB * A + A * B)))
+    PP = formula(V ~ (Vmax * A * B / (KmA * B + KmB * A + A * B))),
+    BIND = formula(FB ~ (P / (P + KD)))
 )
 
 # Define model functions (takes parameters and independent variables - output perfect data)
@@ -217,6 +235,16 @@ MODEL_FUNCTIONS <- list(
         grid <- expand.grid(A = A.range, B = B.range)
         # Calculate V for each combination
         grid$V <- Vmax * grid$A * grid$B / (KmA * grid$B + KmB * grid$A + grid$A * grid$B)
+        # Return data frame
+        return(grid)
+    },
+    BIND = function(params, P.range, z.range) {
+        # Extract parameters
+        KD <- params$KD
+        # Create a data frame with all combinations of P.range
+        grid <- expand.grid(P = P.range)
+        # Calculate FB for each combination
+        grid$FB <- grid$P / (grid$P + KD)
         # Return data frame
         return(grid)
     }

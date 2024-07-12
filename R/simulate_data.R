@@ -61,6 +61,7 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_sample
     param.names <- MODEL_PARAMETERS[[model]]
     full.model.name <- PLOT_TITLES[[model]]
     model.params.string <- MODEL_PARAMETER_STRINGS[[model]]
+    dependent.var <- MODEL_VARIABLES[[model]][2]
     num.independent.vars <- length(MODEL_VARIABLES[[model]]) - 1
     
     # Check if required parameters are present
@@ -108,11 +109,11 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_sample
         # If noise_type is relative
         if (noise_type == "relative") {
             # Scale by the data
-            noise <- synthetic.data$V * noise
+            noise <- synthetic.data[[dependent.var]] * noise
         }
         
         # Add noise to data
-        synthetic.data$V <- synthetic.data$V + noise
+        synthetic.data[[dependent.var]] <- synthetic.data[[dependent.var]] + noise
     }
     # ===============================
     
