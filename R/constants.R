@@ -171,20 +171,108 @@ MODEL_FORMULAE <- list(
 # Define a dictionary for model formulae for display
 #' @export
 MODEL_FORMULAE_DISPLAY <- list(
-    MM = "V = \\frac{V_{max} \\cdot A}{K_m + A}",
-    MMSI = "V = \\frac{V_{max} \\cdot A}{K_m + A + \\frac{A^2}{K_{si}}}",
-    OGMM = "V = \\frac{K_{cat} \\cdot E_{0} \\cdot A}{K_m + A}",
-    ALTMM = "V = \\frac{K_{cat} \\cdot K_{A} \\cdot E_{0} \\cdot A}{K_{cat} + K_{A} \\cdot A}",
-    CI = "V = \\frac{V_{max} \\cdot A}{K_m \\left(1 + \\frac{I}{K_i}\\right) + A}",
-    UCI = "V = \\frac{V_{max} \\cdot A}{K_m + A \\left(1 + \\frac{I}{K_i}\\right)}",
-    NCI = "V = \\frac{V_{max} \\cdot A}{\\left(1 + \\frac{I}{K_i}\\right)(K_m + A)}",
-    MI = "V = \\frac{V_{max} \\cdot A}{K_m \\left(1 + \\frac{I}{K_{ic}}\\right) + A \\left(1 + \\frac{I}{K_{iu}}\\right)}",
+    MM = "\\Large{V = \\frac{V_{max} \\cdot A}{K_m + A}}",
+    MMSI = "\\Large{V = \\frac{V_{max} \\cdot A}{K_m + A + \\frac{A^2}{K_{si}}}}",
+    OGMM = "\\Large{V = \\frac{K_{cat} \\cdot E_{0} \\cdot A}{K_m + A}}",
+    ALTMM = "\\Large{V = \\frac{K_{cat} \\cdot K_{A} \\cdot E_{0} \\cdot A}{K_{cat} + K_{A} \\cdot A}}",
+    CI = "\\Large{V = \\frac{V_{max} \\cdot A}{K_m \\left(1 + \\frac{I}{K_i}\\right) + A}}",
+    UCI = "\\Large{V = \\frac{V_{max} \\cdot A}{K_m + A \\left(1 + \\frac{I}{K_i}\\right)}}",
+    NCI = "\\Large{V = \\frac{V_{max} \\cdot A}{\\left(1 + \\frac{I}{K_i}\\right)(K_m + A)}}",
+    MI = "\\Large{V = \\frac{V_{max} \\cdot A}{K_m \\left(1 + \\frac{I}{K_{ic}}\\right) + A \\left(1 + \\frac{I}{K_{iu}}\\right)}}",
     TC = "V = \\frac{V_{max} \\cdot A \\cdot B}{K_{mB} \\cdot A + K_{mA} \\cdot B + A \\cdot B + K_{sat} \\cdot K_{mB}}",
-    HILL = "V = V_{max} \\cdot \\frac{A^{Hill}}{K_m^{Hill} + A^{Hill}}",
-    PP = "V = \\frac{V_{max} \\cdot A \\cdot B}{K_{mA} \\cdot B + K_{mB} \\cdot A + A \\cdot B}",
-    SBK = "F_B = \\frac{P}{P + K_D}",
+    HILL = "\\Large{V = V_{max} \\cdot \\frac{A^{Hill}}{K_m^{Hill} + A^{Hill}}}",
+    PP = "\\Large{V = \\frac{V_{max} \\cdot A \\cdot B}{K_{mA} \\cdot B + K_{mB} \\cdot A + A \\cdot B}}",
+    SBK = "\\Large{F_B = \\frac{P}{P + K_D}}",
     CBK = "F_B = \\frac{(R + P + K_D) - \\sqrt{(R + P + K_D)^2 - 4 \\cdot R \\cdot P}}{2 \\cdot R}"
 )
+
+
+# Define a dictionary for model variables for display
+#' @export
+MODEL_VARIABLES_DISPLAY <- list(
+    MM = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
+          {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
+          {\\Large K_m}  -  \\text{Michaelis constant} \\\\
+          {\\Large A}  -  \\text{Substrate concentration}",
+    
+    MMSI = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
+            {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
+            {\\Large K_m}  -  \\text{Michaelis constant} \\\\
+            {\\Large A}  -  \\text{Substrate concentration} \\\\
+            {\\Large K_{si}}  -  \\text{Substrate inhibition constant}",
+    
+    OGMM = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
+            {\\Large K_{cat}}  -  \\text{Turnover number} \\\\
+            {\\Large E_0}  -  \\text{Initial enzyme concentration} \\\\
+            {\\Large A}  -  \\text{Substrate concentration} \\\\
+            {\\Large K_m}  -  \\text{Michaelis constant}",
+    
+    ALTMM = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
+             {\\Large K_{cat}}  -  \\text{Turnover number} \\\\
+             {\\Large K_A}  -  \\text{Association constant} \\\\
+             {\\Large E_0}  -  \\text{Initial enzyme concentration} \\\\
+             {\\Large A}  -  \\text{Substrate concentration}",
+    
+    CI = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
+          {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
+          {\\Large K_m}  -  \\text{Michaelis constant} \\\\
+          {\\Large A}  -  \\text{Substrate concentration} \\\\
+          {\\Large I}  -  \\text{Inhibitor concentration} \\\\
+          {\\Large K_i}  -  \\text{Inhibition constant}",
+    
+    UCI = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
+           {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
+           {\\Large K_m}  -  \\text{Michaelis constant} \\\\
+           {\\Large A}  -  \\text{Substrate concentration} \\\\
+           {\\Large I}  -  \\text{Inhibitor concentration} \\\\
+           {\\Large K_i}  -  \\text{Inhibition constant}",
+    
+    NCI = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
+           {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
+           {\\Large K_m}  -  \\text{Michaelis constant} \\\\
+           {\\Large A}  -  \\text{Substrate concentration} \\\\
+           {\\Large I}  -  \\text{Inhibitor concentration} \\\\
+           {\\Large K_i}  -  \\text{Inhibition constant}",
+    
+    MI = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
+          {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
+          {\\Large K_m}  -  \\text{Michaelis constant} \\\\
+          {\\Large A}  -  \\text{Substrate concentration} \\\\
+          {\\Large I}  -  \\text{Inhibitor concentration} \\\\
+          {\\Large K_{ic}}  -  \\text{Competitive inhibition constant} \\\\
+          {\\Large K_{iu}}  -  \\text{Uncompetitive inhibition constant}",
+    
+    TC = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
+          {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
+          {\\Large A}  -  \\text{Substrate A concentration} \\\\
+          {\\Large B}  -  \\text{Substrate B concentration} \\\\
+          {\\Large K_{mA}}  -  \\text{Michaelis constant for A} \\\\
+          {\\Large K_{mB}}  -  \\text{Michaelis constant for B} \\\\
+          {\\Large K_{sat}}  -  \\text{Saturation constant}",
+    
+    HILL = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
+            {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
+            {\\Large A}  -  \\text{Substrate concentration} \\\\
+            {\\Large K_m}  -  \\text{Michaelis constant} \\\\
+            {\\Large Hill}  -  \\text{Hill coefficient}",
+    
+    PP = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
+          {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
+          {\\Large A}  -  \\text{Substrate A concentration} \\\\
+          {\\Large B}  -  \\text{Substrate B concentration} \\\\
+          {\\Large K_{mA}}  -  \\text{Michaelis constant for A} \\\\
+          {\\Large K_{mB}}  -  \\text{Michaelis constant for B}",
+    
+    SBK = "{\\Large F_B}  -  \\text{Fraction bound} \\\\
+           {\\Large P}  -  \\text{Binding partner in excess concentration} \\\\
+           {\\Large K_D}  -  \\text{Dissociation constant}",
+    
+    CBK = "{\\Large F_B}  -  \\text{Fraction bound} \\\\
+           {\\Large R}  -  \\text{Trace limiting partner concentration} \\\\
+           {\\Large P}  -  \\text{Binding partner in excess concentration} \\\\
+           {\\Large K_D}  -  \\text{Dissociation constant}"
+)
+
 
 
 # Define model functions (takes parameters and independent variables - output perfect data)
