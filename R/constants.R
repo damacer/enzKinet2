@@ -2,11 +2,11 @@
 
 # Define valid models constant
 #' @export
-VALID_MODELS <- c("MM", "MMSI", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "SBK", "CBK")
+VALID_MODELS <- c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "SBK", "CBK")
 
 # Define all parameters that are used
 #' @export
-ALL_PARAMETERS <- c("Km", "KmA", "KmB", "Ksi", "Ki", "Kic", "Kiu", "Ksat", "Vmax", "Hill", "KD")
+ALL_PARAMETERS <- c("Km", "KmA", "KmB", "Ksi", "Ki", "Kic", "Kiu", "Ksat", "Vmax", "Hill", "KD", "Kcat", "E0", "KA")
 
 # Define all extra independent variables that are used (extra on top of the primary ones like A and FB)
 #' @export
@@ -17,6 +17,8 @@ ALL_EXTRA_INDEPENDENT_VARS <- c("I", "B", "R")
 MODEL_PARAMETERS <- list(
     MM = c("Km", "Vmax"),
     MMSI = c("Km", "Vmax", "Ksi"),
+    OGMM = c("Km", "Kcat", "E0"),
+    ALTMM = c("KA", "Kcat", "E0"),
     CI = c("Km", "Vmax", "Ki"),
     UCI = c("Km", "Vmax", "Ki"),
     NCI = c("Km", "Vmax", "Ki"),
@@ -35,6 +37,8 @@ MODEL_VARIABLES <- list(
     # Primary independent variable always first
     MM = c("A", "V"),
     MMSI = c("A", "V"),
+    OGMM = c("A", "V"),
+    ALTMM = c("A", "V"),
     CI = c("A", "V", "I"),
     UCI = c("A", "V", "I"),
     NCI = c("A", "V", "I"),
@@ -51,6 +55,8 @@ MODEL_VARIABLES <- list(
 MODEL_DEPENDENT_VAR_DOMAINS <- list(
     MM = c(0, Inf),
     MMSI = c(0, Inf),
+    OGMM = c(0, Inf),
+    ALTMM = c(0, Inf),
     CI = c(0, Inf),
     UCI = c(0, Inf),
     NCI = c(0, Inf),
@@ -67,6 +73,8 @@ MODEL_DEPENDENT_VAR_DOMAINS <- list(
 MODEL_OPTIONS <- c(
     "Michaelis-Menten" = "MM",
     "Michaelis-Menten with Substrate Inhibition" = "MMSI",
+    "Original Michaelis-Menten" = "OGMM",
+    "Alternative Michaelis-Menten" = "ALTMM",
     "Competitive Inhibition" = "CI",
     "Uncompetitive Inhibition" = "UCI",
     "Non-competitive Inhibition" = "NCI",
@@ -83,6 +91,8 @@ MODEL_OPTIONS <- c(
 PLOT_TITLES <- list(
     MM = "Michaelis-Menten",
     MMSI = "Michaelis-Menten with Substrate Inhibition",
+    OGMM = "Original Michaelis-Menten",
+    ALTMM = "Alternative Michaelis-Menten",
     CI = "Competitive Inhibition",
     UCI = "Uncompetitive Inhibition",
     NCI = "Non-competitive Inhibition",
@@ -109,6 +119,8 @@ AXIS_TITLES <- list(
 MODEL_PARAMETER_STRINGS <- list(
     MM = "Km, Vmax",
     MMSI = "Km, Vmax, and Ksi",
+    OGMM = "Km, Kcat, and E0",
+    ALTMM = "KA, Kcat, and E0",
     CI = "Km, Vmax, and Ki",
     UCI = "Km, Vmax, and Ki",
     NCI = "Km, Vmax, and Ki",
@@ -125,6 +137,8 @@ MODEL_PARAMETER_STRINGS <- list(
 MODEL_VARIABLE_STRINGS <- list(
     MM = "A and V",
     MMSI = "A and V",
+    OGMM = "A and V",
+    ALTMM = "A and V",
     CI = "A, V and I",
     UCI = "A, V and I",
     NCI = "A, V and I",
@@ -140,6 +154,8 @@ MODEL_VARIABLE_STRINGS <- list(
 MODEL_FORMULAE <- list(
     MM = formula(V ~ Vmax * A / (Km + A)),
     MMSI = formula(V ~ Vmax * A / (Km + A + A * A / Ksi)),
+    OGMM = formula(V ~ Kcat * E0 * A / (Km + A)),
+    ALTMM = formula(V ~ Kcat * KA * E0 * A / (Kcat + KA * A)),
     CI = formula(V ~ Vmax * A / (Km * (1 + I / Ki) + A)),
     UCI = formula(V ~ Vmax * A / (Km + A * (1 + I / Ki))),
     NCI = formula(V ~ Vmax * A / ((1 + I / Ki) * (Km + A))),
@@ -157,6 +173,8 @@ MODEL_FORMULAE <- list(
 MODEL_FORMULAE_DISPLAY <- list(
     MM = "V = \\frac{V_{max} \\cdot A}{K_m + A}",
     MMSI = "V = \\frac{V_{max} \\cdot A}{K_m + A + \\frac{A^2}{K_{si}}}",
+    OGMM = "V = \\frac{K_{cat} \\cdot E_{0} \\cdot A}{K_m + A}",
+    ALTMM = "V = \\frac{K_{cat} \\cdot K_{A} \\cdot E_{0} \\cdot A}{K_{cat} + K_{A} \\cdot A}",
     CI = "V = \\frac{V_{max} \\cdot A}{K_m \\left(1 + \\frac{I}{K_i}\\right) + A}",
     UCI = "V = \\frac{V_{max} \\cdot A}{K_m + A \\left(1 + \\frac{I}{K_i}\\right)}",
     NCI = "V = \\frac{V_{max} \\cdot A}{\\left(1 + \\frac{I}{K_i}\\right)(K_m + A)}",
@@ -191,6 +209,30 @@ MODEL_FUNCTIONS <- list(
         grid <- expand.grid(A = A.range)
         # Calculate V for each combination
         grid$V <- Vmax * grid$A / (Km + grid$A + (grid$A * grid$A) / Ksi)
+        # Return data frame
+        return(grid)
+    },
+    OGMM = function(params, A.range, z.range) {
+        # Extract parameters
+        Km <- params$Km
+        Kcat <- params$Kcat
+        E0 <- params$E0
+        # Create a data frame with all combinations of A.range
+        grid <- expand.grid(A = A.range)
+        # Calculate V for each combination
+        grid$V <- Kcat * E0 * grid$A / (Km + grid$A)
+        # Return data frame
+        return(grid)
+    },
+    ALTMM = function(params, A.range, z.range) {
+        # Extract parameters
+        KA <- params$KA
+        Kcat <- params$Kcat
+        E0 <- params$E0
+        # Create a data frame with all combinations of A.range
+        grid <- expand.grid(A = A.range)
+        # Calculate V for each combination
+        grid$V <- Kcat * KA * E0 * grid$A / (Kcat + KA * grid$A)
         # Return data frame
         return(grid)
     },
