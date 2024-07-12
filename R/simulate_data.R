@@ -12,7 +12,7 @@
 #' @param x.max Defines the range of x values to cover.
 #' @param z.values Defines the z values to cover (NULL if not used)
 #' @param n_samples The number of data points generated.
-#' @param noise_level The level of noise (between 0 and 1, inclusive)
+#' @param noise_level The level of noise (equal to or greater than 0)
 #' @param noise_type The kind of noise ("absolute" or "relative")
 #' @return synthetic.data
 #' 
@@ -45,9 +45,9 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_sample
     if (!is.numeric(n_samples) || n_samples <= 0 || floor(n_samples) != n_samples) {
         stop("n_samples must be a positive integer.")
     }
-    # Check if noise_level is numeric and between 0 and 1
-    if (!is.numeric(noise_level) || noise_level < 0 || noise_level > 1) {
-        stop("noise_level must be a numeric value between 0 and 1 (inclusive).")
+    # Check if noise_level is numeric and equal to or greater than 0
+    if (!is.numeric(noise_level) || noise_level < 0) {
+        stop("noise_level must be a numeric and equal to or greater than 0.")
     }
     # Check if noise_type is valid
     if (!noise_type %in% c("absolute", "relative")) {
@@ -105,7 +105,9 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_sample
     if (noise_level > 0) {
         # Make a noisy normal distribution for each observation
         num_observations <- nrow(synthetic.data)
-        noise <- rnorm(num_observations, mean = 0, sd = 1) * noise_level
+        noise <- rnorm(num_observations, mean = 0, sd = noise_level)
+        
+        # All noise is in proportion to the maximum observed value
         
         # If noise_type is relative
         if (noise_type == "relative") {

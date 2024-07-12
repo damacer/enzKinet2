@@ -28,7 +28,7 @@ simulate_data(
 
 \item{n_samples}{The number of data points generated.}
 
-\item{noise_level}{The level of noise (between 0 and 1, inclusive)}
+\item{noise_level}{The level of noise (equal to or greater than 0)}
 
 \item{noise_type}{The kind of noise ("absolute" or "relative")}
 }
