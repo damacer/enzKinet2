@@ -80,6 +80,14 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
         ggplot2::ggtitle(default.title) +
         ggplot2::labs(color = "Legend") +
         ggthemes::theme_few()
+    
+    # Get the valid domain of the dependent variable
+    dependent.var.domain <- MODEL_DEPENDENT_VAR_DOMAINS[[model]]
+    # If it doesn't include infinity
+    if (!Inf %in% dependent.var.domain) {
+        # Set y-axis range to it (e.g.between 0 and 1)
+        plot <- plot + ggplot2::scale_y_continuous(limits = dependent.var.domain)
+    }
     # ===============================
     
     

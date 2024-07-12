@@ -4,7 +4,7 @@
 \alias{make_curve}
 \title{Make Curve}
 \usage{
-make_curve(model, params, x.min, x.max, z.values = NULL, n_samples = 100)
+make_curve(model, params, x.min, x.max, z.values = NULL, n_samples = 250)
 }
 \arguments{
 \item{model}{The chosen model ("MM", "MMSI", etc.)}

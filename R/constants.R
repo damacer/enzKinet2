@@ -46,6 +46,22 @@ MODEL_VARIABLES <- list(
     CBK = c("P", "FB", "R")
 )
 
+# Define a dictionary for model dependent variable domains
+#' @export
+MODEL_DEPENDENT_VAR_DOMAINS <- list(
+    MM = c(0, Inf),
+    MMSI = c(0, Inf),
+    CI = c(0, Inf),
+    UCI = c(0, Inf),
+    NCI = c(0, Inf),
+    MI = c(0, Inf),
+    TC = c(0, Inf),
+    HILL = c(0, Inf),
+    PP = c(0, Inf),
+    SBK = c(0, 1),
+    CBK = c(0, 1)
+)
+
 # Define a dictionary for model options
 #' @export
 MODEL_OPTIONS <- c(
