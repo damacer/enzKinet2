@@ -4,6 +4,8 @@ enzKinet2 is an R package useful for the analysis of enzyme kinetics. This is ve
 
 - Michaelis-Menten (MM)
 - Michaelis-Menten with Substrate Inhibition (MMSI)
+- Original Michaelis-Menten (OGMM)
+- Alternative Michaelis-Menten (ALTMM)
 - Competitive Inhibition (CI)
 - Uncompetitive Inhibition (UCI)
 - Non-competitive Inhibition (NCI)
@@ -13,7 +15,6 @@ enzKinet2 is an R package useful for the analysis of enzyme kinetics. This is ve
 - Ping-Pong (PP)
 - Simple Binding Kinetics (SBK)
 - Complex Binding Kinetics (CBK)
-
 
 ## Installation
 
