@@ -10,7 +10,8 @@ make_plot(
   curve.df = NULL,
   x.label = NULL,
   y.label = NULL,
-  title = NULL
+  title = NULL,
+  extra.curve = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ make_plot(
 \item{y.label}{Defines the range of x values to cover.}
 
 \item{title}{Defines the range of x values to cover.}
+
+\item{extra.curve}{An extra curve to be displayed on top of the other}
 }
 \value{
 plot
