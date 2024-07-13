@@ -12,11 +12,12 @@
 #' @param x.label Defines the range of x values to cover.
 #' @param y.label Defines the range of x values to cover.
 #' @param title Defines the range of x values to cover.
+#' @param extra.curve An extra curve to be displayed on top of the other
 #' @return plot
 #' 
 #' @export
 
-make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.label = NULL, title = NULL) {
+make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.label = NULL, title = NULL, extra.curve = NULL) {
     
     # Error Handling ================
     # Check if model is valid
@@ -41,6 +42,10 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
     if (!is.null(curve.df) && !is.data.frame(curve.df)) {
         stop("curve.df must be a dataframe.")
     }
+    # Check if extra.curve is a dataframe if provided
+    if (!is.null(extra.curve) && !is.data.frame(extra.curve)) {
+        stop("extra.curve must be a dataframe.")
+    }
     # ===============================
     
     
@@ -61,6 +66,12 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
     if (!is.null(curve.df)) {
         if (!all(model.vars %in% colnames(curve.df))) {
             stop(paste("For the", full.model.name, "model, curve.df must contain columns (variables) named", model.vars.string, "."))
+        }
+    }
+    # If extra.curve is provided, check if it has the necessary columns (variables)
+    if (!is.null(extra.curve)) {
+        if (!all(model.vars %in% colnames(extra.curve))) {
+            stop(paste("For the", full.model.name, "model, extra.curve must contain columns (variables) named", model.vars.string, "."))
         }
     }
     # ===============================
@@ -93,19 +104,22 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
     
     # Add Extra Plot Features ===================
     
+    # Add colour pallette
+    plot <- plot + ggplot2::scale_color_brewer(palette = "Set1")
+    
     # If using an extra independent variable
     if (length(model.vars) > 2) {
         # Get the name of that var (e.g. "I")
         extra.independent.variable <- model.vars[3]
         # Set colours
         colours <- paste0("factor(", extra.independent.variable, ")")
-        # Add colour pallette
-        plot <- plot + ggplot2::scale_color_brewer(palette = "Set1")
     } else {
         # No extra independent variable
         extra.independent.variable <- NULL
         # Set colours
-        colours <- NULL
+        colours <- "'This is the only colour'"
+        # Turn off the legend
+        plot <- plot + ggplot2::guides(color = "none")
     }
     
     # If data was given
@@ -142,8 +156,27 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
             # Draw the curve
             plot <- plot + 
                 ggplot2::geom_path(data = curve.dfs[[i]], 
-                        ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
-                        inherit.aes = FALSE)
+                                   ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
+                                   inherit.aes = FALSE)
+        }
+    }
+    # If an extra curve(s) was given
+    if (!is.null(extra.curve)) {
+        # If we are using 2 independent variables
+        if (!is.null(extra.independent.variable)) {
+            # Split the dataframe into list of multiple df - one per curve
+            curve.dfs <- split(extra.curve, extra.curve[[extra.independent.variable]])
+        } else {
+            # "Split" the dataframe into a list one one df - because only one curve
+            curve.dfs <- list(extra.curve)
+        }
+        # Loop through each curve df
+        for (i in seq_along(curve.dfs)) {
+            # Draw the curve
+            plot <- plot + 
+                ggplot2::geom_path(data = curve.dfs[[i]], 
+                                   ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = NULL), 
+                                   inherit.aes = FALSE)
         }
     }
     # If an x-axis label was given

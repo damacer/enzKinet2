@@ -7,11 +7,12 @@
 #' @param plot The existing plot to be updated
 #' @param curve.df Data frame with the new curve data
 #' @param model The chosen model ("MM", "MMSI", etc.)
+#' @param extra.curve An extra curve to be displayed on top of the other
 #' @return Updated plot
 #' 
 #' @export
 
-update_plot_curve <- function(model, plot, curve.df = NULL) {
+update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL) {
     
     # Error Handling ================
     # Check if model is valid
@@ -21,6 +22,10 @@ update_plot_curve <- function(model, plot, curve.df = NULL) {
     # Check if curve.df is a dataframe if provided
     if (!is.null(curve.df) && !is.data.frame(curve.df)) {
         stop("curve.df must be a dataframe.")
+    }
+    # Check if extra.curve is a dataframe if provided
+    if (!is.null(extra.curve) && !is.data.frame(extra.curve)) {
+        stop("extra.curve must be a dataframe.")
     }
     # ===============================
     
@@ -35,6 +40,12 @@ update_plot_curve <- function(model, plot, curve.df = NULL) {
     if (!is.null(curve.df)) {
         if (!all(model.vars %in% colnames(curve.df))) {
             stop(paste("For the", full.model.name, "model, curve.df must contain columns (variables) named", model.vars.string, "."))
+        }
+    }
+    # If extra.curve is provided, check if it has the necessary columns (variables)
+    if (!is.null(extra.curve)) {
+        if (!all(model.vars %in% colnames(extra.curve))) {
+            stop(paste("For the", full.model.name, "model, extra.curve must contain columns (variables) named", model.vars.string, "."))
         }
     }
     # ===============================
@@ -56,7 +67,9 @@ update_plot_curve <- function(model, plot, curve.df = NULL) {
             # No extra independent variable
             extra.independent.variable <- NULL
             # Set colours
-            colours <- NULL
+            colours <- "'This is the only colour'"
+            # Turn off the legend
+            plot <- plot + ggplot2::guides(color = "none")
             # "Split" the dataframe into a list one one df - because only one curve
             curve.dfs <- list(curve.df)
         }
@@ -67,6 +80,30 @@ update_plot_curve <- function(model, plot, curve.df = NULL) {
             plot <- plot + 
                 ggplot2::geom_path(data = curve.dfs[[i]], 
                                    ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
+                                   inherit.aes = FALSE)
+        }
+    }
+    # If an extra curve was given
+    if (!is.null(extra.curve)) {
+        # If using an extra independent variable
+        if (length(model.vars) > 2) {
+            # Get the name of that var (e.g. "I")
+            extra.independent.variable <- model.vars[3]
+            # Split the dataframe into list of multiple df - one per curve
+            curve.dfs <- split(extra.curve, extra.curve[[extra.independent.variable]])
+        } else {
+            # No extra independent variable
+            extra.independent.variable <- NULL
+            # "Split" the dataframe into a list one one df - because only one curve
+            curve.dfs <- list(extra.curve)
+        }
+        
+        # Loop through each curve df
+        for (i in seq_along(curve.dfs)) {
+            # Add curve
+            plot <- plot + 
+                ggplot2::geom_path(data = curve.dfs[[i]], 
+                                   ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = NULL), 
                                    inherit.aes = FALSE)
         }
     }
