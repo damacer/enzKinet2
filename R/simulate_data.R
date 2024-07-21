@@ -12,13 +12,16 @@
 #' @param x.max Defines the range of x values to cover.
 #' @param z.values Defines the z values to cover (NULL if not used)
 #' @param n_samples The number of data points generated.
+#' @param n_replicates The number of replicate data points generated.
 #' @param noise_level The level of noise (equal to or greater than 0)
 #' @param noise_type The kind of noise ("absolute" or "relative")
 #' @return synthetic.data
 #' 
 #' @export
 
-simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_samples = 24, noise_level = 0.05, noise_type = "relative") {
+simulate_data <- function(model, params, x.min, x.max, z.values = NULL, 
+                          n_samples = 24, n_replicates = 1, 
+                          noise_level = 0.05, noise_type = "relative") {
     
     # Error Handling ================
     # Check if model is valid
@@ -44,6 +47,10 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_sample
     # Check if n_samples is a positive integer
     if (!is.numeric(n_samples) || n_samples <= 0 || floor(n_samples) != n_samples) {
         stop("n_samples must be a positive integer.")
+    }
+    # Check if n_replicates is a positive integer
+    if (!is.numeric(n_replicates) || n_replicates <= 0 || floor(n_replicates) != n_replicates) {
+        stop("n_replicates must be a positive integer.")
     }
     # Check if noise_level is numeric and equal to or greater than 0
     if (!is.numeric(noise_level) || noise_level < 0) {
@@ -99,6 +106,10 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL, n_sample
     synthetic.data <- model.function(params, x.range, z.values)
     # ===================================
     
+    # Replicate data =================
+    # Duplicate the data n_replicates times
+    synthetic.data <- do.call(rbind, replicate(n_replicates, synthetic.data, simplify = FALSE))
+    # ===================================
     
     # Add noise ============================
     # If any noise
