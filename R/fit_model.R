@@ -9,12 +9,13 @@
 #' @param model The chosen model ("MM", "MMSI", etc.)
 #' @param data.df The data to fit the model to
 #' @param start.params The unfitted parameters for the model (e.g. Km, Vmax)
-#' @param override_data_point_check Boolean to override num data points checks.
+#' @param locked.params A vector of parameter names to lock (e.g., c("Km"))
+#' @param override.data.point.check Boolean to override num data points checks.
 #' @return fitted.params
 #' 
 #' @export
 
-fit_model <- function(model, data.df, start.params, override_data_point_check = FALSE) {
+fit_model <- function(model, data.df, start.params, locked.params = NULL, override.data.point.check = FALSE) {
     
     # Error Handling ================
     # Check if model is valid
@@ -24,6 +25,10 @@ fit_model <- function(model, data.df, start.params, override_data_point_check = 
     # Check if start.params is a list
     if (!is.list(start.params)) {
         stop("start.params must be a list.")
+    }
+    # Check if locked.params is a vector
+    if (!is.null(locked.params) && !is.vector(locked.params)) {
+        stop("locked.params must be a vector.")
     }
     # Check if data.df is a dataframe
     if (!is.data.frame(data.df)) {
@@ -35,9 +40,9 @@ fit_model <- function(model, data.df, start.params, override_data_point_check = 
     }
     # Check number of data points
     num_data_points <- nrow(data.df)
-    if (!override_data_point_check) {
+    if (!override.data.point.check) {
         if (num_data_points < 5) {
-            stop("Less than 5 data points is unlikely insufficient to fit the model. Overide this by setting override_data_point_check to TRUE.")
+            stop("Less than 5 data points is unlikely insufficient to fit the model. Overide this by setting override.data.point.check to TRUE.")
         } else if (num_data_points < 15) {
             warning("Less than 15 data points may be insufficient to fit the model.")
         }
@@ -76,21 +81,39 @@ fit_model <- function(model, data.df, start.params, override_data_point_check = 
             stop(paste(param, "must be greater than 0."))
         }
     }
+    # Ensure all values of locked.params are in param.names
+    if (!is.null(locked.params) && !all(locked.params %in% param.names)) {
+        stop("All values of locked.params must be from:", model.params.string, ".")
+    }
     
     # Define model
     model.formula <- MODEL_FORMULAE[[model]]
+    
+    # Replace variables in model.formula with values from locked.params
+    if (!is.null(locked.params)) {
+        for (locked.param in locked.params) {
+            if (locked.param %in% param.names) {
+                param.value <- start.params[[locked.param]]
+                model.formula <- as.formula(gsub(as.character(locked.param), param.value, deparse(model.formula)))
+            }
+        }
+    }
     
     # Define some NLS control parameters
     ctrl <- nls.control(maxiter = 1e5, tol = 1e-5)
     
     # Extract only the needed starting parameters
-    start.params <- as.list(start.params[param.names])
+    fit.start.params <- as.list(start.params[param.names])
+    if (!is.null(locked.params)) {
+        fit.start.params <- fit.start.params[!names(fit.start.params) %in% locked.params]
+    }
     # ===============================
     
     # Fit model =================
     fitted.params <- NULL
+    
     tryCatch({
-        fit <- nls(model.formula, data = data.df, start = start.params, control = ctrl)
+        fit <- nls(model.formula, data = data.df, start = fit.start.params, control = ctrl)
         fitted.params <- as.list(coef(fit))
         names(fitted.params) <- names(coef(fit))
     }, error = function(e) {
@@ -98,6 +121,15 @@ fit_model <- function(model, data.df, start.params, override_data_point_check = 
         message("Failiure to fit could be explained by noiseless data, poor starting parameters, over parametrisation , etc..")
         fitted.params <- NULL
     })
+    # ===============================
+    
+    # Return locked.params ===================
+    # Add locked.params to fitted.params
+    if (!is.null(fitted.params) && !is.null(locked.params)) {
+        for (locked.param in locked.params) {
+            fitted.params[locked.param] <- start.params[[locked.param]]
+        }
+    }
     # ===============================
     
     # Return the fitted params (NULL if model could not fit)
