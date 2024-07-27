@@ -95,14 +95,17 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL, y.
         # No values of z
         z.values <- NULL
     }
-    # Divide number of rows in data by number of z values to get n_samples
-    n_samples <- if (is.null(z.values)) nrow(data.df) else nrow(data.df) / length(z.values)
+    # Get n_samples
+    n_samples <- length(unique(data.df[[first.independent.var]]))
+    # Calculate n_replicates by division
+    n_replicates <- nrow(data.df) / n_samples
+    print(n_replicates)
     # Get the max and min of the x-axis
     x.min.data <- min(data.df[[first.independent.var]])
     x.max.data <- max(data.df[[first.independent.var]])
     # Make use of simulate_data to generate the data perfectly according to the model with 0 noise
     perfect.data.df <- simulate_data(model, params, x.min.data, x.max.data, z.values = z.values, 
-                              noise_level = 0, n_samples = n_samples)
+                              noise_level = 0, n_samples = n_samples, n_replicates = n_replicates)
     # Calculate residuals
     residuals.df <- data.df
     residuals.df[[dependent.var]] <- data.df[[dependent.var]] - perfect.data.df[[dependent.var]]
