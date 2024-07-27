@@ -21,11 +21,11 @@ make_plot(
 
 \item{curve.df}{Dense data used to draw the model curve}
 
-\item{x.label}{Defines the range of x values to cover.}
+\item{x.label}{Custom x-axis label.}
 
-\item{y.label}{Defines the range of x values to cover.}
+\item{y.label}{Custom y-axis label.}
 
-\item{title}{Defines the range of x values to cover.}
+\item{title}{Custom plot title.}
 
 \item{extra.curve}{An extra curve to be displayed on top of the other}
 }

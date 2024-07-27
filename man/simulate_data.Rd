@@ -11,6 +11,7 @@ simulate_data(
   x.max,
   z.values = NULL,
   n_samples = 24,
+  n_replicates = 1,
   noise_level = 0.05,
   noise_type = "relative"
 )
@@ -27,6 +28,8 @@ simulate_data(
 \item{z.values}{Defines the z values to cover (NULL if not used)}
 
 \item{n_samples}{The number of data points generated.}
+
+\item{n_replicates}{The number of replicate data points generated.}
 
 \item{noise_level}{The level of noise (equal to or greater than 0)}
 

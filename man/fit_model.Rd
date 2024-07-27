@@ -4,7 +4,13 @@
 \alias{fit_model}
 \title{Fit Model}
 \usage{
-fit_model(model, data.df, start.params, override_data_point_check = FALSE)
+fit_model(
+  model,
+  data.df,
+  start.params,
+  locked.params = NULL,
+  override.data.point.check = FALSE
+)
 }
 \arguments{
 \item{model}{The chosen model ("MM", "MMSI", etc.)}
@@ -13,7 +19,9 @@ fit_model(model, data.df, start.params, override_data_point_check = FALSE)
 
 \item{start.params}{The unfitted parameters for the model (e.g. Km, Vmax)}
 
-\item{override_data_point_check}{Boolean to override num data points checks.}
+\item{locked.params}{A vector of parameter names to lock (e.g., c("Km"))}
+
+\item{override.data.point.check}{Boolean to override num data points checks.}
 }
 \value{
 fitted.params

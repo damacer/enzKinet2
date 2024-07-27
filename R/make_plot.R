@@ -9,9 +9,9 @@
 #' @param model The chosen model ("MM", "MMSI", etc.)
 #' @param data.df Data plotted as dots
 #' @param curve.df Dense data used to draw the model curve 
-#' @param x.label Defines the range of x values to cover.
-#' @param y.label Defines the range of x values to cover.
-#' @param title Defines the range of x values to cover.
+#' @param x.label Custom x-axis label.
+#' @param y.label Custom y-axis label.
+#' @param title Custom plot title.
 #' @param extra.curve An extra curve to be displayed on top of the other
 #' @return plot
 #' 
