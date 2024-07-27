@@ -8,11 +8,13 @@
 #' @param curve.df Data frame with the new curve data
 #' @param model The chosen model ("MM", "MMSI", etc.)
 #' @param extra.curve An extra curve to be displayed on top of the other
+#' @param plot.transformation Transformation to give the data.
 #' @return Updated plot
 #' 
 #' @export
 
-update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL) {
+update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL, 
+                              plot.transformation = "standard") {
     
     # Error Handling ================
     # Check if model is valid
@@ -53,6 +55,19 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL) 
     # Remove the current curve
     plot$layers <- plot$layers[!sapply(plot$layers, function(layer) inherits(layer$geom, "GeomPath"))]
     
+    
+    # Transform the curve(s) ===============
+    transformation <- PLOT_TRANSFORMATIONS[[plot.transformation]]
+    if (!is.null(curve.df)) {
+        curve.df = transformation(curve.df, x.name = first.independent.var, y.name = dependent.var)
+    }
+    if (!is.null(extra.curve)) {
+        extra.curve = transformation(extra.curve, x.name = first.independent.var, y.name = dependent.var)
+    }
+    # ===============================
+    
+    
+    
     # If a curve(s) was given
     if (!is.null(curve.df)) {
         # If using an extra independent variable
@@ -76,9 +91,33 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL) 
         
         # Loop through each curve df
         for (i in seq_along(curve.dfs)) {
+            this.curve.df <- curve.dfs[[i]]
+            # If this is a lineweaver-burk plot add the x-intercept
+            if (plot.transformation == "lineweaver") {
+                # Get min and max points
+                x.axis <- this.curve.df[[first.independent.var]]
+                y.axis <- this.curve.df[[dependent.var]]
+                x1 <- min(x.axis, na.rm = TRUE)
+                y1 <- y.axis[which.min(x.axis)]
+                x2 <- max(x.axis, na.rm = TRUE)
+                y2 <- y.axis[which.max(x.axis)]
+                # Calculate the slope
+                m <- (y2 - y1) / (x2 - x1)
+                # Calculate the y-intercept using the formula c = y - m * x
+                c <- y1 - m * x1
+                # Calculate the x-intercept
+                x_intercept = -c / m
+                # Create a new point at the x_intercept
+                new_row <- this.curve.df[1, ]
+                new_row[[first.independent.var]] <- x_intercept
+                new_row[[dependent.var]] <- 0
+                this.curve.df <- rbind(this.curve.df, new_row)
+                # Sort the dataframe
+                this.curve.df <- this.curve.df[order(this.curve.df[[first.independent.var]]), ]
+            }
             # Add curve
             plot <- plot + 
-                ggplot2::geom_path(data = curve.dfs[[i]], 
+                ggplot2::geom_path(data = this.curve.df, 
                                    ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
                                    inherit.aes = FALSE)
         }
@@ -100,9 +139,33 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL) 
         
         # Loop through each curve df
         for (i in seq_along(curve.dfs)) {
+            this.curve.df <- curve.dfs[[i]]
+            # If this is a lineweaver-burk plot add the x-intercept
+            if (plot.transformation == "lineweaver") {
+                # Get min and max points
+                x.axis <- this.curve.df[[first.independent.var]]
+                y.axis <- this.curve.df[[dependent.var]]
+                x1 <- min(x.axis, na.rm = TRUE)
+                y1 <- y.axis[which.min(x.axis)]
+                x2 <- max(x.axis, na.rm = TRUE)
+                y2 <- y.axis[which.max(x.axis)]
+                # Calculate the slope
+                m <- (y2 - y1) / (x2 - x1)
+                # Calculate the y-intercept using the formula c = y - m * x
+                c <- y1 - m * x1
+                # Calculate the x-intercept
+                x_intercept = -c / m
+                # Create a new point at the x_intercept
+                new_row <- this.curve.df[1, ]
+                new_row[[first.independent.var]] <- x_intercept
+                new_row[[dependent.var]] <- 0
+                this.curve.df <- rbind(this.curve.df, new_row)
+                # Sort the dataframe
+                this.curve.df <- this.curve.df[order(this.curve.df[[first.independent.var]]), ]
+            }
             # Add curve
             plot <- plot + 
-                ggplot2::geom_path(data = curve.dfs[[i]], 
+                ggplot2::geom_path(data = this.curve.df, 
                                    ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = NULL), 
                                    inherit.aes = FALSE)
         }

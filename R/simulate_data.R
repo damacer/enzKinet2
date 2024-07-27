@@ -15,13 +15,15 @@
 #' @param n_replicates The number of replicate data points generated.
 #' @param noise_level The level of noise (equal to or greater than 0)
 #' @param noise_type The kind of noise ("absolute" or "relative")
+#' @param space The distribution of the space to generate data
 #' @return synthetic.data
 #' 
 #' @export
 
 simulate_data <- function(model, params, x.min, x.max, z.values = NULL, 
                           n_samples = 24, n_replicates = 1, 
-                          noise_level = 0.05, noise_type = "relative") {
+                          noise_level = 0.05, noise_type = "relative", 
+                          space = "linear") {
     
     # Error Handling ================
     # Check if model is valid
@@ -35,10 +37,6 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL,
     # Check if x.min and x.max are numeric
     if (!is.numeric(x.min) || !is.numeric(x.max)) {
         stop("x.min and x.max must be numeric values.")
-    }
-    # Check if x.min is positive
-    if (x.min < 0) {
-        stop("x.min must be a positive value.")
     }
     # Check if x.min is less than x.max
     if (x.min >= x.max) {
@@ -99,7 +97,22 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL,
     
     # Generate the perfect curve ================
     # Define values of x
-    x.range <- pracma::linspace(x.min, x.max, n = n_samples)
+    if (space == "linear") {
+        x.range <- pracma::linspace(x.min, x.max, n = n_samples)
+    } else if (space == "exponential"){
+        # Generate an exponentially spaced sequence from 0 to 1
+        exp_seq <- (seq(0, 1, length.out = n_samples))^2
+        # Normalize the sequence to the desired range
+        x.range <- exp_seq * (x.max - x.min) + x.min
+    } else if (space == "inverse_exponential"){
+        # Generate an exponentially spaced sequence from 0 to 1
+        exp_seq <- (seq(0, 1, length.out = n_samples))^3
+        # Flip it
+        #exp_seq <- (exp_seq - 1) * -1
+        # Normalize the sequence to the desired range
+        x.range <- exp_seq * (x.max - x.min) + x.min
+    }
+    
     # Get the model function
     model.function <- MODEL_FUNCTIONS[[model]]
     # Generate a perfect curve

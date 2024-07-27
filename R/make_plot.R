@@ -9,15 +9,18 @@
 #' @param model The chosen model ("MM", "MMSI", etc.)
 #' @param data.df Data plotted as dots
 #' @param curve.df Dense data used to draw the model curve 
+#' @param extra.curve An extra curve to be displayed on top of the other
+#' @param plot.transformation Transformation to give the data.
 #' @param x.label Custom x-axis label.
 #' @param y.label Custom y-axis label.
 #' @param title Custom plot title.
-#' @param extra.curve An extra curve to be displayed on top of the other
 #' @return plot
 #' 
 #' @export
 
-make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.label = NULL, title = NULL, extra.curve = NULL) {
+make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL, 
+                      plot.transformation = "standard", 
+                      x.label = NULL, y.label = NULL, title = NULL) {
     
     # Error Handling ================
     # Check if model is valid
@@ -84,11 +87,25 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
     default.x.axis <- AXIS_TITLES[[first.independent.var]]
     default.y.axis <- AXIS_TITLES[[dependent.var]]
     
+    # Adjust title according to transformation
+    transformation_text <- PLOT_TRANSFORMATION_TITLES[[plot.transformation]]
+    title <- paste(default.title, transformation_text)
+    # Adjust x-axis title according to transformation
+    transformation_text <- PLOT_TRANSFORMATION_X_AXIS_TITLES[[plot.transformation]]
+    transformation_text <- gsub("X-AXIS", default.x.axis, transformation_text)
+    transformation_text <- gsub("Y-AXIS", default.y.axis, transformation_text)
+    x.axis <- paste(transformation_text, default.x.axis)
+    # Adjust y-axis title according to transformation
+    transformation_text <- PLOT_TRANSFORMATION_Y_AXIS_TITLES[[plot.transformation]]
+    transformation_text <- gsub("X-AXIS", default.x.axis, transformation_text)
+    transformation_text <- gsub("Y-AXIS", default.y.axis, transformation_text)
+    y.axis <- paste(transformation_text, default.y.axis)
+    
     # Make default plot
     plot <- ggplot2::ggplot() + 
-        ggplot2::xlab(sprintf(default.x.axis)) +
-        ggplot2::ylab(default.y.axis) +
-        ggplot2::ggtitle(default.title) +
+        ggplot2::xlab(sprintf(x.axis)) +
+        ggplot2::ylab(y.axis) +
+        ggplot2::ggtitle(title) +
         ggplot2::labs(color = "Legend") +
         ggthemes::theme_few()
     
@@ -102,11 +119,29 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
     # ===============================
     
     
-    # Add Extra Plot Features ===================
+    # Transform the data and/or curve ===============
+    transformation <- PLOT_TRANSFORMATIONS[[plot.transformation]]
+    if (!is.null(data.df)) {
+        data.df = transformation(data.df, x.name = first.independent.var, y.name = dependent.var)
+    }
+    if (!is.null(curve.df)) {
+        curve.df = transformation(curve.df, x.name = first.independent.var, y.name = dependent.var)
+    }
+    if (!is.null(extra.curve)) {
+        extra.curve = transformation(extra.curve, x.name = first.independent.var, y.name = dependent.var)
+    }
+    # ===============================
     
+    
+    
+    # Add Extra Plot Features ===================
     # Add colour pallette
     plot <- plot + ggplot2::scale_color_brewer(palette = "Set1")
     
+    # If this is a lineweaver-burk plot add a line at the y-axis
+    if (plot.transformation == "lineweaver") {
+        plot <- plot + ggplot2::geom_vline(xintercept = 0, linetype = "dotted", color = "black")
+    }
     # If using an extra independent variable
     if (length(model.vars) > 2) {
         # Get the name of that var (e.g. "I")
@@ -153,9 +188,34 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
         }
         # Loop through each curve df
         for (i in seq_along(curve.dfs)) {
+            this.curve.df <- curve.dfs[[i]]
+            # If this is a lineweaver-burk plot add the x-intercept
+            if (plot.transformation == "lineweaver") {
+                # Get min and max points
+                x.axis <- this.curve.df[[first.independent.var]]
+                y.axis <- this.curve.df[[dependent.var]]
+                x1 <- min(x.axis, na.rm = TRUE)
+                y1 <- y.axis[which.min(x.axis)]
+                x2 <- max(x.axis, na.rm = TRUE)
+                y2 <- y.axis[which.max(x.axis)]
+                # Calculate the slope
+                m <- (y2 - y1) / (x2 - x1)
+                # Calculate the y-intercept using the formula c = y - mx
+                c <- y1 - m * x1
+                # Calculate the x-intercept
+                x_intercept = -c / m
+                # Create a new point at the x_intercept
+                new_row <- this.curve.df[1, ]
+                new_row[[first.independent.var]] <- x_intercept
+                new_row[[dependent.var]] <- 0
+                this.curve.df <- rbind(this.curve.df, new_row)
+                # Sort the dataframe
+                this.curve.df <- this.curve.df[order(this.curve.df[[first.independent.var]]), ]
+            }
+            
             # Draw the curve
             plot <- plot + 
-                ggplot2::geom_path(data = curve.dfs[[i]], 
+                ggplot2::geom_path(data = this.curve.df, 
                                    ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
                                    inherit.aes = FALSE)
         }
@@ -172,9 +232,33 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, x.label = NULL, y.
         }
         # Loop through each curve df
         for (i in seq_along(curve.dfs)) {
+            this.curve.df <- curve.dfs[[i]]
+            # If this is a lineweaver-burk plot add the x-intercept
+            if (plot.transformation == "lineweaver") {
+                # Get min and max points
+                x.axis <- this.curve.df[[first.independent.var]]
+                y.axis <- this.curve.df[[dependent.var]]
+                x1 <- min(x.axis, na.rm = TRUE)
+                y1 <- y.axis[which.min(x.axis)]
+                x2 <- max(x.axis, na.rm = TRUE)
+                y2 <- y.axis[which.max(x.axis)]
+                # Calculate the slope
+                m <- (y2 - y1) / (x2 - x1)
+                # Calculate the y-intercept using the formula c = y - m * x
+                c <- y1 - m * x1
+                # Calculate the x-intercept
+                x_intercept = -c / m
+                # Create a new point at the x_intercept
+                new_row <- this.curve.df[1, ]
+                new_row[[first.independent.var]] <- x_intercept
+                new_row[[dependent.var]] <- 0
+                this.curve.df <- rbind(this.curve.df, new_row)
+                # Sort the dataframe
+                this.curve.df <- this.curve.df[order(this.curve.df[[first.independent.var]]), ]
+            }
             # Draw the curve
             plot <- plot + 
-                ggplot2::geom_path(data = curve.dfs[[i]], 
+                ggplot2::geom_path(data = this.curve.df, 
                                    ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = NULL), 
                                    inherit.aes = FALSE)
         }

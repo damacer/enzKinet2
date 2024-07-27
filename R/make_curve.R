@@ -13,15 +13,16 @@
 #' @param x.max Defines the range of x values to cover.
 #' @param z.values Defines the z values to cover (NULL if not used)
 #' @param n_samples The resolution of the curve (128 is almost always enough)
+#' @param space The distribution of the space to generate data
 #' @return curve.df
 #' 
 #' @export
 
-make_curve <- function(model, params, x.min, x.max, z.values = NULL, n_samples = 250) {
+make_curve <- function(model, params, x.min, x.max, z.values = NULL, n_samples = 250, space = "linear") {
     
     # Make use of simulate_data to generate data with 0 noise
     curve.df <- simulate_data(model, params, x.min, x.max, z.values = z.values, 
-                              noise_level = 0, n_samples = n_samples)
+                              noise_level = 0, n_samples = n_samples, space = space)
     
     return(curve.df)
 }

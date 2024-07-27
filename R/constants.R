@@ -91,8 +91,8 @@ MODEL_OPTIONS <- c(
 PLOT_TITLES <- list(
     MM = "Michaelis-Menten",
     MMSI = "Michaelis-Menten with Substrate Inhibition",
-    OGMM = "Original Michaelis-Menten",
-    ALTMM = "Alternative Michaelis-Menten",
+    OGMM = "Michaelis-Menten",
+    ALTMM = "Michaelis-Menten",
     CI = "Competitive Inhibition",
     UCI = "Uncompetitive Inhibition",
     NCI = "Non-competitive Inhibition",
@@ -151,6 +151,7 @@ MODEL_VARIABLE_STRINGS <- list(
 )
 
 # Define a dictionary for model formulae
+#' @export
 MODEL_FORMULAE <- list(
     MM = formula(V ~ Vmax * A / (Km + A)),
     MMSI = formula(V ~ Vmax * A / (Km + A + A * A / Ksi)),
@@ -274,6 +275,103 @@ MODEL_VARIABLES_DISPLAY <- list(
 )
 
 
+# Define a dictionary for plotting transformation functions before plotting data
+#' @export
+PLOT_TRANSFORMATIONS <- list(
+    standard = function(data.df, x.name = NULL, y.name = NULL) {
+        # No transformation
+        return (data.df)
+    },
+    log10 = function(data.df, x.name = "A", y.name = "V") {
+        # Log transform the x.axis
+        data.df[[x.name]] <- log10(data.df[[x.name]])
+        return (data.df)
+    },
+    ln = function(data.df, x.name = "A", y.name = "V") {
+        # Natural log transform the x-axis
+        data.df[[x.name]] <- log(data.df[[x.name]])
+        return(data.df)
+    },
+    lineweaver = function(data.df, x.name = "A", y.name = "V") {
+        # Get reciprocal of the x-axis
+        data.df[[x.name]] <- 1 / data.df[[x.name]]
+        # Get reciprocal of the y-axis
+        data.df[[y.name]] <- 1 / data.df[[y.name]]
+        return(data.df)
+    },
+    hanes = function(data.df, x.name = "A", y.name = "V") {
+        # Get x/y for the y-axis
+        data.df[[y.name]] <- data.df[[x.name]] / data.df[[y.name]]
+        return(data.df)
+    },
+    eadie = function(data.df, x.name = "A", y.name = "V") {
+        # Get y/x for the x-axis
+        data.df[[x.name]] <- data.df[[y.name]] / data.df[[x.name]]
+        return(data.df)
+    }
+)
+
+# Define a dictionary for options for plotting transformations
+#' @export
+PLOT_TRANSFORMATION_OPTIONS <- c(
+    "Standard Plot (v against a)" = "standard",
+    "Log 10 Plot (v against log10 a)" = "log10",
+    "Natural Log Plot (v against ln a)" = "ln",
+    "Lineweaver-Burk Plot (1/v against 1/a)" = "lineweaver",
+    "Hanes Plot (a/v against a)" = "hanes",
+    "Eadie-Hofstee Plot (v against v/a)" = "eadie"
+)
+
+# Define a dictionary for plot titles for transformations
+#' @export
+PLOT_TRANSFORMATION_TITLES <- c(
+    standard = "",
+    log10 = "Log 10 Plot",
+    ln = "Natural Log Plot",
+    lineweaver = "Lineweaver-Burk Plot",
+    hanes = "Hanes Plot",
+    eadie = "Eadie-Hofstee Plot"
+)
+
+# Define a dictionary for x-axis titles for transformations
+#' @export
+PLOT_TRANSFORMATION_X_AXIS_TITLES <- c(
+    standard = "",
+    log10 = "Log 10 of",
+    ln = "Natural Log of",
+    lineweaver = "Reciprocal of",
+    hanes = "",
+    eadie = "Y-AXIS /"
+)
+
+# Define a dictionary for y-axis titles for transformations
+#' @export
+PLOT_TRANSFORMATION_Y_AXIS_TITLES <- c(
+    standard = "",
+    log10 = "",
+    ln = "",
+    lineweaver = "Reciprocal of",
+    hanes = "X-AXIS /",
+    eadie = ""
+)
+
+# Define a dictionary for the blocked transformations for each model
+#' @export
+BLOCKED_TRANSFORMATIONS <- list(
+    MM = c(),
+    MMSI = c("lineweaver", "hanes", "eadie"),
+    OGMM = c(),
+    ALTMM = c(),
+    CI = c(),
+    UCI = c(),
+    NCI = c(),
+    MI = c(),
+    TC = c(),
+    HILL = c(),
+    PP = c(),
+    SBK = c("lineweaver", "hanes", "eadie"),
+    CBK = c("lineweaver", "hanes", "eadie")
+)
 
 # Define model functions (takes parameters and independent variables - output perfect data)
 MODEL_FUNCTIONS <- list(

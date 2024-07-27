@@ -4,7 +4,15 @@
 \alias{make_curve}
 \title{Make Curve}
 \usage{
-make_curve(model, params, x.min, x.max, z.values = NULL, n_samples = 250)
+make_curve(
+  model,
+  params,
+  x.min,
+  x.max,
+  z.values = NULL,
+  n_samples = 250,
+  space = "linear"
+)
 }
 \arguments{
 \item{model}{The chosen model ("MM", "MMSI", etc.)}
@@ -18,6 +26,8 @@ make_curve(model, params, x.min, x.max, z.values = NULL, n_samples = 250)
 \item{z.values}{Defines the z values to cover (NULL if not used)}
 
 \item{n_samples}{The resolution of the curve (128 is almost always enough)}
+
+\item{space}{The distribution of the space to generate data}
 }
 \value{
 curve.df

@@ -8,10 +8,11 @@ make_plot(
   model,
   data.df = NULL,
   curve.df = NULL,
+  extra.curve = NULL,
+  plot.transformation = "standard",
   x.label = NULL,
   y.label = NULL,
-  title = NULL,
-  extra.curve = NULL
+  title = NULL
 )
 }
 \arguments{
@@ -21,13 +22,15 @@ make_plot(
 
 \item{curve.df}{Dense data used to draw the model curve}
 
+\item{extra.curve}{An extra curve to be displayed on top of the other}
+
+\item{plot.transformation}{Transformation to give the data.}
+
 \item{x.label}{Custom x-axis label.}
 
 \item{y.label}{Custom y-axis label.}
 
 \item{title}{Custom plot title.}
-
-\item{extra.curve}{An extra curve to be displayed on top of the other}
 }
 \value{
 plot

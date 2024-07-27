@@ -4,7 +4,13 @@
 \alias{update_plot_curve}
 \title{Update Plot Curve}
 \usage{
-update_plot_curve(model, plot, curve.df = NULL, extra.curve = NULL)
+update_plot_curve(
+  model,
+  plot,
+  curve.df = NULL,
+  extra.curve = NULL,
+  plot.transformation = "standard"
+)
 }
 \arguments{
 \item{model}{The chosen model ("MM", "MMSI", etc.)}
@@ -14,6 +20,8 @@ update_plot_curve(model, plot, curve.df = NULL, extra.curve = NULL)
 \item{curve.df}{Data frame with the new curve data}
 
 \item{extra.curve}{An extra curve to be displayed on top of the other}
+
+\item{plot.transformation}{Transformation to give the data.}
 }
 \value{
 Updated plot

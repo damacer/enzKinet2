@@ -13,7 +13,8 @@ simulate_data(
   n_samples = 24,
   n_replicates = 1,
   noise_level = 0.05,
-  noise_type = "relative"
+  noise_type = "relative",
+  space = "linear"
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ simulate_data(
 \item{noise_level}{The level of noise (equal to or greater than 0)}
 
 \item{noise_type}{The kind of noise ("absolute" or "relative")}
+
+\item{space}{The distribution of the space to generate data}
 }
 \value{
 synthetic.data

@@ -97,8 +97,10 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL, y.
     }
     # Get n_samples
     n_samples <- length(unique(data.df[[first.independent.var]]))
+    # How many z_values?
+    num_z_values <- ifelse(is.null(z.values), 1, length(z.values))
     # Calculate n_replicates by division
-    n_replicates <- nrow(data.df) / n_samples / length(z.values)
+    n_replicates <- nrow(data.df) / n_samples / num_z_values
     # Get the max and min of the x-axis
     x.min.data <- min(data.df[[first.independent.var]])
     x.max.data <- max(data.df[[first.independent.var]])
