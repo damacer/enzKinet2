@@ -367,7 +367,7 @@ BLOCKED_TRANSFORMATIONS <- list(
     NCI = c(),
     MI = c(),
     TC = c(),
-    HILL = c(),
+    HILL = c("lineweaver", "hanes", "eadie"),
     PP = c(),
     SBK = c("lineweaver", "hanes", "eadie"),
     CBK = c("lineweaver", "hanes", "eadie")
