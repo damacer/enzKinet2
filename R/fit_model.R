@@ -10,12 +10,13 @@
 #' @param data.df The data to fit the model to
 #' @param start.params The unfitted parameters for the model (e.g. Km, Vmax)
 #' @param locked.params A vector of parameter names to lock (e.g., c("Km"))
+#' @param add.minor.noise Boolean to add a tiny amount of noise to the data before fitting.
 #' @param override.data.point.check Boolean to override num data points checks.
 #' @return fitted.params
 #' 
 #' @export
 
-fit_model <- function(model, data.df, start.params, locked.params = NULL, override.data.point.check = FALSE) {
+fit_model <- function(model, data.df, start.params, locked.params = NULL, add.minor.noise = FALSE, override.data.point.check = FALSE) {
     
     # Error Handling ================
     # Check if model is valid
@@ -58,6 +59,16 @@ fit_model <- function(model, data.df, start.params, locked.params = NULL, overri
     # Check if data.df has the necessary columns (variables)
     if (!all(model.vars %in% colnames(data.df))) {
             stop(paste("For the", full.model.name, "model, data.df must contain columns (variables) named", model.vars.string, "."))
+    }
+    # ===============================
+    
+    
+    # Add minor noise =========================
+    if (add.minor.noise) {
+        # For reproducibility
+        set.seed(24)
+        noise <- rnorm(n = nrow(data.df), mean = 0, sd = 1e-6)
+        data.df <- data.df + noise
     }
     # ===============================
     
