@@ -9,6 +9,7 @@
 #' @param model The chosen model ("MM", "MMSI", etc.)
 #' @param data.df The data to fit the model to
 #' @param start.params The unfitted parameters for the model (e.g. Km, Vmax)
+#' @param fit.method The algorithm or calculation used to fit the model.
 #' @param locked.params A vector of parameter names to lock (e.g., c("Km"))
 #' @param add.minor.noise Boolean to add a tiny amount of noise to the data before fitting.
 #' @param override.data.point.check Boolean to override num data points checks.
@@ -16,7 +17,8 @@
 #' 
 #' @export
 
-fit_model <- function(model, data.df, start.params, locked.params = NULL, add.minor.noise = FALSE, override.data.point.check = FALSE) {
+fit_model <- function(model, data.df, start.params, fit.method = "nls", locked.params = NULL, 
+                      add.minor.noise = FALSE, override.data.point.check = FALSE) {
     
     # Error Handling ================
     # Check if model is valid
@@ -38,6 +40,18 @@ fit_model <- function(model, data.df, start.params, locked.params = NULL, add.mi
     # Check if data.df is not empty
     if (nrow(data.df) == 0) {
         stop("data.df must not be empty.")
+    }
+    # Check if fit.method is valid
+    if (!is.null(fit.method) && !fit.method %in% names(FITTING_METHODS)) {
+        stop("Invalid fit method. Please choose a valid method such as 'nls' or 'recursive'.")
+    }
+    # Check if model is valid for the fit.method
+    if (!is.null(fit.method) && !model %in% FITTING_METHODS[[fit.method]]) {
+        stop(paste("The model", model, "is not valid for the fit method", fit.method, "."))
+    }
+    # Check if fit.method is not "nls" and locked.params is TRUE
+    if (fit.method != "nls" && !is.null(locked.params)) {
+        stop("Locked parameters can only be used with the 'nls' fit method.")
     }
     # Check number of data points
     num_data_points <- nrow(data.df)
@@ -97,51 +111,112 @@ fit_model <- function(model, data.df, start.params, locked.params = NULL, add.mi
         stop("All values of locked.params must be from:", model.params.string, ".")
     }
     
-    # Define model
-    model.formula <- MODEL_FORMULAE[[model]]
     
-    # Replace variables in model.formula with values from locked.params
-    if (!is.null(locked.params)) {
-        for (locked.param in locked.params) {
-            if (locked.param %in% param.names) {
-                param.value <- start.params[[locked.param]]
-                model.formula <- as.formula(gsub(as.character(locked.param), param.value, deparse(model.formula)))
+    # If NLS method
+    if (fit.method == "nls") {
+        # Define model
+        model.formula <- MODEL_FORMULAE[[model]]
+        # Replace variables in model.formula with values from locked.params
+        if (!is.null(locked.params)) {
+            for (locked.param in locked.params) {
+                if (locked.param %in% param.names) {
+                    param.value <- start.params[[locked.param]]
+                    model.formula <- as.formula(gsub(as.character(locked.param), param.value, deparse(model.formula)))
+                }
             }
         }
-    }
-    
-    # Define some NLS control parameters
-    ctrl <- nls.control(maxiter = 1e5, tol = 1e-5)
-    
-    # Extract only the needed starting parameters
-    fit.start.params <- as.list(start.params[param.names])
-    if (!is.null(locked.params)) {
-        fit.start.params <- fit.start.params[!names(fit.start.params) %in% locked.params]
-    }
-    # ===============================
-    
-    # Fit model =================
-    fitted.params <- NULL
-    
-    tryCatch({
-        fit <- nls(model.formula, data = data.df, start = fit.start.params, control = ctrl)
-        fitted.params <- as.list(coef(fit))
-        names(fitted.params) <- names(coef(fit))
-    }, error = function(e) {
-        message("Model fitting failed: ", e$message)
-        message("Failiure to fit could be explained by noiseless data, poor starting parameters, over parametrisation , etc..")
-        fitted.params <- NULL
-    })
-    # ===============================
-    
-    # Return locked.params ===================
-    # Add locked.params to fitted.params
-    if (!is.null(fitted.params) && !is.null(locked.params)) {
-        for (locked.param in locked.params) {
-            fitted.params[locked.param] <- start.params[[locked.param]]
+        # Define some NLS control parameters
+        ctrl <- nls.control(maxiter = 1e5, tol = 1e-5)
+        # Extract only the needed starting parameters
+        fit.start.params <- as.list(start.params[param.names])
+        if (!is.null(locked.params)) {
+            fit.start.params <- fit.start.params[!names(fit.start.params) %in% locked.params]
         }
+        # ===============================
+        # Fit model =================
+        fitted.params <- NULL
+        tryCatch({
+            fit <- nls(model.formula, data = data.df, start = fit.start.params, control = ctrl)
+            fitted.params <- as.list(coef(fit))
+            names(fitted.params) <- names(coef(fit))
+        }, error = function(e) {
+            message("Model fitting failed: ", e$message)
+            message("Failiure to fit could be explained by noiseless data, poor starting parameters, over parametrisation , etc..")
+            fitted.params <- NULL
+        })
+        # ===============================
+        # Return locked.params ===================
+        # Add locked.params to fitted.params
+        if (!is.null(fitted.params) && !is.null(locked.params)) {
+            for (locked.param in locked.params) {
+                fitted.params[locked.param] <- start.params[[locked.param]]
+            }
+        }
+        # ===============================
     }
-    # ===============================
+    # If recursive method
+    if (fit.method == "recursive") {
+        # Extract only the needed starting parameters
+        fit.start.params <- as.list(start.params[param.names])
+        # Get the MM function
+        MM_function <- MODEL_FUNCTIONS[[model]]
+        # Define function to calculate the parameters as estimate
+        calculate.params <- function (data) {
+            # Transform the vectors as needed
+            v3 <- data$V^3
+            v4 <- data$V^4
+            a1 <- data$A^1
+            a2 <- data$A^2
+            # Calculate needed sums
+            sum_v4_by_a2 <- sum(v4/a2)
+            sum_v4_by_a1 <- sum(v4/a1)
+            sum_v4 <- sum(v4)
+            sum_v3_by_a1 <- sum(v3/a1)
+            sum_v3 <- sum(v3)
+            # Use this equation to calculate Km estimate
+            est.Km <- (sum_v4*sum_v3_by_a1 - sum_v4_by_a1*sum_v3) / 
+                (sum_v4_by_a2*sum_v3 - sum_v4_by_a1*sum_v3_by_a1)
+            # Use this equation to calculate Vmax estimate
+            est.Vmax <- (sum_v4_by_a2*sum_v4 - sum_v4_by_a1^2) / 
+                (sum_v4_by_a2*sum_v3 - sum_v4_by_a1*sum_v3_by_a1)
+            # Return estimates
+            est.params <- list("Km" = est.Km, "Vmax" = est.Vmax)
+            return (est.params)
+        }
+        # Define function to calculate the parameters recursively until convergence
+        recursive.fit <- function (data, params=NULL, max.iter=1e5, max.tol=1e-5) {
+            # If reached max iterations
+            if (max.iter < 1) {
+                # Print warning
+                warning("Reached maximum iterations without convergence.")
+                return (params)
+            # If starting with no params
+            } else if (is.null(params)) {
+                # Calculate approximate Km and Vmax using data
+                est.params <- calculate.params(data)
+                # Use approximate Km and Vmax with A's to calculate v's
+                est.data <- MM_function(est.params, data$A, NULL)
+                # Recursively call function using estimate rates
+                return(recursive.fit(est.data, est.params, max.iter=max.iter-1))
+                
+            } else {
+                # Calculate approximate Km and Vmax using data
+                est.params <- calculate.params(data)
+                # If difference between estimated params and previous params is under tolerance
+                if ((abs(est.params$Km - params$Km) < max.tol) && (abs(est.params$Vmax - params$Vmax) < max.tol)) {
+                    # Converged
+                    return(params)
+                } else {
+                    # Use approximate Km and Vmax with A's to calculate v's
+                    est.data <- MM_function(est.params, data$A, NULL)
+                    # Recursively call function using estimate rates
+                    return(recursive.fit(est.data, est.params, max.iter=max.iter-1))
+                }
+            }
+        }
+        # Use function to estimate parameters
+        fitted.params <- recursive.fit(data.df)
+    }
     
     # Return the fitted params (NULL if model could not fit)
     return(fitted.params)

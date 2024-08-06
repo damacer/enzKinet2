@@ -8,7 +8,9 @@ fit_model(
   model,
   data.df,
   start.params,
+  fit.method = "nls",
   locked.params = NULL,
+  add.minor.noise = FALSE,
   override.data.point.check = FALSE
 )
 }
@@ -19,7 +21,11 @@ fit_model(
 
 \item{start.params}{The unfitted parameters for the model (e.g. Km, Vmax)}
 
+\item{fit.method}{The algorithm or calculation used to fit the model.}
+
 \item{locked.params}{A vector of parameter names to lock (e.g., c("Km"))}
+
+\item{add.minor.noise}{Boolean to add a tiny amount of noise to the data before fitting.}
 
 \item{override.data.point.check}{Boolean to override num data points checks.}
 }

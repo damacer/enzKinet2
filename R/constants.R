@@ -373,6 +373,12 @@ BLOCKED_TRANSFORMATIONS <- list(
     CBK = c("lineweaver", "hanes", "eadie")
 )
 
+# Define dictionary for model fitting methods
+FITTING_METHODS <- list(
+    nls = c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "SBK", "CBK"),
+    recursive = c("MM")
+)
+
 # Define model functions (takes parameters and independent variables - output perfect data)
 MODEL_FUNCTIONS <- list(
     MM = function(params, A.range, z.range) {
