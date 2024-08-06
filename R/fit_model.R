@@ -186,7 +186,7 @@ fit_model <- function(model, data.df, start.params, fit.method = "nls", locked.p
             return (est.params)
         }
         # Define function to calculate the parameters recursively until convergence
-        recursive.fit <- function (data, params=NULL, max.iter=1e5, max.tol=1e-5) {
+        recursive.fit <- function (data, params=NULL, max.iter=1e3, max.tol=1e-6) {
             # If reached max iterations
             if (max.iter < 1) {
                 # Print warning
