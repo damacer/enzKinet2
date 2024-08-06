@@ -17,7 +17,7 @@
 #' 
 #' @export
 
-fit_model <- function(model, data.df, start.params, fit.method = "nls", locked.params = NULL, 
+fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", locked.params = NULL, 
                       add.minor.noise = FALSE, override.data.point.check = FALSE) {
     
     # Error Handling ================
@@ -25,9 +25,9 @@ fit_model <- function(model, data.df, start.params, fit.method = "nls", locked.p
     if (!model %in% VALID_MODELS) {
         stop("Invalid model. Please choose a valid model such as 'MM'.")
     }
-    # Check if start.params is a list
-    if (!is.list(start.params)) {
-        stop("start.params must be a list.")
+    # Check if start.params is a list if fit.method is NLS
+    if (!is.list(start.params) && fit.method == "nls") {
+        stop("start.params must be a list when using nonlinear least squares.")
     }
     # Check if locked.params is a vector
     if (!is.null(locked.params) && !is.vector(locked.params)) {
@@ -93,22 +93,25 @@ fit_model <- function(model, data.df, start.params, fit.method = "nls", locked.p
     full.model.name <- PLOT_TITLES[[model]]
     model.params.string <- MODEL_PARAMETER_STRINGS[[model]]
     
-    # Check if required parameters are present
-    if (!all(param.names %in% names(start.params))) {
-        stop(paste("For the", full.model.name, "model, start.params must include", model.params.string, "."))
-    }
-    # Check if the parameters are numeric and greater than 0
-    for (param in param.names) {
-        if (!is.numeric(start.params[[param]])) {
-            stop(paste(param, "must be a numeric value."))
+    # If nonlinear least squares
+    if (fit.method == "nls") {
+        # Check if required parameters are present
+        if (!all(param.names %in% names(start.params))) {
+            stop(paste("For the", full.model.name, "model, alongwith nonlinear least squares, start.params must include", model.params.string, "."))
         }
-        if (start.params[[param]] <= 0) {
-            stop(paste(param, "must be greater than 0."))
+        # Check if the parameters are numeric and greater than 0
+        for (param in param.names) {
+            if (!is.numeric(start.params[[param]])) {
+                stop(paste(param, "must be a numeric value."))
+            }
+            if (start.params[[param]] <= 0) {
+                stop(paste(param, "must be greater than 0."))
+            }
         }
-    }
-    # Ensure all values of locked.params are in param.names
-    if (!is.null(locked.params) && !all(locked.params %in% param.names)) {
-        stop("All values of locked.params must be from:", model.params.string, ".")
+        # Ensure all values of locked.params are in param.names
+        if (!is.null(locked.params) && !all(locked.params %in% param.names)) {
+            stop("All values of locked.params must be from:", model.params.string, ".")
+        }
     }
     
     
@@ -132,7 +135,6 @@ fit_model <- function(model, data.df, start.params, fit.method = "nls", locked.p
         if (!is.null(locked.params)) {
             fit.start.params <- fit.start.params[!names(fit.start.params) %in% locked.params]
         }
-        # ===============================
         # Fit model =================
         fitted.params <- NULL
         tryCatch({
@@ -144,7 +146,6 @@ fit_model <- function(model, data.df, start.params, fit.method = "nls", locked.p
             message("Failiure to fit could be explained by noiseless data, poor starting parameters, over parametrisation , etc..")
             fitted.params <- NULL
         })
-        # ===============================
         # Return locked.params ===================
         # Add locked.params to fitted.params
         if (!is.null(fitted.params) && !is.null(locked.params)) {
@@ -156,8 +157,6 @@ fit_model <- function(model, data.df, start.params, fit.method = "nls", locked.p
     }
     # If recursive method
     if (fit.method == "recursive") {
-        # Extract only the needed starting parameters
-        fit.start.params <- as.list(start.params[param.names])
         # Get the MM function
         MM_function <- MODEL_FUNCTIONS[[model]]
         # Define function to calculate the parameters as estimate
