@@ -7,7 +7,7 @@
 fit_model(
   model,
   data.df,
-  start.params,
+  start.params = NULL,
   fit.method = "nls",
   locked.params = NULL,
   add.minor.noise = FALSE,
