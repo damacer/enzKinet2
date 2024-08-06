@@ -162,23 +162,25 @@ fit_model <- function(model, data.df, start.params, fit.method = "nls", locked.p
         MM_function <- MODEL_FUNCTIONS[[model]]
         # Define function to calculate the parameters as estimate
         calculate.params <- function (data) {
+            # Define a small epsilon value
+            eps <- 1e-10
             # Transform the vectors as needed
             v3 <- data$V^3
             v4 <- data$V^4
             a1 <- data$A^1
             a2 <- data$A^2
             # Calculate needed sums
-            sum_v4_by_a2 <- sum(v4/a2)
-            sum_v4_by_a1 <- sum(v4/a1)
+            sum_v4_by_a2 <- sum(v4/(a2+eps))
+            sum_v4_by_a1 <- sum(v4/(a1+eps))
             sum_v4 <- sum(v4)
-            sum_v3_by_a1 <- sum(v3/a1)
+            sum_v3_by_a1 <- sum(v3/(a1+eps))
             sum_v3 <- sum(v3)
             # Use this equation to calculate Km estimate
             est.Km <- (sum_v4*sum_v3_by_a1 - sum_v4_by_a1*sum_v3) / 
-                (sum_v4_by_a2*sum_v3 - sum_v4_by_a1*sum_v3_by_a1)
+                (sum_v4_by_a2*sum_v3 - sum_v4_by_a1*sum_v3_by_a1 + eps)
             # Use this equation to calculate Vmax estimate
             est.Vmax <- (sum_v4_by_a2*sum_v4 - sum_v4_by_a1^2) / 
-                (sum_v4_by_a2*sum_v3 - sum_v4_by_a1*sum_v3_by_a1)
+                (sum_v4_by_a2*sum_v3 - sum_v4_by_a1*sum_v3_by_a1 + eps)
             # Return estimates
             est.params <- list("Km" = est.Km, "Vmax" = est.Vmax)
             return (est.params)
