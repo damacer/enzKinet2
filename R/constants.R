@@ -378,7 +378,8 @@ BLOCKED_TRANSFORMATIONS <- list(
 FITTING_METHODS_OPTIONS <- c(
     "Nonlinear Least Squares" = "nls",
     "Recursive Solve" = "recursive",
-    "Sum of Squares Calculation" = "ss_calc"
+    "Sum of Squares Calculation" = "ss_calc",
+    "Nonparametric" = "nonparametric"
 )
 
 # Define dictionary for model fitting methods
@@ -386,25 +387,26 @@ FITTING_METHODS_OPTIONS <- c(
 FITTING_METHODS <- list(
     nls = c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "SBK", "CBK"),
     recursive = c("MM"),
-    ss_calc = c("MM")
+    ss_calc = c("MM"),
+    nonparametric = c("MM")
 )
 
 # Define a dictionary for the blocked fitting options for each model
 #' @export
 BLOCKED_FITTING_METHODS <- list(
     MM = c(),
-    MMSI = c("recursive", "ss_calc"),
-    OGMM = c("recursive", "ss_calc"),
-    ALTMM = c("recursive", "ss_calc"),
-    CI = c("recursive", "ss_calc"),
-    UCI = c("recursive", "ss_calc"),
-    NCI = c("recursive", "ss_calc"),
-    MI = c("recursive", "ss_calc"),
-    TC = c("recursive", "ss_calc"),
-    HILL = c("recursive", "ss_calc"),
-    PP = c("recursive", "ss_calc"),
-    SBK = c("recursive", "ss_calc"),
-    CBK = c("recursive", "ss_calc")
+    MMSI = c("recursive", "ss_calc", "nonparametric"),
+    OGMM = c("recursive", "ss_calc", "nonparametric"),
+    ALTMM = c("recursive", "ss_calc", "nonparametric"),
+    CI = c("recursive", "ss_calc", "nonparametric"),
+    UCI = c("recursive", "ss_calc", "nonparametric"),
+    NCI = c("recursive", "ss_calc", "nonparametric"),
+    MI = c("recursive", "ss_calc", "nonparametric"),
+    TC = c("recursive", "ss_calc", "nonparametric"),
+    HILL = c("recursive", "ss_calc", "nonparametric"),
+    PP = c("recursive", "ss_calc", "nonparametric"),
+    SBK = c("recursive", "ss_calc", "nonparametric"),
+    CBK = c("recursive", "ss_calc", "nonparametric")
 )
 
 # Define model functions (takes parameters and independent variables - output perfect data)

@@ -1,6 +1,6 @@
 Package: enzKinet2
 Title: Models for Enzyme Kinetic Analysis
-Version: 1.0.6.3
+Version: 1.0.6.4
 Authors@R: 
     person(given = "Daniel",
            family = "Mak",

@@ -42,7 +42,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     }
     # Check if fit.method is valid
     if (!is.null(fit.method) && !fit.method %in% names(FITTING_METHODS)) {
-        stop("Invalid fit method. Please choose a valid method such as 'nls', 'recursive' or 'ss_calc'.")
+        stop("Invalid fit method. Please choose a valid method such as 'nls', 'recursive', 'ss_calc' or 'nonparametric.")
     }
     # Check if model is valid for the fit.method
     if (!is.null(fit.method) && !model %in% FITTING_METHODS[[fit.method]]) {
@@ -111,13 +111,8 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         if (!is.null(locked.params) && !all(locked.params %in% param.names)) {
             stop("All values of locked.params must be from:", model.params.string, ".")
         }
-    }
-    # ===============================
-    
-    
-    
-    # If NLS method
-    if (fit.method == "nls") {
+        # ===============================
+        
         # Define model
         model.formula <- MODEL_FORMULAE[[model]]
         # Replace variables in model.formula with values from locked.params
@@ -248,6 +243,44 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
             (sum_v2_by_a2 * sum_v1 - sum_v2_by_a1 * sum_v1_by_a1 + eps)
         # Return estimates
         fitted.params <- list("Km" = est.Km, "Vmax" = est.Vmax)
+    }
+    # ===============================
+    
+    
+    
+    # If non-parametric method
+    if (fit.method == "nonparametric") {
+        # Define a small epsilon value
+        eps <- 1e-10
+        # Initialise empty lists
+        all.est.Vmax <- c()
+        all.est.Km <- c()
+        # Loop through every pair of observations
+        for (i in 1:nrow(data.df)) {
+            for (j in 1:nrow(data.df)) {
+                # Extract values Ai, Vi, Aj, Vj
+                Ai <- data.df$A[i]
+                Vi <- data.df$V[i]
+                Aj <- data.df$A[j]
+                Vj <- data.df$V[j]
+                # Compute Km and Vmax values for this pair of observations
+                est.Vmax <- (Ai - Aj) / ((Ai / (Vi + eps)) - (Aj / (Vj + eps) + eps))
+                est.Km <- (Vj - Vi) / ((Vi / (Ai + eps)) - (Vj / (Aj + eps) + eps))
+                # Add to the lists
+                all.est.Vmax <- c(all.est.Vmax, est.Vmax)
+                all.est.Km <- c(all.est.Km, est.Km)
+            }
+        }
+        # Find medians of both (if even number of obs, take mean of centre two)
+        median.est.Vmax <- median(all.est.Vmax)
+        median.est.Km <- median(all.est.Km)
+        # Check if either median is below 0 and return NULL if true
+        if (median.est.Vmax < 0 || median.est.Km < 0) {
+            fitted.params <- NULL
+        } else {
+            # Return estimates
+            fitted.params <- list("Km" = median.est.Km, "Vmax" = median.est.Vmax)
+        }
     }
     # ===============================
     
