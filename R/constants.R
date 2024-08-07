@@ -378,7 +378,7 @@ BLOCKED_TRANSFORMATIONS <- list(
 FITTING_METHODS_OPTIONS <- c(
     "Nonlinear Least Squares" = "nls",
     "Recursive Solve" = "recursive",
-    "Sum Oo Squares Calculation" = "ss_calc"
+    "Sum of Squares Calculation" = "ss_calc"
 )
 
 # Define dictionary for model fitting methods
