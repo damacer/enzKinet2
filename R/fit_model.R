@@ -19,7 +19,6 @@
 
 fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", locked.params = NULL, 
                       add.minor.noise = FALSE, override.data.point.check = FALSE) {
-    
     # Error Handling ================
     # Check if model is valid
     if (!model %in% VALID_MODELS) {
@@ -43,7 +42,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     }
     # Check if fit.method is valid
     if (!is.null(fit.method) && !fit.method %in% names(FITTING_METHODS)) {
-        stop("Invalid fit method. Please choose a valid method such as 'nls' or 'recursive'.")
+        stop("Invalid fit method. Please choose a valid method such as 'nls', 'recursive' or 'ss_calc'.")
     }
     # Check if model is valid for the fit.method
     if (!is.null(fit.method) && !model %in% FITTING_METHODS[[fit.method]]) {
@@ -113,6 +112,8 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
             stop("All values of locked.params must be from:", model.params.string, ".")
         }
     }
+    # ===============================
+    
     
     
     # If NLS method
@@ -153,8 +154,10 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                 fitted.params[locked.param] <- start.params[[locked.param]]
             }
         }
-        # ===============================
     }
+    # ===============================
+    
+    
     # If recursive method
     if (fit.method == "recursive") {
         # Get the MM function
@@ -218,6 +221,36 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         # Use function to estimate parameters
         fitted.params <- recursive.fit(data.df)
     }
+    # ===============================
+    
+    
+    
+    # If sum of squares calculation method
+    if (fit.method == "ss_calc") {
+        # Define a small epsilon value
+        eps <- 1e-10
+        # Transform the vectors as needed
+        v1 <- data.df$V^1
+        v2 <- data.df$V^2
+        a1 <- data.df$A^1
+        a2 <- data.df$A^2
+        # Calculate needed sums
+        sum_v2_by_a2 <- sum(v2/(a2+eps))
+        sum_v2_by_a1 <- sum(v2/(a1+eps))
+        sum_v1_by_a1 <- sum(v1/(a1+eps))
+        sum_v2 <- sum(v2)
+        sum_v1 <- sum(v1)
+        # Use this equation to calculate Km estimate
+        est.Km <- (sum_v2 * sum_v1_by_a1 - sum_v2_by_a1 * sum_v1) / 
+            (sum_v2_by_a2 * sum_v1 - sum_v2_by_a1 * sum_v1_by_a1 + eps)
+        # Use this equation to calculate Vmax estimate
+        est.Vmax <- (sum_v2_by_a2 * sum_v2 - sum_v2_by_a1^2) / 
+            (sum_v2_by_a2 * sum_v1 - sum_v2_by_a1 * sum_v1_by_a1 + eps)
+        # Return estimates
+        fitted.params <- list("Km" = est.Km, "Vmax" = est.Vmax)
+    }
+    # ===============================
+    
     
     # Return the fitted params (NULL if model could not fit)
     return(fitted.params)

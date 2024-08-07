@@ -377,32 +377,34 @@ BLOCKED_TRANSFORMATIONS <- list(
 #' @export
 FITTING_METHODS_OPTIONS <- c(
     "Nonlinear Least Squares" = "nls",
-    "Recursive Solve" = "recursive"
+    "Recursive Solve" = "recursive",
+    "Sum Oo Squares Calculation" = "ss_calc"
 )
 
 # Define dictionary for model fitting methods
 #' @export
 FITTING_METHODS <- list(
     nls = c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "SBK", "CBK"),
-    recursive = c("MM")
+    recursive = c("MM"),
+    ss_calc = c("MM")
 )
 
 # Define a dictionary for the blocked fitting options for each model
 #' @export
 BLOCKED_FITTING_METHODS <- list(
     MM = c(),
-    MMSI = c("recursive"),
-    OGMM = c("recursive"),
-    ALTMM = c("recursive"),
-    CI = c("recursive"),
-    UCI = c("recursive"),
-    NCI = c("recursive"),
-    MI = c("recursive"),
-    TC = c("recursive"),
-    HILL = c("recursive"),
-    PP = c("recursive"),
-    SBK = c("recursive"),
-    CBK = c("recursive")
+    MMSI = c("recursive", "ss_calc"),
+    OGMM = c("recursive", "ss_calc"),
+    ALTMM = c("recursive", "ss_calc"),
+    CI = c("recursive", "ss_calc"),
+    UCI = c("recursive", "ss_calc"),
+    NCI = c("recursive", "ss_calc"),
+    MI = c("recursive", "ss_calc"),
+    TC = c("recursive", "ss_calc"),
+    HILL = c("recursive", "ss_calc"),
+    PP = c("recursive", "ss_calc"),
+    SBK = c("recursive", "ss_calc"),
+    CBK = c("recursive", "ss_calc")
 )
 
 # Define model functions (takes parameters and independent variables - output perfect data)
