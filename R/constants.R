@@ -308,6 +308,10 @@ PLOT_TRANSFORMATIONS <- list(
         # Get y/x for the x-axis
         data.df[[x.name]] <- data.df[[y.name]] / data.df[[x.name]]
         return(data.df)
+    },
+    direct = function(data.df, x.name = NULL, y.name = NULL) {
+        # No transformation (transformation done elsewhere)
+        return (data.df)
     }
 )
 
@@ -319,7 +323,8 @@ PLOT_TRANSFORMATION_OPTIONS <- c(
     "Natural Log Plot (v against ln a)" = "ln",
     "Lineweaver-Burk Plot (1/v against 1/a)" = "lineweaver",
     "Hanes Plot (a/v against a)" = "hanes",
-    "Eadie-Hofstee Plot (v against v/a)" = "eadie"
+    "Eadie-Hofstee Plot (v against v/a)" = "eadie",
+    "Direct Linear Plot (Vmax against Km)" = "direct"
 )
 
 # Define a dictionary for plot titles for transformations
@@ -330,7 +335,8 @@ PLOT_TRANSFORMATION_TITLES <- c(
     ln = "Natural Log Plot",
     lineweaver = "Lineweaver-Burk Plot",
     hanes = "Hanes Plot",
-    eadie = "Eadie-Hofstee Plot"
+    eadie = "Eadie-Hofstee Plot",
+    direct = "Direct Linear Plot"
 )
 
 # Define a dictionary for x-axis titles for transformations
@@ -341,7 +347,8 @@ PLOT_TRANSFORMATION_X_AXIS_TITLES <- c(
     ln = "Natural Log of",
     lineweaver = "Reciprocal of",
     hanes = "",
-    eadie = "Y-AXIS /"
+    eadie = "Y-AXIS /",
+    direct = "Km"
 )
 
 # Define a dictionary for y-axis titles for transformations
@@ -352,25 +359,26 @@ PLOT_TRANSFORMATION_Y_AXIS_TITLES <- c(
     ln = "",
     lineweaver = "Reciprocal of",
     hanes = "X-AXIS /",
-    eadie = ""
+    eadie = "",
+    direct = "Vmax"
 )
 
 # Define a dictionary for the blocked transformations for each model
 #' @export
 BLOCKED_TRANSFORMATIONS <- list(
     MM = c(),
-    MMSI = c("lineweaver", "hanes", "eadie"),
-    OGMM = c(),
-    ALTMM = c(),
-    CI = c(),
-    UCI = c(),
-    NCI = c(),
-    MI = c(),
-    TC = c(),
-    HILL = c("lineweaver", "hanes", "eadie"),
-    PP = c(),
-    SBK = c("lineweaver", "hanes", "eadie"),
-    CBK = c("lineweaver", "hanes", "eadie")
+    MMSI = c("lineweaver", "hanes", "eadie", "direct"),
+    OGMM = c("direct"),
+    ALTMM = c("direct"),
+    CI = c("direct"),
+    UCI = c("direct"),
+    NCI = c("direct"),
+    MI = c("direct"),
+    TC = c("direct"),
+    HILL = c("lineweaver", "hanes", "eadie", "direct"),
+    PP = c("direct"),
+    SBK = c("lineweaver", "hanes", "eadie", "direct"),
+    CBK = c("lineweaver", "hanes", "eadie", "direct")
 )
 
 # Define a dictionary for options for fitting methods
