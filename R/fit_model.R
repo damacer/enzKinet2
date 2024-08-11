@@ -291,7 +291,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # ===============================
     
     # If any estimates are out of valid range
-    if (any(fitted.params < 0) || any(fitted.params > 1e19)) {
+    if (any(fitted.params <= 0) || any(fitted.params > 1e19)) {
         fitted.params <- NULL
     } 
     

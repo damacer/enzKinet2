@@ -199,7 +199,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
             }
             # Compute maximum x and y values
             max.x <- max(data.df$A)
-            max.y <- max(data.df$V) * 2
+            max.y <- max(data.df$V) * 1.5
             
             # Extend each line to max values, while keeping their slopes the same
             for (i in 1:nrow(lines.df)) {
