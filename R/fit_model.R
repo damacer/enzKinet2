@@ -258,24 +258,35 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         # Loop through every pair of observations
         for (i in 1:nrow(data.df)) {
             for (j in 1:nrow(data.df)) {
-                # Extract values Ai, Vi, Aj, Vj
-                Ai <- data.df$A[i]
-                Vi <- data.df$V[i]
-                Aj <- data.df$A[j]
-                Vj <- data.df$V[j]
-                # Compute Km and Vmax values for this pair of observations
-                est.Vmax <- (Ai - Aj) / ((Ai / (Vi + eps)) - (Aj / (Vj + eps) + eps))
-                est.Km <- (Vj - Vi) / ((Vi / (Ai + eps)) - (Vj / (Aj + eps) + eps))
-                # Add to the lists
-                all.est.Vmax <- c(all.est.Vmax, est.Vmax)
-                all.est.Km <- c(all.est.Km, est.Km)
+                # If these are nonduplicate
+                if (data.df$A[i] != data.df$A[j]) {
+                    # Extract values Ai, Vi, Aj, Vj
+                    Ai <- data.df$A[i]
+                    Vi <- data.df$V[i]
+                    Aj <- data.df$A[j]
+                    Vj <- data.df$V[j]
+                    # Compute Km and Vmax values for this pair of observations
+                    est.Vmax <- (Ai - Aj) / ((Ai / (Vi + eps)) - (Aj / (Vj + eps) + eps))
+                    est.Km <- (Vj - Vi) / ((Vi / (Ai + eps)) - (Vj / (Aj + eps) + eps))
+                    # Set any pair of estimated values in the 3rd quadrant to large positive values
+                    # (see page 431 Fundamentals of Enzyme Kinetics 4th Edition)
+                    if (est.Vmax < 0 && est.Km < 0) {
+                        # Large values won't affect median too much
+                        est.Vmax <- 1e20
+                        est.Km <- 1e20
+                    }
+                    # Add to the lists
+                    all.est.Vmax <- c(all.est.Vmax, est.Vmax)
+                    all.est.Km <- c(all.est.Km, est.Km)
+                }
             }
         }
+        
         # Find medians of both (if even number of obs, take mean of centre two)
         median.est.Vmax <- median(all.est.Vmax)
         median.est.Km <- median(all.est.Km)
-        # Check if either median is below 0 and return NULL if true
-        if (median.est.Vmax < 0 || median.est.Km < 0) {
+        # Return NULL if any estimates are out of valid range
+        if (median.est.Vmax < 0 || median.est.Km < 0 || median.est.Vmax > 1e19 || median.est.Km > 1e19) {
             fitted.params <- NULL
         } else {
             # Return estimates
