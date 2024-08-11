@@ -99,7 +99,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     
     # Adjust title according to transformation
     transformation_text <- PLOT_TRANSFORMATION_TITLES[[plot.transformation]]
-    title <- paste(default.title, transformation_text)
+    plot.title <- paste(default.title, transformation_text)
     # If direct linear plot (special case)
     if (plot.transformation == "direct") {
         x.axis <- PLOT_TRANSFORMATION_X_AXIS_TITLES[[plot.transformation]]
@@ -121,7 +121,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     plot <- ggplot2::ggplot() + 
         ggplot2::xlab(sprintf(x.axis)) +
         ggplot2::ylab(y.axis) +
-        ggplot2::ggtitle(title) +
+        ggplot2::ggtitle(plot.title) +
         ggplot2::labs(color = "Legend") +
         ggthemes::theme_few()
     
@@ -356,7 +356,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     # If an y-axis label was given
     if (!is.null(y.label)) {
         # Add the label
-        plot <- plot + ggplot2::xlab(sprintf(y.label))
+        plot <- plot + ggplot2::ylab(sprintf(y.label))
     }
     # If a title was given
     if (!is.null(title)) {
