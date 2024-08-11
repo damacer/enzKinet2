@@ -285,16 +285,15 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         # Find medians of both (if even number of obs, take mean of centre two)
         median.est.Vmax <- median(all.est.Vmax)
         median.est.Km <- median(all.est.Km)
-        # Return NULL if any estimates are out of valid range
-        if (median.est.Vmax < 0 || median.est.Km < 0 || median.est.Vmax > 1e19 || median.est.Km > 1e19) {
-            fitted.params <- NULL
-        } else {
-            # Return estimates
-            fitted.params <- list("Km" = median.est.Km, "Vmax" = median.est.Vmax)
-        }
+        # Return estimates
+        fitted.params <- list("Km" = median.est.Km, "Vmax" = median.est.Vmax)
     }
     # ===============================
     
+    # If any estimates are out of valid range
+    if (any(fitted.params < 0) || any(fitted.params > 1e19)) {
+        fitted.params <- NULL
+    } 
     
     # Return the fitted params (NULL if model could not fit)
     return(fitted.params)
