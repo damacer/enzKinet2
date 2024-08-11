@@ -180,65 +180,62 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     
     # If direct linear plot 
     if (plot.transformation == "direct") {
-        # Calculate all lines (only from y=0 to x=0, for now)
-        lines.df <- data.frame(x1 = numeric(), y1 = numeric(), x2 = numeric(), y2 = numeric())
-        # Loop through every observation (row) in data.df
-        for (i in 1:nrow(data.df)) {
-            # Calculate points for the lines
-            a <- data.df$A[i]
-            v <- data.df$V[i]
-            x1 <- -1 * a
-            y1 <- 0
-            x2 <- 0
-            y2 <- v
-            # Add the line to lines.df
-            lines.df <- rbind(lines.df, data.frame(x1 = x1, y1 = y1, x2 = x2, y2 = y2))
-            
-        }
-        # Compute maximum x and y values
-        max.x <- max(data.df$A)
-        max.y <- max(data.df$V) * 2
-        
-        # Extend each line to max values, while keeping their slopes the same
-        for (i in 1:nrow(lines.df)) {
-            # Calculate the slope of the line
-            slope <- (lines.df$y2[i] - lines.df$y1[i]) / (lines.df$x2[i] - lines.df$x1[i])
-            y_intercept <- lines.df$y1[i] - slope * lines.df$x1[i]
-            
-            # Calculate intersection with max.x
-            y_at_max_x <- slope * max.x + y_intercept
-            
-            # Calculate intersection with max.y
-            x_at_max_y <- (max.y - y_intercept) / slope
-            
-            # Determine which points to use as endpoints
-            if (0 <= x_at_max_y && x_at_max_y <= max.x) {
-                # x_at_max_y is within the bounds
-                lines.df$x2[i] <- x_at_max_y
-                lines.df$y2[i] <- max.y
-            } else {
-                # y_at_max_x is within the bounds
-                lines.df$x2[i] <- max.x
-                lines.df$y2[i] <- y_at_max_x
+        # If we have data
+        if (!is.null(data.df)) {
+            # Calculate all lines (only from y=0 to x=0, for now)
+            lines.df <- data.frame(x1 = numeric(), y1 = numeric(), x2 = numeric(), y2 = numeric())
+            # Loop through every observation (row) in data.df
+            for (i in 1:nrow(data.df)) {
+                # Calculate points for the lines
+                a <- data.df$A[i]
+                v <- data.df$V[i]
+                x1 <- -1 * a
+                y1 <- 0
+                x2 <- 0
+                y2 <- v
+                # Add the line to lines.df
+                lines.df <- rbind(lines.df, data.frame(x1 = x1, y1 = y1, x2 = x2, y2 = y2))
+                
             }
+            # Compute maximum x and y values
+            max.x <- max(data.df$A)
+            max.y <- max(data.df$V) * 2
             
+            # Extend each line to max values, while keeping their slopes the same
+            for (i in 1:nrow(lines.df)) {
+                # Calculate the slope of the line
+                slope <- (lines.df$y2[i] - lines.df$y1[i]) / (lines.df$x2[i] - lines.df$x1[i])
+                y_intercept <- lines.df$y1[i] - slope * lines.df$x1[i]
+                
+                # Calculate intersection with max.x
+                y_at_max_x <- slope * max.x + y_intercept
+                
+                # Calculate intersection with max.y
+                x_at_max_y <- (max.y - y_intercept) / slope
+                
+                # Determine which points to use as endpoints
+                if (0 <= x_at_max_y && x_at_max_y <= max.x) {
+                    # x_at_max_y is within the bounds
+                    lines.df$x2[i] <- x_at_max_y
+                    lines.df$y2[i] <- max.y
+                } else {
+                    # y_at_max_x is within the bounds
+                    lines.df$x2[i] <- max.x
+                    lines.df$y2[i] <- y_at_max_x
+                }
+            }
+            # Draw the lines
+            plot <- plot + 
+                ggplot2::geom_segment(data = lines.df, 
+                                   ggplot2::aes(x = x1, y = y1, xend = x2, yend = y2, color = colours), 
+                                   inherit.aes = FALSE)
         }
-        
-        # Draw the lines
-        plot <- plot + 
-            ggplot2::geom_segment(data = lines.df, 
-                               ggplot2::aes(x = x1, y = y1, xend = x2, yend = y2, color = colours), 
-                               inherit.aes = FALSE)
         # Draw the y-axis
         plot <- plot + 
             ggplot2::geom_vline(
                 xintercept = 0, 
                 color = "black"
             )
-        
-        
-        
-        
         
     # =================================
     } else {

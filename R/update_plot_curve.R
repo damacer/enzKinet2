@@ -50,6 +50,12 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
             stop(paste("For the", full.model.name, "model, extra.curve must contain columns (variables) named", model.vars.string, "."))
         }
     }
+    # If direct linear plot, there shouldn't be any curves
+    if (plot.transformation == "direct") {
+        if (!is.null(curve.df) || !is.null(extra.curve)) {
+            stop("For a direct linear plot, curves are not used.")
+        }
+    }
     # ===============================
     
     # Remove the current curve
