@@ -10,6 +10,7 @@ make_plot(
   curve.df = NULL,
   extra.curve = NULL,
   plot.transformation = "standard",
+  conf.int = FALSE,
   x.label = NULL,
   y.label = NULL,
   title = NULL
@@ -25,6 +26,8 @@ make_plot(
 \item{extra.curve}{An extra curve to be displayed on top of the other}
 
 \item{plot.transformation}{Transformation to give the data.}
+
+\item{conf.int}{Boolean for whether or not to plot confidence intervals.}
 
 \item{x.label}{Custom x-axis label.}
 

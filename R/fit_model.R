@@ -68,8 +68,8 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     if (!override.data.point.check) {
         if (num_data_points < 5) {
             stop("Less than 5 data points is unlikely insufficient to fit the model. Overide this by setting override.data.point.check to TRUE.")
-        } else if (num_data_points < 15) {
-            warning("Less than 15 data points may be insufficient to fit the model.")
+        } else if (num_data_points < 10) {
+            warning("Less than 10 data points may be insufficient to fit the model.")
         }
     }
     # ===============================
@@ -152,10 +152,14 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
             # Get confidence intervals 
             if (get.conf.int) {
                 confidence.intervals = nlstools::confint2(fit, level = conf.level)
-                # Unpack into fitted params
+                # Unpack into fitted params (e.g. Km.lb and Km.ub)
                 for (param in rownames(confidence.intervals)) {
-                    fitted.params[[paste0(param, ".lb")]] <- confidence.intervals[param, 1]
-                    fitted.params[[paste0(param, ".ub")]] <- confidence.intervals[param, 2]
+                    lower_bound <- confidence.intervals[param, 1]
+                    # Ensure above 0
+                    if (lower_bound <= 0) {lower_bound <- 1e-5}
+                    upper_bound <- confidence.intervals[param, 2]
+                    fitted.params[[paste0(param, ".lb")]] <- lower_bound
+                    fitted.params[[paste0(param, ".ub")]] <- upper_bound
                 }
             }
             
@@ -313,8 +317,9 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # ===============================
     
     # If any estimates are out of valid range
-    if (any(fitted.params <= 0) || any(fitted.params > 1e19)) {
+    if (!is.null(fitted.params) && (any(fitted.params <= 0) || any(fitted.params > 1e19))) {
         fitted.params <- NULL
+        message("Model fitting returned parameter values out of valid range.")
     } 
     
     # Return the fitted params (NULL if model could not fit)

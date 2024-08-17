@@ -11,7 +11,8 @@ make_curve(
   x.max,
   z.values = NULL,
   n_samples = 250,
-  space = "linear"
+  space = "linear",
+  conf.int = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ make_curve(
 \item{n_samples}{The resolution of the curve (128 is almost always enough)}
 
 \item{space}{The distribution of the space to generate data}
+
+\item{conf.int}{Boolean for whether or not to generate upper and lower bound curves.}
 }
 \value{
 curve.df

@@ -11,6 +11,7 @@
 #' @param curve.df Dense data used to draw the model curve 
 #' @param extra.curve An extra curve to be displayed on top of the other
 #' @param plot.transformation Transformation to give the data.
+#' @param conf.int Boolean for whether or not to plot confidence intervals.
 #' @param x.label Custom x-axis label.
 #' @param y.label Custom y-axis label.
 #' @param title Custom plot title.
@@ -19,7 +20,7 @@
 #' @export
 
 make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL, 
-                      plot.transformation = "standard", 
+                      plot.transformation = "standard", conf.int = FALSE,
                       x.label = NULL, y.label = NULL, title = NULL) {
     
     # Error Handling ================
@@ -87,6 +88,10 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
             warning("For a direct linear plot, curves are not used.")
         }
     }
+    # Check if confidence interval curves were provided (if used)
+    if (conf.int && !all(CONFIDENCE_INTERVAL_BOUNDING_VARIABLES[[model]] %in% colnames(curve.df))) {
+        stop("Confidence interval curves (e.g. 'V.lb', 'V.ub') not provided.")
+    }
     # ===============================
     
     
@@ -129,19 +134,35 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     dependent.var.domain <- MODEL_DEPENDENT_VAR_DOMAINS[[model]]
     # If it doesn't include infinity
     if (!Inf %in% dependent.var.domain) {
-        # Set y-axis range to it (e.g.between 0 and 1)
+        # Set y-axis range to it (e.g. between 0 and 1)
         plot <- plot + ggplot2::scale_y_continuous(limits = dependent.var.domain)
     }
     # ===============================
     
     
-    # Transform the data and/or curve ===============
+    # Transform the data and/or curves ===============
     transformation <- PLOT_TRANSFORMATIONS[[plot.transformation]]
     if (!is.null(data.df)) {
         data.df = transformation(data.df, x.name = first.independent.var, y.name = dependent.var)
     }
     if (!is.null(curve.df)) {
         curve.df = transformation(curve.df, x.name = first.independent.var, y.name = dependent.var)
+        if (conf.int) {
+            # Transform lower bound curve
+            lb.curve.df <- curve.df[, grep("\\.lb$", names(curve.df))]
+            names(lb.curve.df) <- sub("\\.lb$", "", names(lb.curve.df))
+            lb.curve.df <- transformation(lb.curve.df, x.name = first.independent.var, y.name = dependent.var)
+            names(lb.curve.df) <- paste0(names(lb.curve.df), ".lb")
+            
+            # Transform upper bound curve
+            ub.curve.df <- curve.df[, grep("\\.ub$", names(curve.df))]
+            names(ub.curve.df) <- sub("\\.ub$", "", names(ub.curve.df))
+            ub.curve.df <- transformation(ub.curve.df, x.name = first.independent.var, y.name = dependent.var)
+            names(ub.curve.df) <- paste0(names(ub.curve.df), ".ub")
+            
+            # Reintegrate transformed lower and upper bound curves into curve.df
+            curve.df <- cbind(curve.df[, !grepl("\\.lb$|\\.ub$", names(curve.df))], lb.curve.df, ub.curve.df)
+        }
     }
     if (!is.null(extra.curve)) {
         extra.curve = transformation(extra.curve, x.name = first.independent.var, y.name = dependent.var)
@@ -149,10 +170,10 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     # ===============================
     
     
-    
     # Add Extra Plot Features ===================
     # Add colour pallette
     plot <- plot + ggplot2::scale_color_brewer(palette = "Set1")
+    fill_palette <- ggplot2::scale_fill_brewer(palette = "Set1")
     
     # If this is a lineweaver-burk plot add a line at the y-axis
     if (plot.transformation == "lineweaver") {
@@ -175,8 +196,37 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     # =================================
     
     
-    
-    
+    # Confidence Intervals ============
+    if (conf.int) {
+        # If we are using 2 independent variables
+        if (!is.null(extra.independent.variable)) {
+            # Sort the dataframe by the extra independent variable
+            curve.df <- curve.df[order(curve.df[[extra.independent.variable]]), ]
+            # Split the dataframe into list of multiple df - one per value of the extra independent variable
+            curve.dfs <- split(curve.df, curve.df[[extra.independent.variable]])
+        } else {
+            # "Split" the dataframe into a list of one df - because only one set of points
+            curve.dfs <- list(curve.df)
+        }
+        # Loop through each data df
+        for (i in seq_along(curve.dfs)) {
+            # Add a confidence interval ribbon to the plot
+            plot <- plot + ggplot2::geom_ribbon(
+                data = curve.dfs[[i]], 
+                ggplot2::aes_string(
+                    x = first.independent.var, 
+                    ymin = paste0(dependent.var, ".lb"), 
+                    ymax = paste0(dependent.var, ".ub"),
+                    fill = colours
+                ), 
+                alpha=0.3, inherit.aes = FALSE,
+                show.legend = FALSE
+            ) + fill_palette
+        }
+        # Now we can for sure remove upper and lower curves to prevent issues later in the function
+        curve.df <- curve.df[, !grepl("\\.lb$|\\.ub$", names(curve.df))]
+    }
+    # =================================
     
     # If direct linear plot 
     if (plot.transformation == "direct") {
@@ -244,6 +294,8 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         if (!is.null(data.df)) {
             # If we are using 2 independent variables
             if (!is.null(extra.independent.variable)) {
+                # Sort the dataframe by the extra independent variable
+                data.df <- data.df[order(data.df[[extra.independent.variable]]), ]
                 # Split the dataframe into list of multiple df - one per value of the extra independent variable
                 data.dfs <- split(data.df, data.df[[extra.independent.variable]])
             } else {
@@ -263,6 +315,8 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         if (!is.null(curve.df)) {
             # If we are using 2 independent variables
             if (!is.null(extra.independent.variable)) {
+                # Sort the dataframe by the extra independent variable
+                curve.df <- curve.df[order(curve.df[[extra.independent.variable]]), ]
                 # Split the dataframe into list of multiple df - one per curve
                 curve.dfs <- split(curve.df, curve.df[[extra.independent.variable]])
             } else {
@@ -307,6 +361,8 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         if (!is.null(extra.curve)) {
             # If we are using 2 independent variables
             if (!is.null(extra.independent.variable)) {
+                # Sort the dataframe by the extra independent variable
+                extra.curve <- extra.curve[order(extra.curve[[extra.independent.variable]]), ]
                 # Split the dataframe into list of multiple df - one per curve
                 curve.dfs <- split(extra.curve, extra.curve[[extra.independent.variable]])
             } else {
@@ -364,7 +420,6 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         plot <- plot + ggplot2::ggtitle(sprintf(title))
     }
     # ===============================
-    
     
     return(plot)
 }

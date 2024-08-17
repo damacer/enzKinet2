@@ -9,12 +9,13 @@
 #' @param model The chosen model ("MM", "MMSI", etc.)
 #' @param extra.curve An extra curve to be displayed on top of the other
 #' @param plot.transformation Transformation to give the data.
+#' @param conf.int Boolean for whether or not to plot confidence intervals.
 #' @return Updated plot
 #' 
 #' @export
 
 update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL, 
-                              plot.transformation = "standard") {
+                              plot.transformation = "standard",  conf.int = FALSE) {
     
     # Error Handling ================
     # Check if model is valid
@@ -28,6 +29,10 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     # Check if extra.curve is a dataframe if provided
     if (!is.null(extra.curve) && !is.data.frame(extra.curve)) {
         stop("extra.curve must be a dataframe.")
+    }
+    # Check if confidence interval curves were provided (if used)
+    if (conf.int && !all(CONFIDENCE_INTERVAL_BOUNDING_VARIABLES[[model]] %in% colnames(curve.df))) {
+        stop("Confidence interval curves (e.g. 'V.lb', 'V.ub') not provided.")
     }
     # ===============================
     
@@ -66,12 +71,47 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     transformation <- PLOT_TRANSFORMATIONS[[plot.transformation]]
     if (!is.null(curve.df)) {
         curve.df = transformation(curve.df, x.name = first.independent.var, y.name = dependent.var)
+        if (conf.int) {
+            # Transform lower bound curve
+            lb.curve.df <- curve.df[, grep("\\.lb$", names(curve.df))]
+            names(lb.curve.df) <- sub("\\.lb$", "", names(lb.curve.df))
+            lb.curve.df <- transformation(lb.curve.df, x.name = first.independent.var, y.name = dependent.var)
+            names(lb.curve.df) <- paste0(names(lb.curve.df), ".lb")
+            
+            # Transform upper bound curve
+            ub.curve.df <- curve.df[, grep("\\.ub$", names(curve.df))]
+            names(ub.curve.df) <- sub("\\.ub$", "", names(ub.curve.df))
+            ub.curve.df <- transformation(ub.curve.df, x.name = first.independent.var, y.name = dependent.var)
+            names(ub.curve.df) <- paste0(names(ub.curve.df), ".ub")
+            
+            # Reintegrate transformed lower and upper bound curves into curve.df
+            curve.df <- cbind(curve.df[, !grepl("\\.lb$|\\.ub$", names(curve.df))], lb.curve.df, ub.curve.df)
+        }
     }
     if (!is.null(extra.curve)) {
         extra.curve = transformation(extra.curve, x.name = first.independent.var, y.name = dependent.var)
     }
     # ===============================
     
+    
+    
+    # Confidence Intervals ============
+    if (conf.int) {
+        # Add a grey confidence interval ribbon to the plot
+        plot <- plot + ggplot2::geom_ribbon(
+            data = curve.df, 
+            ggplot2::aes_string(
+                x = first.independent.var, 
+                ymin = paste0(dependent.var, ".lb"), 
+                ymax = paste0(dependent.var, ".ub")
+            ), 
+            fill = "grey", alpha = 0.2, inherit.aes = FALSE
+        )
+        
+        # Now we can for sure remove upper and lower curves to prevent issues later in the function
+        curve.df <- curve.df[, !grepl("\\.lb$|\\.ub$", names(curve.df))]
+    }
+    # =================================
     
     
     # If a curve(s) was given

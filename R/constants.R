@@ -417,6 +417,77 @@ BLOCKED_FITTING_METHODS <- list(
     CBK = c("recursive", "ss_calc", "nonparametric")
 )
 
+# Define a dictionary for bounding variable names
+CONFIDENCE_INTERVAL_BOUNDING_VARIABLES <- list(
+    MM = c("A.lb", "A.ub", "V.lb", "V.ub"),
+    MMSI = c("A.lb", "A.ub", "V.lb", "V.ub"),
+    OGMM = c("A.lb", "A.ub", "V.lb", "V.ub"),
+    ALTMM = c("A.lb", "A.ub", "V.lb", "V.ub"),
+    CI = c("A.lb", "A.ub", "V.lb", "V.ub", "I.lb", "I.ub"),
+    UCI = c("A.lb", "A.ub", "V.lb", "V.ub", "I.lb", "I.ub"),
+    NCI = c("A.lb", "A.ub", "V.lb", "V.ub", "I.lb", "I.ub"),
+    MI = c("A.lb", "A.ub", "V.lb", "V.ub", "I.lb", "I.ub"),
+    TC = c("A.lb", "A.ub", "V.lb", "V.ub", "B.lb", "B.ub"),
+    HILL = c("A.lb", "A.ub", "V.lb", "V.ub"),
+    PP = c("A.lb", "A.ub", "V.lb", "V.ub", "B.lb", "B.ub"),
+    SBK = c("P.lb", "P.ub", "FB.lb", "FB.ub"),
+    CBK = c("P.lb", "P.ub", "FB.lb", "FB.ub", "R.lb", "R.ub")
+)
+
+# Define a dictionary for bounding parameter names
+CONFIDENCE_INTERVAL_BOUNDING_PARAMS <- list(
+    MM = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub"),
+    MMSI = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "Ksi.lb", "Ksi.ub"),
+    OGMM = c("Km.lb", "Km.ub", "Kcat.lb", "Kcat.ub", "E0.lb", "E0.ub"),
+    ALTMM = c("KA.lb", "KA.ub", "Kcat.lb", "Kcat.ub", "E0.lb", "E0.ub"),
+    CI = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "Ki.lb", "Ki.ub"),
+    UCI = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "Ki.lb", "Ki.ub"),
+    NCI = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "Ki.lb", "Ki.ub"),
+    MI = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "Kic.lb", "Kic.ub", "Kiu.lb", "Kiu.ub"),
+    TC = c("KmA.lb", "KmA.ub", "Vmax.lb", "Vmax.ub", "KmB.lb", "KmB.ub", "Ksat.lb", "Ksat.ub"),
+    HILL = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "Hill.lb", "Hill.ub"),
+    PP = c("KmA.lb", "KmA.ub", "Vmax.lb", "Vmax.ub", "KmB.lb", "KmB.ub"),
+    SBK = c("KD.lb", "KD.ub"),
+    CBK = c("KD.lb", "KD.ub")
+)
+
+# Define a dictionary for which bound of each parameter gives the lower bound for the function
+LOWER_BOUND_PARAMS <- list(
+    Km = "Km.ub", 
+    KmA = "KmA.ub",
+    KmB = "KmB.ub",
+    Ksi = "Ksi.lb",
+    Ki = "Ki.lb",
+    Kic = "Kic.lb",
+    Kiu = "Kiu.lb",
+    Ksat = "Ksat.ub",
+    Vmax = "Vmax.lb",
+    Hill = c("Hill.lb", "Hill.ub"),
+    KD = "KD.ub",
+    Kcat = "Kcat.lb",
+    E0 = "E0.lb",
+    KA = "KA.lb"
+)
+
+
+# Define a dictionary for which bound of each parameter gives the upper bound for the function
+UPPER_BOUND_PARAMS <- list(
+    Km = "Km.lb", 
+    KmA = "KmA.lb",
+    KmB = "KmB.lb",
+    Ksi = "Ksi.ub",
+    Ki = "Ki.ub",
+    Kic = "Kic.ub",
+    Kiu = "Kiu.ub",
+    Ksat = "Ksat.lb",
+    Vmax = "Vmax.ub",
+    Hill = c("Hill.lb", "Hill.ub"),
+    KD = "KD.lb",
+    Kcat = "Kcat.ub",
+    E0 = "E0.ub",
+    KA = "KA.ub"
+)
+
 # Define model functions (takes parameters and independent variables - output perfect data)
 MODEL_FUNCTIONS <- list(
     MM = function(params, A.range, z.range) {

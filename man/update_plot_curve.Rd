@@ -9,7 +9,8 @@ update_plot_curve(
   plot,
   curve.df = NULL,
   extra.curve = NULL,
-  plot.transformation = "standard"
+  plot.transformation = "standard",
+  conf.int = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ update_plot_curve(
 \item{extra.curve}{An extra curve to be displayed on top of the other}
 
 \item{plot.transformation}{Transformation to give the data.}
+
+\item{conf.int}{Boolean for whether or not to plot confidence intervals.}
 }
 \value{
 Updated plot
