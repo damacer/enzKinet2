@@ -23,5 +23,7 @@ RoxygenNote: 7.3.2
 Imports:
     ggplot2,
     ggthemes,
-    pracma
+    pracma,
+    modelr,
+    broom
 Config/testthat/edition: 3

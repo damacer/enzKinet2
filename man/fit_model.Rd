@@ -13,7 +13,8 @@ fit_model(
   add.minor.noise = FALSE,
   override.data.point.check = FALSE,
   get.conf.int = FALSE,
-  conf.level = 0.95
+  conf.level = 0.95,
+  get.stats = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ fit_model(
 \item{get.conf.int}{Boolean to get extra parameter values for upper and lower bounds.}
 
 \item{conf.level}{Float for confidence level of confidence interval.}
+
+\item{get.stats}{Boolean to get statistics of fit}
 }
 \value{
 fitted.params

@@ -15,13 +15,14 @@
 #' @param override.data.point.check Boolean to override num data points checks.
 #' @param get.conf.int Boolean to get extra parameter values for upper and lower bounds.
 #' @param conf.level Float for confidence level of confidence interval.
+#' @param get.stats Boolean to get statistics of fit
 #' @return fitted.params
 #' 
 #' @export
 
 fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", locked.params = NULL, 
                       add.minor.noise = FALSE, override.data.point.check = FALSE,
-                      get.conf.int = FALSE, conf.level = 0.95) {
+                      get.conf.int = FALSE, conf.level = 0.95, get.stats = FALSE) {
     # Error Handling ================
     # Check if model is valid
     if (!model %in% VALID_MODELS) {
@@ -58,6 +59,10 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # Check if using confidence intervals without "nls"
     if (fit.method != "nls" && get.conf.int) {
         stop("Confidence intervals can only be derived with the 'nls' fit method.")
+    }
+    # Check if getting stats without "nls"
+    if (fit.method != "nls" && get.stats) {
+        stop("Statistics can only be derived with the 'nls' fit method.")
     }
     # Check if using confidence level is okay
     if (get.conf.int && !(is.numeric(conf.level) && conf.level > 0 && conf.level < 1)) {
@@ -102,6 +107,8 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     param.names <- MODEL_PARAMETERS[[model]]
     full.model.name <- PLOT_TITLES[[model]]
     model.params.string <- MODEL_PARAMETER_STRINGS[[model]]
+    # Initialise empty statistics
+    statistics <- NULL
     
     # If nonlinear least squares
     if (fit.method == "nls") {
@@ -161,6 +168,31 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                     fitted.params[[paste0(param, ".lb")]] <- lower_bound
                     fitted.params[[paste0(param, ".ub")]] <- upper_bound
                 }
+            }
+            if (get.stats) {
+                # Extract the standard errors for each parameter
+                standard.errors <- unname(summary(fit)$coefficients[, 2])
+                # Extract the parameter names
+                parameter.names <- rownames(summary(fit)$coefficients)
+                # Initialize an empty list for the statistics
+                statistics <- list()
+                # Add the standard errors to the statistics list with ".se" extension
+                for (i in seq_along(parameter.names)) {
+                    statistics[[paste0(parameter.names[i], ".se")]] <- standard.errors[i]
+                }
+                # Calculate additional statistics
+                R2 <- modelr::rsquare(fit, data.df)
+                RMSE <- modelr::rmse(fit, data.df)
+                MAE <- modelr::mae(fit, data.df)
+                glance <- broom::glance(fit)
+                # Add these statistics to the list
+                statistics$R2 <- R2
+                statistics$RMSE <- RMSE
+                statistics$MAE <- MAE
+                statistics$AIC <- glance$AIC
+                statistics$BIC <- glance$BIC
+                statistics$logLik <- glance$logLik
+                print(statistics)
             }
             
         }, error = function(e) {
@@ -322,6 +354,11 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         message("Model fitting returned parameter values out of valid range.")
     } 
     
-    # Return the fitted params (NULL if model could not fit)
-    return(fitted.params)
+    if (!get.stats) {
+        # Return the fitted params (NULL if model could not fit)
+        return(fitted.params)
+    } else {
+        # Also return stats
+        return(list(fitted.params, statistics))
+    }
 }
