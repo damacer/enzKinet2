@@ -11,7 +11,9 @@ fit_model(
   fit.method = "nls",
   locked.params = NULL,
   add.minor.noise = FALSE,
-  override.data.point.check = FALSE
+  override.data.point.check = FALSE,
+  get.conf.int = FALSE,
+  conf.level = 0.95
 )
 }
 \arguments{
@@ -28,6 +30,10 @@ fit_model(
 \item{add.minor.noise}{Boolean to add a tiny amount of noise to the data before fitting.}
 
 \item{override.data.point.check}{Boolean to override num data points checks.}
+
+\item{get.conf.int}{Boolean to get extra parameter values for upper and lower bounds.}
+
+\item{conf.level}{Float for confidence level of confidence interval.}
 }
 \value{
 fitted.params

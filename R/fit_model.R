@@ -13,12 +13,15 @@
 #' @param locked.params A vector of parameter names to lock (e.g., c("Km"))
 #' @param add.minor.noise Boolean to add a tiny amount of noise to the data before fitting.
 #' @param override.data.point.check Boolean to override num data points checks.
+#' @param get.conf.int Boolean to get extra parameter values for upper and lower bounds.
+#' @param conf.level Float for confidence level of confidence interval.
 #' @return fitted.params
 #' 
 #' @export
 
 fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", locked.params = NULL, 
-                      add.minor.noise = FALSE, override.data.point.check = FALSE) {
+                      add.minor.noise = FALSE, override.data.point.check = FALSE,
+                      get.conf.int = FALSE, conf.level = 0.95) {
     # Error Handling ================
     # Check if model is valid
     if (!model %in% VALID_MODELS) {
@@ -51,6 +54,14 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # Check if fit.method is not "nls" and locked.params is TRUE
     if (fit.method != "nls" && !is.null(locked.params)) {
         stop("Locked parameters can only be used with the 'nls' fit method.")
+    }
+    # Check if using confidence intervals without "nls"
+    if (fit.method != "nls" && get.conf.int) {
+        stop("Confidence intervals can only be derived with the 'nls' fit method.")
+    }
+    # Check if using confidence level is okay
+    if (get.conf.int && !(is.numeric(conf.level) && conf.level > 0 && conf.level < 1)) {
+        stop("Confidence level must be greater than 0 and less than 1.")
     }
     # Check number of data points
     num_data_points <- nrow(data.df)
@@ -134,9 +145,20 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         # Fit model =================
         fitted.params <- NULL
         tryCatch({
+            # Fit with NLS
             fit <- nls(model.formula, data = data.df, start = fit.start.params, control = ctrl)
             fitted.params <- as.list(coef(fit))
             names(fitted.params) <- names(coef(fit))
+            # Get confidence intervals 
+            if (get.conf.int) {
+                confidence.intervals = nlstools::confint2(fit, level = conf.level)
+                # Unpack into fitted params
+                for (param in rownames(confidence.intervals)) {
+                    fitted.params[[paste0(param, ".lb")]] <- confidence.intervals[param, 1]
+                    fitted.params[[paste0(param, ".ub")]] <- confidence.intervals[param, 2]
+                }
+            }
+            
         }, error = function(e) {
             message("Model fitting failed: ", e$message)
             message("Failiure to fit could be explained by noiseless data, poor starting parameters, over parametrisation , etc..")
