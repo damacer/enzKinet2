@@ -1,6 +1,6 @@
 Package: enzKinet2
 Title: Models for Enzyme Kinetic Analysis
-Version: 1.0.7.1
+Version: 1.0.8
 Authors@R: 
     person(given = "Daniel",
            family = "Mak",
@@ -25,5 +25,6 @@ Imports:
     ggthemes,
     pracma,
     modelr,
-    broom
+    broom,
+    nlstools
 Config/testthat/edition: 3
