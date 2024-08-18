@@ -192,7 +192,6 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                 statistics$AIC <- glance$AIC
                 statistics$BIC <- glance$BIC
                 statistics$logLik <- glance$logLik
-                print(statistics)
             }
             
         }, error = function(e) {
@@ -359,6 +358,6 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         return(fitted.params)
     } else {
         # Also return stats
-        return(list(fitted.params, statistics))
+        return(list(fitted_params = fitted.params, statistics = statistics))
     }
 }
