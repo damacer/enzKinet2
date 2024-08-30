@@ -141,7 +141,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
             }
         }
         # Define some NLS control parameters
-        ctrl <- nls.control(maxiter = 1e5, tol = 1e-5)
+        ctrl <- nls.control(maxiter = 1e4, tol = 1e-5)
         # Extract only the needed starting parameters
         fit.start.params <- as.list(start.params[param.names])
         if (!is.null(locked.params)) {
