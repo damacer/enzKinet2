@@ -312,11 +312,6 @@ PLOT_TRANSFORMATIONS <- list(
         data.df[[x.name]] <- log10(data.df[[x.name]])
         return (data.df)
     },
-    ln = function(data.df, x.name = "A", y.name = "V") {
-        # Natural log transform the x-axis
-        data.df[[x.name]] <- log(data.df[[x.name]])
-        return(data.df)
-    },
     lineweaver = function(data.df, x.name = "A", y.name = "V") {
         # Get reciprocal of the x-axis
         data.df[[x.name]] <- 1 / data.df[[x.name]]
@@ -345,7 +340,6 @@ PLOT_TRANSFORMATIONS <- list(
 PLOT_TRANSFORMATION_OPTIONS <- c(
     "Standard Plot (v against a)" = "standard",
     "Log 10 Plot (v against log10 a)" = "log10",
-    "Natural Log Plot (v against ln a)" = "ln",
     "Lineweaver-Burk Plot (1/v against 1/a)" = "lineweaver",
     "Hanes Plot (a/v against a)" = "hanes",
     "Eadie-Hofstee Plot (v against v/a)" = "eadie",
@@ -357,7 +351,6 @@ PLOT_TRANSFORMATION_OPTIONS <- c(
 PLOT_TRANSFORMATION_TITLES <- c(
     standard = "",
     log10 = "Log 10 Plot",
-    ln = "Natural Log Plot",
     lineweaver = "Lineweaver-Burk Plot",
     hanes = "Hanes Plot",
     eadie = "Eadie-Hofstee Plot",
@@ -369,7 +362,6 @@ PLOT_TRANSFORMATION_TITLES <- c(
 PLOT_TRANSFORMATION_X_AXIS_TITLES <- c(
     standard = "",
     log10 = "Log 10 of",
-    ln = "Natural Log of",
     lineweaver = "Reciprocal of",
     hanes = "",
     eadie = "Y-AXIS /",
@@ -381,7 +373,6 @@ PLOT_TRANSFORMATION_X_AXIS_TITLES <- c(
 PLOT_TRANSFORMATION_Y_AXIS_TITLES <- c(
     standard = "",
     log10 = "",
-    ln = "",
     lineweaver = "Reciprocal of",
     hanes = "X-AXIS /",
     eadie = "",
