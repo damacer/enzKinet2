@@ -13,7 +13,8 @@ make_residual_plot(
   y.label = NULL,
   title = NULL,
   zero.line = TRUE,
-  palette = "Set1"
+  palette = "Set1",
+  hide_legend = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ make_residual_plot(
 \item{zero.line}{If TRUE, draws a dotted line at y=0.}
 
 \item{palette}{Custom plot colour palette.}
+
+\item{hide_legend}{Boolean to hide the plot legend.}
 }
 \value{
 plot

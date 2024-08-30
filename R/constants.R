@@ -131,10 +131,12 @@ PLOT_TITLES <- list(
 #' @export
 AXIS_TITLES <- list(
     V = "Velocity V",
-    A = "Substrate Concentration [A]",
+    A = "Substrate A Concentration [A]",
+    B = "Substrate B\nConcentration [B]",
+    I = "Inhibitor\nConcentration [I]",
     FB = "Fraction Bound FB",
     P = "Concentration of Binding Partner in Excess [P]",
-    R = "Concentration of Trace Limiting Partner [R]"
+    R = "Concentration of Trace\nLimiting Partner [R]"
 )
 
 # Define a dictionary for model parameter strings

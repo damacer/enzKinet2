@@ -15,13 +15,14 @@
 #' @param title Custom plot title.
 #' @param zero.line If TRUE, draws a dotted line at y=0.
 #' @param palette Custom plot colour palette.
+#' @param hide_legend Boolean to hide the plot legend.
 #' @return plot
 #' 
 #' @export
 
 make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL, 
                                y.label = NULL, title = NULL, zero.line = TRUE, 
-                               palette = "Set1") {
+                               palette = "Set1", hide_legend = FALSE) {
     
     # Error Handling ================
     # Check if model is valid
@@ -190,6 +191,10 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     if (!is.null(title)) {
         # Add the title
         plot <- plot + ggplot2::ggtitle(sprintf(title))
+    }
+    # Logic for hide_legend parameter
+    if (hide_legend) {
+        plot <- plot + ggplot2::theme(legend.position = "none")
     }
     # ===============================
     

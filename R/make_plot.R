@@ -16,13 +16,15 @@
 #' @param y.label Custom y-axis label.
 #' @param title Custom plot title.
 #' @param palette Custom plot colour palette.
+#' @param hide_legend Boolean to hide the plot legend.
 #' @return plot
 #' 
 #' @export
 
 make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL, 
                       plot.transformation = "standard", conf.int = FALSE,
-                      x.label = NULL, y.label = NULL, title = NULL, palette = "Set1") {
+                      x.label = NULL, y.label = NULL, title = NULL, 
+                      palette = "Set1", hide_legend = FALSE) {
     
     # Error Handling ================
     # Check if model is valid
@@ -425,6 +427,10 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     if (!is.null(title)) {
         # Add the title
         plot <- plot + ggplot2::ggtitle(sprintf(title))
+    }
+    # Logic for hide_legend parameter
+    if (hide_legend) {
+        plot <- plot + ggplot2::theme(legend.position = "none")
     }
     # ===============================
     

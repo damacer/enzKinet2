@@ -14,7 +14,8 @@ make_plot(
   x.label = NULL,
   y.label = NULL,
   title = NULL,
-  palette = "Set1"
+  palette = "Set1",
+  hide_legend = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ make_plot(
 \item{title}{Custom plot title.}
 
 \item{palette}{Custom plot colour palette.}
+
+\item{hide_legend}{Boolean to hide the plot legend.}
 }
 \value{
 plot
