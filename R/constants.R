@@ -86,6 +86,29 @@ MODEL_OPTIONS <- c(
     "Complex Binding Kinetics" = "CBK"
 )
 
+# Define a dictionary for model options in groups
+#' @export
+MODEL_OPTIONS_GROUPED <- list(
+    "Michaelis-Menten Models" = list(
+        "Michaelis-Menten" = "MM",
+        "Michaelis-Menten with Substrate Inhibition" = "MMSI",
+        "Original Michaelis-Menten" = "OGMM",
+        "Alternative Michaelis-Menten" = "ALTMM",
+        "Hill" = "HILL"),
+    "Inhibition Models" = list(
+        "Competitive Inhibition" = "CI",
+        "Uncompetitive Inhibition" = "UCI",
+        "Non-competitive Inhibition" = "NCI",
+        "Mixed Inhibition" = "MI"),
+    "Multi-Substrate Models" = list(
+        "Ternary Complex" = "TC",
+        "Ping-Pong" = "PP"),
+    "Binding Models" = list(
+        "Simple Binding Kinetics" = "SBK",
+        "Complex Binding Kinetics" = "CBK"
+    )
+)
+
 # Define a dictionary for plot titles
 #' @export
 PLOT_TITLES <- list(
