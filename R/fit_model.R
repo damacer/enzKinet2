@@ -71,10 +71,8 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # Check number of data points
     num_data_points <- nrow(data.df)
     if (!override.data.point.check) {
-        if (num_data_points < 5) {
-            stop("Less than 5 data points is unlikely insufficient to fit the model. Overide this by setting override.data.point.check to TRUE.")
-        } else if (num_data_points < 10) {
-            warning("Less than 10 data points may be insufficient to fit the model.")
+        if (num_data_points < 3) {
+            stop("Less than 3 data points is unlikely insufficient to fit the model. Overide this by setting override.data.point.check to TRUE.")
         }
     }
     # ===============================
