@@ -511,6 +511,14 @@ UPPER_BOUND_PARAMS <- list(
     KA = "KA.ub"
 )
 
+# Define a list of plot colour palettes
+#' @export
+PLOT_COLOUR_PALETTES <- c("Set1", "Set2", "Set3", "Accent", "Dark2", 
+                           "Pastel2", "Pastel1", "Blues", "Greys", "Oranges", 
+                           "Purples", "Greens", "Reds", "OrRd", "PuBu", "BuPu", 
+                           "YlOrBr", "RdPu", "GnBu", "YlOrRd", "PuRd", 
+                           "RdYlGn", "RdGy", "RdBu")
+
 # Define model functions (takes parameters and independent variables - output perfect data)
 MODEL_FUNCTIONS <- list(
     MM = function(params, A.range, z.range) {

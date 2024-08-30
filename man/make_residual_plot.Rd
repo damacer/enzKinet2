@@ -12,7 +12,8 @@ make_residual_plot(
   x.label = NULL,
   y.label = NULL,
   title = NULL,
-  zero.line = TRUE
+  zero.line = TRUE,
+  palette = "Set1"
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ make_residual_plot(
 \item{title}{Custom plot title.}
 
 \item{zero.line}{If TRUE, draws a dotted line at y=0.}
+
+\item{palette}{Custom plot colour palette.}
 }
 \value{
 plot

@@ -15,13 +15,14 @@
 #' @param x.label Custom x-axis label.
 #' @param y.label Custom y-axis label.
 #' @param title Custom plot title.
+#' @param palette Custom plot colour palette.
 #' @return plot
 #' 
 #' @export
 
 make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL, 
                       plot.transformation = "standard", conf.int = FALSE,
-                      x.label = NULL, y.label = NULL, title = NULL) {
+                      x.label = NULL, y.label = NULL, title = NULL, palette = "Set1") {
     
     # Error Handling ================
     # Check if model is valid
@@ -53,6 +54,10 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     # Check is plot.transformation is valid
     if (!(plot.transformation %in% names(PLOT_TRANSFORMATIONS))) {
         stop("plot.transformation is invalid.")
+    }
+    # Ensure palette is valid
+    if (!palette %in% PLOT_COLOUR_PALETTES) {
+        stop(paste("Invalid colour palette. Please choose a valid model from:", PLOT_COLOUR_PALETTES))
     }
     # ===============================
     
@@ -172,8 +177,8 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     
     # Add Extra Plot Features ===================
     # Add colour pallette
-    plot <- plot + ggplot2::scale_color_brewer(palette = "Set1")
-    fill_palette <- ggplot2::scale_fill_brewer(palette = "Set1")
+    plot <- plot + ggplot2::scale_color_brewer(palette = palette)
+    fill_palette <- ggplot2::scale_fill_brewer(palette = palette)
     
     # If this is a lineweaver-burk plot add a line at the y-axis
     if (plot.transformation == "lineweaver") {

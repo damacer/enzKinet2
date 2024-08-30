@@ -14,11 +14,14 @@
 #' @param y.label Custom y-axis label.
 #' @param title Custom plot title.
 #' @param zero.line If TRUE, draws a dotted line at y=0.
+#' @param palette Custom plot colour palette.
 #' @return plot
 #' 
 #' @export
 
-make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL, y.label = NULL, title = NULL, zero.line = TRUE) {
+make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL, 
+                               y.label = NULL, title = NULL, zero.line = TRUE, 
+                               palette = "Set1") {
     
     # Error Handling ================
     # Check if model is valid
@@ -130,7 +133,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL, y.
         ggplot2::ggtitle(default.title) +
         ggplot2::labs(color = "Legend") +
         ggthemes::theme_few() + 
-        ggplot2::scale_color_brewer(palette = "Set1") +
+        ggplot2::scale_color_brewer(palette = palette) +
         ggplot2::geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
         ggplot2::ylim(y.limits) +
         ggplot2::xlim(0, max(x.max, x.max.data))

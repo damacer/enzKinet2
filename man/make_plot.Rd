@@ -13,7 +13,8 @@ make_plot(
   conf.int = FALSE,
   x.label = NULL,
   y.label = NULL,
-  title = NULL
+  title = NULL,
+  palette = "Set1"
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ make_plot(
 \item{y.label}{Custom y-axis label.}
 
 \item{title}{Custom plot title.}
+
+\item{palette}{Custom plot colour palette.}
 }
 \value{
 plot
