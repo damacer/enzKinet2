@@ -127,11 +127,13 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     default.y.axis <- paste("Residual", AXIS_TITLES[[dependent.var]])
     
     # Make default plot
+    extra.independent.var <- if (length(model.vars) > 2) model.vars[3] else "Legend"
+    legend_name <- AXIS_TITLES[[extra.independent.var]]
     plot <- ggplot2::ggplot() + 
         ggplot2::xlab(sprintf(default.x.axis)) +
         ggplot2::ylab(default.y.axis) +
         ggplot2::ggtitle(default.title) +
-        ggplot2::labs(color = "Legend") +
+        ggplot2::labs(color = legend_name) +
         ggthemes::theme_few() + 
         ggplot2::scale_color_brewer(palette = palette) +
         ggplot2::geom_hline(yintercept = 0, linetype = "dotted", color = "black") +

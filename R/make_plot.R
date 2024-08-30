@@ -128,11 +128,13 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     }
     
     # Make default plot
+    extra.independent.var <- if (length(model.vars) > 2) model.vars[3] else "Legend"
+    legend_name <- AXIS_TITLES[[extra.independent.var]]
     plot <- ggplot2::ggplot() + 
         ggplot2::xlab(sprintf(x.axis)) +
         ggplot2::ylab(y.axis) +
         ggplot2::ggtitle(plot.title) +
-        ggplot2::labs(color = "Legend") +
+        ggplot2::labs(color = legend_name) +
         ggthemes::theme_few()
     
     # Get the valid domain of the dependent variable
