@@ -99,18 +99,27 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
         # No values of z
         z.values <- NULL
     }
-    # Get n_samples
-    n_samples <- length(unique(data.df[[first.independent.var]]))
-    # How many z_values?
-    num_z_values <- ifelse(is.null(z.values), 1, length(z.values))
-    # Calculate n_replicates by division
-    n_replicates <- nrow(data.df) / n_samples / num_z_values
-    # Get the max and min of the x-axis
-    x.min.data <- min(data.df[[first.independent.var]])
-    x.max.data <- max(data.df[[first.independent.var]])
-    # Make use of simulate_data to generate the data perfectly according to the model with 0 noise
-    perfect.data.df <- simulate_data(model, params, x.min.data, x.max.data, z.values = z.values, 
-                              noise_level = 0, n_samples = n_samples, n_replicates = n_replicates)
+    
+    # Make copy of data
+    perfect.data.df <- data.df
+    # Get formula 
+    model.formula <- MODEL_FORMULAE[[model]]
+    # Make a function to compute perfect data
+    calculate_dependent_var <- function(row, formula, params, independent.var, extra.var = NULL) {
+        env <- list2env(params)
+        env[[independent.var]] <- row[[independent.var]]
+        if (!is.null(extra.var)) {
+            env[[extra.var]] <- row[[extra.var]]
+        }
+        return(eval(formula[[3]], envir = env))
+    }
+    # Repopulate the dependent.var column using params, first.independent.var, and (if applicable) extra.independent.variable
+    perfect.data.df[[dependent.var]] <- apply(perfect.data.df, 1, calculate_dependent_var, 
+                                              formula = model.formula, 
+                                              params = params, 
+                                              independent.var = first.independent.var, 
+                                              extra.var = extra.independent.variable)
+    
     # Calculate residuals
     residuals.df <- data.df
     residuals.df[[dependent.var]] <- data.df[[dependent.var]] - perfect.data.df[[dependent.var]]
@@ -128,6 +137,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     default.y.axis <- paste("Residual", AXIS_TITLES[[dependent.var]])
     
     # Make default plot
+    x.max.data <- max(data.df[[first.independent.var]])
     extra.independent.var <- if (length(model.vars) > 2) model.vars[3] else "Legend"
     legend_name <- AXIS_TITLES[[extra.independent.var]]
     plot <- ggplot2::ggplot() + 
@@ -158,6 +168,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
         # Turn off the legend
         plot <- plot + ggplot2::guides(color = "none")
     }
+    
     
     # If we are using 2 independent variables
     if (!is.null(extra.independent.variable)) {

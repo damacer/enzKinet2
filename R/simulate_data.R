@@ -17,6 +17,7 @@
 #' @param noise_type The kind of noise ("absolute" or "relative")
 #' @param space The distribution of the space to generate data
 #' @param dilution_factor Dilution factor if space == "dilution_series"
+#' @param x.range If space is 'custom' this is the x values.
 #' @return synthetic.data
 #' 
 #' @export
@@ -24,7 +25,7 @@
 simulate_data <- function(model, params, x.min, x.max, z.values = NULL, 
                           n_samples = 24, n_replicates = 1, 
                           noise_level = 0.05, noise_type = "relative", 
-                          space = "linear", dilution_factor = NULL) {
+                          space = "linear", dilution_factor = NULL, x.range = NULL) {
     
     # Error Handling ================
     # Check if model is valid
@@ -128,6 +129,14 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL,
                 # Past minimum
                 break
             }
+        }
+    } else if (space == "custom"){
+        # Just ensure x.range is valid
+        if (is.null(x.range) || !is.numeric(x.range) || length(x.range) < 2) {
+            stop("For custom space, x.range must be a numeric vector with at least two values.")
+        }
+        if (any(x.range < x.min) || any(x.range > x.max)) {
+            stop("All values in x.range must be within the bounds of x.min and x.max.")
         }
     } else {
         stop("Invalid space.")

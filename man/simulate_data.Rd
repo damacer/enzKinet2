@@ -15,7 +15,8 @@ simulate_data(
   noise_level = 0.05,
   noise_type = "relative",
   space = "linear",
-  dilution_factor = NULL
+  dilution_factor = NULL,
+  x.range = NULL
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ simulate_data(
 \item{space}{The distribution of the space to generate data}
 
 \item{dilution_factor}{Dilution factor if space == "dilution_series"}
+
+\item{x.range}{If space is 'custom' this is the x values.}
 }
 \value{
 synthetic.data
