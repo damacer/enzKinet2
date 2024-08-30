@@ -16,6 +16,7 @@
 #' @param noise_level The level of noise (equal to or greater than 0)
 #' @param noise_type The kind of noise ("absolute" or "relative")
 #' @param space The distribution of the space to generate data
+#' @param dilution_factor Dilution factor if space == "dilution_series"
 #' @return synthetic.data
 #' 
 #' @export
@@ -23,7 +24,7 @@
 simulate_data <- function(model, params, x.min, x.max, z.values = NULL, 
                           n_samples = 24, n_replicates = 1, 
                           noise_level = 0.05, noise_type = "relative", 
-                          space = "linear") {
+                          space = "linear", dilution_factor = NULL) {
     
     # Error Handling ================
     # Check if model is valid
@@ -111,6 +112,25 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL,
         #exp_seq <- (exp_seq - 1) * -1
         # Normalize the sequence to the desired range
         x.range <- exp_seq * (x.max - x.min) + x.min
+    } else if (space == "dilution_series"){
+        # Ensure we have a valid dilution factor
+        if (is.null(dilution_factor) || !is.numeric(dilution_factor) || dilution_factor <= 1) {
+            stop("A valid dilution_factor greater than 1 must be provided for dilution_series.")
+        }
+        # Generate x values using dilution factor
+        x.range <- numeric(0)
+        for (i in 1:n_samples) {
+            value <- x.max / (dilution_factor ** (i - 1))
+            # If not past minimum
+            if (value >= x.min) {
+                x.range <- c(x.range, value)
+            } else {
+                # Past minimum
+                break
+            }
+        }
+    } else {
+        stop("Invalid space.")
     }
     
     # Get the model function

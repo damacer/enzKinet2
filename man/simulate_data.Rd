@@ -14,7 +14,8 @@ simulate_data(
   n_replicates = 1,
   noise_level = 0.05,
   noise_type = "relative",
-  space = "linear"
+  space = "linear",
+  dilution_factor = NULL
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ simulate_data(
 \item{noise_type}{The kind of noise ("absolute" or "relative")}
 
 \item{space}{The distribution of the space to generate data}
+
+\item{dilution_factor}{Dilution factor if space == "dilution_series"}
 }
 \value{
 synthetic.data
