@@ -18,6 +18,7 @@
 #' @param space The distribution of the space to generate data
 #' @param dilution_factor Dilution factor if space == "dilution_series"
 #' @param x.range If space is 'custom' this is the x values.
+#' @param distribution The distribution to use for noise generation ("norm", "truncated_norm")
 #' @return synthetic.data
 #' 
 #' @export
@@ -25,7 +26,8 @@
 simulate_data <- function(model, params, x.min, x.max, z.values = NULL, 
                           n_samples = 24, n_replicates = 1, 
                           noise_level = 0.05, noise_type = "relative", 
-                          space = "linear", dilution_factor = NULL, x.range = NULL) {
+                          space = "linear", dilution_factor = NULL, x.range = NULL,
+                          distribution = "norm") {
     
     # Error Handling ================
     # Check if model is valid
@@ -60,6 +62,11 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL,
     if (!noise_type %in% c("absolute", "relative")) {
         stop("noise_type must be either 'absolute' or 'relative'.")
     }
+    # Check if distribution is valid
+    if (!distribution %in% c("norm", "truncated_norm")) {
+        stop("Invalid distribution. Please choose 'norm' or 'truncated_norm'.")
+    }
+  
     # ===============================
     
     
@@ -158,30 +165,40 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL,
     if (noise_level > 0) {
         # Make a noisy normal distribution for each observation
         num_observations <- nrow(synthetic.data)
-        noise <- rnorm(num_observations, mean = 0, sd = noise_level)
-        
-        # If noise_type is relative
-        if (noise_type == "relative") {
-            # Scale by the data
-            noise <- synthetic.data[[dependent.var]] * noise
-        }
-        
-        # Add noise to data
-        synthetic.data[[dependent.var]] <- synthetic.data[[dependent.var]] + noise
         
         # Get the valid domain of the dependent variable
-        dependent.var.domain <- MODEL_DEPENDENT_VAR_DOMAINS[[model]]
-        minimum = dependent.var.domain[1]
-        maximum = dependent.var.domain[2]
+        minimum <- MODEL_DEPENDENT_VAR_DOMAINS[[model]][1]
+        maximum <- MODEL_DEPENDENT_VAR_DOMAINS[[model]][2]
+        
+        # Define SD depending on type of noise
+        if (noise_type == "relative") {
+            # Standard deviations are proportional to the data
+            sds <- abs(synthetic.data[[dependent.var]]) * noise_level
+        } else {
+            # Standard deviations are always the same (constant)
+            sds <- rep(noise_level, num_observations)
+        }
+        
+        # Define the means based on data
+        means <- synthetic.data[[dependent.var]]
+        
+        # Generate noise based on the chosen distribution
+        if (distribution == "norm") {
+            noisey_data <- rnorm(num_observations, mean = means, sd = sds)
+        } else if (distribution == "truncated_norm") {
+            noisey_data <- truncnorm::rtruncnorm(num_observations, a = minimum, b = maximum, mean = means, sd = sds)
+        }
+        
         # Ensure the data is within the range
-        original_data <- synthetic.data[[dependent.var]]
-        clipped_data <- pmin(synthetic.data[[dependent.var]], maximum)
-        synthetic.data[[dependent.var]] <- pmax(clipped_data, minimum)
+        clipped_noisey_data <- pmax(pmin(noisey_data, maximum), minimum)
         
         # Warn user if any data was clipped
-        if (any(synthetic.data[[dependent.var]] != original_data)) {
-            warning("Some data values were clipped to fit within the range [", minimum, ", ", maximum, "].")
+        if (any(noisey_data != clipped_noisey_data)) {
+            warning("Data values clipped to domain [", minimum, ", ", maximum, "]. Consider using truncated normal distribution.")
         }
+        
+        # Replace the original data with the noisy data
+        synthetic.data[[dependent.var]] <- clipped_noisey_data
     }
     # ===============================
     

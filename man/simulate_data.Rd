@@ -16,7 +16,8 @@ simulate_data(
   noise_type = "relative",
   space = "linear",
   dilution_factor = NULL,
-  x.range = NULL
+  x.range = NULL,
+  distribution = "norm"
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ simulate_data(
 \item{dilution_factor}{Dilution factor if space == "dilution_series"}
 
 \item{x.range}{If space is 'custom' this is the x values.}
+
+\item{distribution}{The distribution to use for noise generation ("norm", "truncated_norm")}
 }
 \value{
 synthetic.data
