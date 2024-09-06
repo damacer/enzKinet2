@@ -189,7 +189,8 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                 statistics$MAE <- MAE
                 statistics$AIC <- glance$AIC
                 statistics$BIC <- glance$BIC
-                statistics$logLik <- glance$logLik
+                statistics$Log.likelihood <- glance$logLik
+                statistics$Confidence.level = conf.level
             }
             
         }, error = function(e) {
