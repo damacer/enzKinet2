@@ -3,19 +3,19 @@
 #' Fit Model
 #'
 #' @author Haig Bishop
-#' 28/06/2024
+#' 07/09/2024
 #'
-#' Fits the model to the data. Returns the fitted.params (NULL if could not fit)
-#' @param model The chosen model ("MM", "MMSI", etc.)
-#' @param data.df The data to fit the model to
-#' @param start.params The unfitted parameters for the model (e.g. Km, Vmax)
-#' @param fit.method The algorithm or calculation used to fit the model.
-#' @param locked.params A vector of parameter names to lock (e.g., c("Km"))
-#' @param add.minor.noise Boolean to add a tiny amount of noise to the data before fitting.
-#' @param override.data.point.check Boolean to override num data points checks.
-#' @param get.conf.int Boolean to get extra parameter values for upper and lower bounds.
-#' @param conf.level Float for confidence level of confidence interval.
-#' @param get.stats Boolean to get statistics of fit
+#' Fits a model to the given data. Returns fitted.params (NULL if could not fit).
+#' @param model The model to fit the data ("MM", "CI", etc.)
+#' @param data.df The data to fit the model to.
+#' @param start.params The starting parameter values for the model (e.g. Km, Vmax).
+#' @param fit.method The algorithm or calculation used to fit the model ("recursive", "ss.calc", and "nonparametric").
+#' @param locked.params A vector of parameter names to lock while fitting.
+#' @param add.minor.noise Add a negligible amount of noise to the data before fitting.
+#' @param override.data.point.check Override low number of data points error/warnings.
+#' @param get.conf.int Get extra parameter values for upper and lower bounds.
+#' @param conf.level Confidence level value of confidence interval.
+#' @param get.stats Get statistics of the fit (returned alongside fitted.params).
 #' @return fitted.params
 #' 
 #' @export
@@ -46,7 +46,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     }
     # Check if fit.method is valid
     if (!is.null(fit.method) && !fit.method %in% names(FITTING_METHODS)) {
-        stop("Invalid fit method. Please choose a valid method such as 'nls', 'recursive', 'ss_calc' or 'nonparametric.")
+        stop("Invalid fit method. Please choose a valid method such as 'nls', 'recursive', 'ss.calc' or 'nonparametric.")
     }
     # Check if model is valid for the fit.method
     if (!is.null(fit.method) && !model %in% FITTING_METHODS[[fit.method]]) {
@@ -54,7 +54,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     }
     # Check if fit.method is not "nls" and locked.params is TRUE
     if (fit.method != "nls" && !is.null(locked.params)) {
-        stop("Locked parameters can only be used with the 'nls' fit method.")
+        stop("Locked parameters are only supported for the 'nls' fit method.")
     }
     # Check if using confidence intervals without "nls"
     if (fit.method != "nls" && get.conf.int) {
@@ -64,15 +64,15 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     if (fit.method != "nls" && get.stats) {
         stop("Statistics can only be derived with the 'nls' fit method.")
     }
-    # Check if using confidence level is okay
+    # Check if using confidence level is valid
     if (get.conf.int && !(is.numeric(conf.level) && conf.level > 0 && conf.level < 1)) {
-        stop("Confidence level must be greater than 0 and less than 1.")
+        stop("Confidence level must be a numeric value between 0 and 1 (exclusive).")
     }
     # Check number of data points
     num_data_points <- nrow(data.df)
     if (!override.data.point.check) {
         if (num_data_points < 3) {
-            stop("Less than 3 data points is unlikely insufficient to fit the model. Overide this by setting override.data.point.check to TRUE.")
+            stop("Less than 3 data points is unlikely insufficient to fit the model. Override this by setting override.data.point.check to TRUE.")
         }
     }
     # ===============================
@@ -107,9 +107,13 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     model.params.string <- MODEL_PARAMETER_STRINGS[[model]]
     # Initialise empty statistics
     statistics <- NULL
+    # ===============================
     
-    # If nonlinear least squares
+    
+    # If nonlinear least squares ================
     if (fit.method == "nls") {
+        
+        # NLS specific error handling ======
         # Check if required parameters are present
         if (!all(param.names %in% names(start.params))) {
             stop(paste("For the", full.model.name, "model, alongwith nonlinear least squares, start.params must include", model.params.string, "."))
@@ -195,7 +199,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
             
         }, error = function(e) {
             message("Model fitting failed: ", e$message)
-            message("Failiure to fit could be explained by noiseless data, poor starting parameters, over parametrisation , etc..")
+            message("Failure to fit could be explained by noiseless data, poor starting parameters, over-parametrisation , etc..")
             fitted.params <- NULL
         })
         # Return locked.params ===================
@@ -209,7 +213,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # ===============================
     
     
-    # If recursive method
+    # If recursive method ================
     if (fit.method == "recursive") {
         # Get the MM function
         MM_function <- MODEL_FUNCTIONS[[model]]
@@ -275,9 +279,8 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # ===============================
     
     
-    
-    # If sum of squares calculation method
-    if (fit.method == "ss_calc") {
+    # If sum of squares calculation method =========
+    if (fit.method == "ss.calc") {
         # Define a small epsilon value
         eps <- 1e-10
         # Transform the vectors as needed
@@ -303,8 +306,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # ===============================
     
     
-    
-    # If non-parametric method
+    # If non-parametric method ===========
     if (fit.method == "nonparametric") {
         # Define a small epsilon value
         eps <- 1e-10
@@ -337,7 +339,6 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                 }
             }
         }
-        
         # Find medians of both (if even number of obs, take mean of centre two)
         median.est.Vmax <- median(all.est.Vmax)
         median.est.Km <- median(all.est.Km)
@@ -346,12 +347,14 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     }
     # ===============================
     
+    
     # If any estimates are out of valid range
     if (!is.null(fitted.params) && (any(fitted.params <= 0) || any(fitted.params > 1e19))) {
         fitted.params <- NULL
         message("Model fitting returned parameter values out of valid range.")
     } 
     
+    # Return ===============
     if (!get.stats) {
         # Return the fitted params (NULL if model could not fit)
         return(fitted.params)

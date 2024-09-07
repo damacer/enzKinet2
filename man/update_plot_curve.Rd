@@ -34,7 +34,7 @@ Update Plot Curve
 }
 \author{
 Haig Bishop
-08/07/2024
+07/09/2024
 
 Updates (replaces) the curve in an existing enzyme kinetics plot.
 }

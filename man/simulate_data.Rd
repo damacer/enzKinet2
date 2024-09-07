@@ -10,42 +10,42 @@ simulate_data(
   x.min,
   x.max,
   z.values = NULL,
-  n_samples = 24,
-  n_replicates = 1,
-  noise_level = 0.05,
-  noise_type = "relative",
+  n.samples = 24,
+  n.replicates = 1,
+  noise.level = 0.05,
+  noise.type = "relative",
   space = "linear",
-  dilution_factor = NULL,
+  dilution.factor = NULL,
   x.range = NULL,
   distribution = "norm"
 )
 }
 \arguments{
-\item{model}{The chosen model ("MM", "MMSI", etc.)}
+\item{model}{The model to generate the data from ("MM", "CI", etc.)}
 
-\item{params}{The parameters for the model (Including Km, Vmax, Ksi, etc.)}
+\item{params}{The parameter values for the model (e.g. Km, Vmax, Ksi).}
 
-\item{x.min}{Defines the range of x values to cover.}
+\item{x.min}{The minimum x value to cover.}
 
-\item{x.max}{Defines the range of x values to cover.}
+\item{x.max}{The maximum x value to cover.}
 
-\item{z.values}{Defines the z values to cover (NULL if not used)}
+\item{z.values}{The z values to cover (discrete).}
 
-\item{n_samples}{The number of data points generated.}
+\item{n.samples}{The number of data points to generate (unique x values).}
 
-\item{n_replicates}{The number of replicate data points generated.}
+\item{n.replicates}{The number of replicates of data points generated.}
 
-\item{noise_level}{The level of noise (equal to or greater than 0)}
+\item{noise.level}{The level of noise (non-zero number).}
 
-\item{noise_type}{The kind of noise ("absolute" or "relative")}
+\item{noise.type}{The kind of noise ("absolute" or "relative").}
 
-\item{space}{The distribution of the space to generate data}
+\item{space}{The distribution of the space to generate data.}
 
-\item{dilution_factor}{Dilution factor if space == "dilution_series"}
+\item{dilution.factor}{Dilution factor if space == "dilution.series".}
 
-\item{x.range}{If space is 'custom' this is the x values.}
+\item{x.range}{If space is 'custom' these are the x values.}
 
-\item{distribution}{The distribution to use for noise generation ("norm", "truncated_norm")}
+\item{distribution}{The distribution to use for noise generation ("norm" or "truncated.norm").}
 }
 \value{
 synthetic.data
@@ -55,7 +55,7 @@ Simulate Data
 }
 \author{
 Haig Bishop
-28/06/2024
+07/09/2024
 
-Generates synthetic data for an enzyme kinetics model.
+Generates synthetic data for a model.
 }

@@ -14,22 +14,23 @@ make_plot(
   x.label = NULL,
   y.label = NULL,
   title = NULL,
+  legend.label = NULL,
   palette = "Set1",
-  hide_legend = FALSE
+  hide.legend = FALSE
 )
 }
 \arguments{
-\item{model}{The chosen model ("MM", "MMSI", etc.)}
+\item{model}{The model we are plotting ("MM", "CI", etc.).}
 
-\item{data.df}{Data plotted as dots}
+\item{data.df}{Data to be plotted as dots.}
 
-\item{curve.df}{Dense data used to draw the model curve}
+\item{curve.df}{Curve to be plotted as line.}
 
-\item{extra.curve}{An extra curve to be displayed on top of the other}
+\item{extra.curve}{An extra curve to be plotted on top of the other (black).}
 
-\item{plot.transformation}{Transformation to give the data.}
+\item{plot.transformation}{Transformation to apply to data before plotting (e.g., "standard", "lineweaver", "direct").}
 
-\item{conf.int}{Boolean for whether or not to plot confidence intervals.}
+\item{conf.int}{Whether or not to plot confidence intervals.}
 
 \item{x.label}{Custom x-axis label.}
 
@@ -37,19 +38,21 @@ make_plot(
 
 \item{title}{Custom plot title.}
 
-\item{palette}{Custom plot colour palette.}
+\item{legend.label}{Custom legend label.}
 
-\item{hide_legend}{Boolean to hide the plot legend.}
+\item{palette}{Custom plot colour palette (e.g., "Set1", "Set2", etc.).}
+
+\item{hide.legend}{Boolean to hide the plot legend.}
 }
 \value{
-plot
+A ggplot object representing the enzyme kinetics plot.
 }
 \description{
 Make Plot
 }
 \author{
 Haig Bishop
-28/06/2024
+07/09/2024
 
 Generates a plot for an enzyme kinetics model.
 }

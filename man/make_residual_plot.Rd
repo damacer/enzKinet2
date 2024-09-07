@@ -13,18 +13,19 @@ make_residual_plot(
   y.label = NULL,
   title = NULL,
   zero.line = TRUE,
+  legend.label = NULL,
   palette = "Set1",
-  hide_legend = FALSE
+  hide.legend = FALSE
 )
 }
 \arguments{
-\item{model}{The chosen model ("MM", "MMSI", etc.)}
+\item{model}{The model we are plotting ("MM", "CI", etc.).}
 
-\item{params}{The parameters for the model (Including Km, Vmax, Ksi, etc.)}
+\item{params}{The parameter values for the model (e.g. Km, Vmax, Ksi).}
 
-\item{data.df}{The data which might fit the curve}
+\item{data.df}{The data to calculate residuals from.}
 
-\item{x.max}{Defines the maximum of x value.}
+\item{x.max}{Defines the maximum x value to plot to.}
 
 \item{x.label}{Custom x-axis label.}
 
@@ -32,11 +33,13 @@ make_residual_plot(
 
 \item{title}{Custom plot title.}
 
-\item{zero.line}{If TRUE, draws a dotted line at y=0.}
+\item{zero.line}{If TRUE (default), draws a dotted line at y=0.}
+
+\item{legend.label}{Custom legend label.}
 
 \item{palette}{Custom plot colour palette.}
 
-\item{hide_legend}{Boolean to hide the plot legend.}
+\item{hide.legend}{Boolean to hide the plot legend.}
 }
 \value{
 plot
@@ -46,7 +49,7 @@ Make a Residual Plot
 }
 \author{
 Haig Bishop
-28/07/2024
+07/09/2024
 
 Generates a residual plot for an enzyme kinetics model given parameters and data.
 }

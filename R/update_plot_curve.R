@@ -1,7 +1,7 @@
 #' Update Plot Curve
 #'
 #' @author Haig Bishop
-#' 08/07/2024
+#' 07/09/2024
 #'
 #' Updates (replaces) the curve in an existing enzyme kinetics plot.
 #' @param plot The existing plot to be updated
@@ -31,8 +31,17 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
         stop("extra.curve must be a dataframe.")
     }
     # Check if confidence interval curves were provided (if used)
+    if (conf.int && is.null(curve.df)) {
+        stop("Confidence intervals requested, but curve.df is missing.")
+    }
+    # Check if confidence interval curves were provided (if used)
     if (conf.int && !all(CONFIDENCE_INTERVAL_BOUNDING_VARIABLES[[model]] %in% colnames(curve.df))) {
         stop("Confidence interval curves (e.g. 'V.lb', 'V.ub') not provided.")
+    }
+    if (plot.transformation == "direct") {
+        if (!is.null(curve.df) || !is.null(extra.curve)) {
+            stop("Curves are not used in direct linear plot transformations. Please remove curve.df and extra.curve.")
+        }
     }
     # ===============================
     

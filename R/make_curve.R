@@ -3,38 +3,40 @@
 #' Make Curve
 #'
 #' @author Haig Bishop
-#' 28/06/2024
+#' 07/09/2024
 #'
-#' Generates a "curve" for an enzyme kinetics model. The "curve" is just a dense
-#' dataframe for the model.
-#' @param model The chosen model ("MM", "MMSI", etc.)
-#' @param params The parameters for the model (Including Km, Vmax, Ksi, etc.)
-#' @param x.min Defines the range of x values to cover.
-#' @param x.max Defines the range of x values to cover.
-#' @param z.values Defines the z values to cover (NULL if not used)
-#' @param n_samples The resolution of the curve (128 is almost always enough)
-#' @param space The distribution of the space to generate data
-#' @param conf.int Boolean for whether or not to generate upper and lower bound curves.
+#' Generates a curve for a model. The "curve" is equivalent to dense noiseless data.
+#' @param model The model to generate the curve from ("MM", "CI", etc.)
+#' @param params The parameter values for the model (e.g. Km, Vmax, Ksi)
+#' @param x.min The minimum x value to cover.
+#' @param x.max The maximum x value to cover.
+#' @param z.values The z values to cover (discrete).
+#' @param n.samples The resolution of the curve (~150 is usually enough).
+#' @param space The distribution of the space to generate data.
+#' @param conf.int Whether or not to generate upper and lower bound curves.
 #' @return curve.df
 #' 
 #' @export
 
 make_curve <- function(model, params, x.min, x.max, z.values = NULL, 
-                       n_samples = 250, space = "linear", conf.int = FALSE) {
+                       n.samples = 250, space = "linear", conf.int = FALSE) {
     
-    # Make use of simulate_data to generate data with 0 noise
+    
+    # Generate noiseless data
     curve.df <- simulate_data(model, params, x.min, x.max, z.values = z.values, 
-                              noise_level = 0, n_samples = n_samples, space = space)
+                              noise_level = 0, n.samples = n.samples, space = space)
     
-    # If making confidence interval curves as well
+    
+    # If confidence intervals are requested, generate lower and upper bound curves ====
     if (conf.int) {
         # Check params has all necessary lower and upper bounds
         needed.bounding.params <- CONFIDENCE_INTERVAL_BOUNDING_PARAMS[[model]]
-        if (!all(needed.bounding.params %in% names(params))) {
-            stop("Confidence interval values (e.g. 'Km.lb', 'Km.ub') not provided.")
+        missing_bounds <- needed.bounding.params[!needed.bounding.params %in% names(params)]
+        if (length(missing_bounds) > 0) {
+            stop(paste("Missing confidence interval values for:", paste(missing_bounds, collapse = ", ")))
         }
         
-        # Split params into lower and upper
+        # Initialize lists to store lower and upper bound parameters
         lb.params <- list()
         ub.params <- list()
         # Iterate over each parameter in the LOWER_BOUND_PARAMS dictionary
@@ -76,7 +78,7 @@ make_curve <- function(model, params, x.min, x.max, z.values = NULL,
             lb.params <- lapply(lb.params, function(x) unclass(x))
             # Generate lower bound curve
             current.lb.curve.df <- simulate_data(model, lb.params, x.min, x.max, z.values = z.values, 
-                                                 noise_level = 0, n_samples = n_samples, space = space)
+                                                 noise_level = 0, n.samples = n.samples, space = space)
             # If this is the first iteration, initialize lb.curve.df with the current current.lb.curve.df
             if (is.null(lb.curve.df)) {
                 lb.curve.df <- current.lb.curve.df
@@ -100,7 +102,7 @@ make_curve <- function(model, params, x.min, x.max, z.values = NULL,
             
             # Generate upper bound curve
             current.ub.curve.df <- simulate_data(model, ub.params, x.min, x.max, z.values = z.values, 
-                                                 noise_level = 0, n_samples = n_samples, space = space)
+                                                 noise_level = 0, n.samples = n.samples, space = space)
             # If this is the first iteration, initialize ub.curve.df with the current current.ub.curve.df
             if (is.null(ub.curve.df)) {
                 ub.curve.df <- current.ub.curve.df
@@ -116,6 +118,8 @@ make_curve <- function(model, params, x.min, x.max, z.values = NULL,
         # Combine original curve with lower and upper bound curves
         curve.df <- cbind(curve.df, lb.curve.df, ub.curve.df)
     }
+    # ===================================================================
+    
     
     return(curve.df)
 }

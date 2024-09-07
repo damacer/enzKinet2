@@ -3,47 +3,46 @@
 #' Make Plot
 #'
 #' @author Haig Bishop
-#' 28/06/2024
+#' 07/09/2024
 #'
 #' Generates a plot for an enzyme kinetics model.
-#' @param model The chosen model ("MM", "MMSI", etc.)
-#' @param data.df Data plotted as dots
-#' @param curve.df Dense data used to draw the model curve 
-#' @param extra.curve An extra curve to be displayed on top of the other
-#' @param plot.transformation Transformation to give the data.
-#' @param conf.int Boolean for whether or not to plot confidence intervals.
+#' @param model The model we are plotting ("MM", "CI", etc.).
+#' @param data.df Data to be plotted as dots.
+#' @param curve.df Curve to be plotted as line.
+#' @param extra.curve An extra curve to be plotted on top of the other (black).
+#' @param plot.transformation Transformation to apply to data before plotting (e.g., "standard", "lineweaver", "direct").
+#' @param conf.int Whether or not to plot confidence intervals.
 #' @param x.label Custom x-axis label.
 #' @param y.label Custom y-axis label.
 #' @param title Custom plot title.
-#' @param palette Custom plot colour palette.
-#' @param hide_legend Boolean to hide the plot legend.
-#' @return plot
+#' @param legend.label Custom legend label.
+#' @param palette Custom plot colour palette (e.g., "Set1", "Set2", etc.).
+#' @param hide.legend Boolean to hide the plot legend.
+#' @return A ggplot object representing the enzyme kinetics plot.
 #' 
 #' @export
 
 make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL, 
                       plot.transformation = "standard", conf.int = FALSE,
                       x.label = NULL, y.label = NULL, title = NULL, 
-                      palette = "Set1", hide_legend = FALSE) {
+                      legend.label = NULL, palette = "Set1", hide.legend = FALSE) {
     
     # Error Handling ================
     # Check if model is valid
     if (!model %in% VALID_MODELS) {
         stop("Invalid model. Please choose a valid model such as 'MM' or 'MMSI'.")
     }
-    # Check if x.label, y.label, and title are characters if provided
-    if (!is.null(x.label) && !is.character(x.label)) {
-        stop("x.label must be a character string.")
-    }
-    if (!is.null(y.label) && !is.character(y.label)) {
-        stop("y.label must be a character string.")
-    }
-    if (!is.null(title) && !is.character(title)) {
-        stop("title must be a character string.")
-    }
     # Check if data.df is a dataframe if provided
     if (!is.null(data.df) && !is.data.frame(data.df)) {
         stop("data.df must be a dataframe.")
+    }
+    # Ensure data.df is not an empty dataframe (if provided)
+    if (!is.null(data.df) && nrow(data.df) == 0) {
+        stop("data.df must contain at least one row of data.")
+    }
+    # Ensure curve.df is not an empty dataframe (if provided)
+    if (!is.null(curve.df) && nrow(curve.df) == 0) {
+        stop("curve.df must contain at least one row of data.")
     }
     # Check if curve.df is a dataframe if provided
     if (!is.null(curve.df) && !is.data.frame(curve.df)) {
@@ -53,13 +52,30 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     if (!is.null(extra.curve) && !is.data.frame(extra.curve)) {
         stop("extra.curve must be a dataframe.")
     }
-    # Check is plot.transformation is valid
+    # Check if plot.transformation is valid
     if (!(plot.transformation %in% names(PLOT_TRANSFORMATIONS))) {
         stop("plot.transformation is invalid.")
     }
     # Ensure palette is valid
     if (!palette %in% PLOT_COLOUR_PALETTES) {
-        stop(paste("Invalid colour palette. Please choose a valid model from:", PLOT_COLOUR_PALETTES))
+        stop(paste("Invalid colour palette. Please choose a valid palette from:", PLOT_COLOUR_PALETTES))
+    }
+    # Ensure data is provided if it is a direct linear plot
+    if (plot.transformation == "direct" && is.null(data.df)) {
+        stop("For a direct linear plot, data.df must be provided.")
+    }
+    # Check if x.label, y.label, title and legend.label are characters if provided
+    if (!is.null(x.label) && !is.character(x.label)) {
+        stop("x.label must be a character string.")
+    }
+    if (!is.null(y.label) && !is.character(y.label)) {
+        stop("y.label must be a character string.")
+    }
+    if (!is.null(title) && !is.character(title)) {
+        stop("title must be a character string.")
+    }
+    if (!is.null(legend.label) && !is.character(legend.label)) {
+        stop("legend.label must be a character string.")
     }
     # ===============================
     
@@ -93,9 +109,14 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     if (plot.transformation == "direct") {
         if (!is.null(curve.df) || !is.null(extra.curve)) {
             warning("For a direct linear plot, curves are not used.")
+            curve.df <- NULL
+            extra.curve <- NULL
         }
     }
     # Check if confidence interval curves were provided (if used)
+    if (conf.int && is.null(curve.df)) {
+        stop("Confidence intervals requested, but curve.df is missing.")
+    }
     if (conf.int && !all(CONFIDENCE_INTERVAL_BOUNDING_VARIABLES[[model]] %in% colnames(curve.df))) {
         stop("Confidence interval curves (e.g. 'V.lb', 'V.ub') not provided.")
     }
@@ -103,12 +124,10 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     
     
     # Initialise Default Plot ===================
-    
-    # Grab the default title from dictionary
+    # Retrieve the default plot title and axis labels based on the model
     default.title <- PLOT_TITLES[[model]]
     default.x.axis <- AXIS_TITLES[[first.independent.var]]
     default.y.axis <- AXIS_TITLES[[dependent.var]]
-    
     # Adjust title according to transformation
     transformation_text <- PLOT_TRANSFORMATION_TITLES[[plot.transformation]]
     plot.title <- paste(default.title, transformation_text)
@@ -130,11 +149,11 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     }
     
     # Make default plot
-    extra.independent.var <- if (length(model.vars) > 2) model.vars[3] else "Legend"
-    legend_name <- AXIS_TITLES[[extra.independent.var]]
+    extra.independent.var <- if (length(model.vars) > 2) model.vars[3] else NULL
+    legend_name <- if (!is.null(legend.label)) legend.label else if (!is.null(extra.independent.var)) AXIS_TITLES[[extra.independent.var]] else "Legend"
     plot <- ggplot2::ggplot() + 
         ggplot2::xlab(sprintf(x.axis)) +
-        ggplot2::ylab(y.axis) +
+        ggplot2::ylab(sprintf(y.axis)) +
         ggplot2::ggtitle(plot.title) +
         ggplot2::labs(color = legend_name) +
         ggthemes::theme_few()
@@ -180,7 +199,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     
     
     # Add Extra Plot Features ===================
-    # Add colour pallette
+    # Add colour palette
     plot <- plot + ggplot2::scale_color_brewer(palette = palette)
     fill_palette <- ggplot2::scale_fill_brewer(palette = palette)
     
@@ -258,7 +277,8 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
             }
             # Compute maximum x and y values
             max.x <- max(data.df$A)
-            max.y <- max(data.df$V) * 1.5
+            y_multiplier <- 1.5     # Expand y-axis range by arbitrary amount
+            max.y <- max(data.df$V) * y_multiplier  
             
             # Extend each line to max values, while keeping their slopes the same
             for (i in 1:nrow(lines.df)) {
@@ -428,8 +448,8 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         # Add the title
         plot <- plot + ggplot2::ggtitle(sprintf(title))
     }
-    # Logic for hide_legend parameter
-    if (hide_legend) {
+    # Logic for hide.legend parameter
+    if (hide.legend) {
         plot <- plot + ggplot2::theme(legend.position = "none")
     }
     # ===============================

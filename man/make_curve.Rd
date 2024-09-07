@@ -10,27 +10,27 @@ make_curve(
   x.min,
   x.max,
   z.values = NULL,
-  n_samples = 250,
+  n.samples = 250,
   space = "linear",
   conf.int = FALSE
 )
 }
 \arguments{
-\item{model}{The chosen model ("MM", "MMSI", etc.)}
+\item{model}{The model to generate the curve from ("MM", "CI", etc.)}
 
-\item{params}{The parameters for the model (Including Km, Vmax, Ksi, etc.)}
+\item{params}{The parameter values for the model (e.g. Km, Vmax, Ksi)}
 
-\item{x.min}{Defines the range of x values to cover.}
+\item{x.min}{The minimum x value to cover.}
 
-\item{x.max}{Defines the range of x values to cover.}
+\item{x.max}{The maximum x value to cover.}
 
-\item{z.values}{Defines the z values to cover (NULL if not used)}
+\item{z.values}{The z values to cover (discrete).}
 
-\item{n_samples}{The resolution of the curve (128 is almost always enough)}
+\item{n.samples}{The resolution of the curve (~150 is usually enough).}
 
-\item{space}{The distribution of the space to generate data}
+\item{space}{The distribution of the space to generate data.}
 
-\item{conf.int}{Boolean for whether or not to generate upper and lower bound curves.}
+\item{conf.int}{Whether or not to generate upper and lower bound curves.}
 }
 \value{
 curve.df
@@ -40,8 +40,7 @@ Make Curve
 }
 \author{
 Haig Bishop
-28/06/2024
+07/09/2024
 
-Generates a "curve" for an enzyme kinetics model. The "curve" is just a dense
-dataframe for the model.
+Generates a curve for a model. The "curve" is equivalent to dense noiseless data.
 }

@@ -3,26 +3,27 @@
 #' Make a Residual Plot
 #'
 #' @author Haig Bishop
-#' 28/07/2024
+#' 07/09/2024
 #'
 #' Generates a residual plot for an enzyme kinetics model given parameters and data.
-#' @param model The chosen model ("MM", "MMSI", etc.)
-#' @param params The parameters for the model (Including Km, Vmax, Ksi, etc.)
-#' @param data.df The data which might fit the curve
-#' @param x.max Defines the maximum of x value.
+#' @param model The model we are plotting ("MM", "CI", etc.).
+#' @param params The parameter values for the model (e.g. Km, Vmax, Ksi).
+#' @param data.df The data to calculate residuals from.
+#' @param x.max Defines the maximum x value to plot to.
 #' @param x.label Custom x-axis label.
 #' @param y.label Custom y-axis label.
 #' @param title Custom plot title.
-#' @param zero.line If TRUE, draws a dotted line at y=0.
+#' @param legend.label Custom legend label.
+#' @param zero.line If TRUE (default), draws a dotted line at y=0.
 #' @param palette Custom plot colour palette.
-#' @param hide_legend Boolean to hide the plot legend.
+#' @param hide.legend Boolean to hide the plot legend.
 #' @return plot
 #' 
 #' @export
 
 make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL, 
                                y.label = NULL, title = NULL, zero.line = TRUE, 
-                               palette = "Set1", hide_legend = FALSE) {
+                               legend.label = NULL, palette = "Set1", hide.legend = FALSE) {
     
     # Error Handling ================
     # Check if model is valid
@@ -33,19 +34,27 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     if (!is.list(params)) {
         stop("params must be a list.")
     }
+    # Check if params is not empty
+    if (length(params) == 0) {
+        stop("params list cannot be empty.")
+    }
     # Check if data.df is a dataframe
     if (!is.data.frame(data.df)) {
         stop("data.df must be a dataframe.")
+    }
+    # Ensure data.df is not an empty dataframe (if provided)
+    if (!is.null(data.df) && nrow(data.df) == 0) {
+        stop("data.df must contain at least one row of data.")
     }
     # Check if x.max is numeric
     if (!is.numeric(x.max)) {
         stop("x.max must be a numeric value.")
     }
     # Check if x.max is positive
-    if (x.max < 0) {
+    if (x.max <= 0) {
         stop("x.max must be a positive value.")
     }
-    # Check if x.label, y.label, and title are characters if provided
+    # Check if x.label, y.label, title and legend.label are characters if provided
     if (!is.null(x.label) && !is.character(x.label)) {
         stop("x.label must be a character string.")
     }
@@ -54,6 +63,9 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     }
     if (!is.null(title) && !is.character(title)) {
         stop("title must be a character string.")
+    }
+    if (!is.null(legend.label) && !is.character(legend.label)) {
+        stop("legend.label must be a character string.")
     }
     # ===============================
     
@@ -66,6 +78,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     first.independent.var <- model.vars[1]
     full.model.name <- PLOT_TITLES[[model]]
     model.vars.string <- MODEL_VARIABLE_STRINGS[[model]]
+    model.params.string <- MODEL_PARAMETER_STRINGS[[model]]
     # Check if data.df has the necessary columns (variables)
     if (!all(model.vars %in% colnames(data.df))) {
         stop(paste("For the", full.model.name, "model, data.df must contain columns (variables) named", model.vars.string, "."))
@@ -86,6 +99,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     }
     # ===============================
     
+    
     # Calculate Residuals ================
     # If using an extra independent variable
     if (length(model.vars) > 2) {
@@ -100,8 +114,6 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
         z.values <- NULL
     }
     
-    # Make copy of data
-    perfect.data.df <- data.df
     # Get formula 
     model.formula <- MODEL_FORMULAE[[model]]
     # Make a function to compute perfect data
@@ -113,13 +125,14 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
         }
         return(eval(formula[[3]], envir = env))
     }
+    # Make copy of data
+    perfect.data.df <- data.df
     # Repopulate the dependent.var column using params, first.independent.var, and (if applicable) extra.independent.variable
     perfect.data.df[[dependent.var]] <- apply(perfect.data.df, 1, calculate_dependent_var, 
                                               formula = model.formula, 
                                               params = params, 
                                               independent.var = first.independent.var, 
                                               extra.var = extra.independent.variable)
-    
     # Calculate residuals
     residuals.df <- data.df
     residuals.df[[dependent.var]] <- data.df[[dependent.var]] - perfect.data.df[[dependent.var]]
@@ -138,11 +151,11 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     
     # Make default plot
     x.max.data <- max(data.df[[first.independent.var]])
-    extra.independent.var <- if (length(model.vars) > 2) model.vars[3] else "Legend"
-    legend_name <- AXIS_TITLES[[extra.independent.var]]
+    extra.independent.var <- if (length(model.vars) > 2) model.vars[3] else NULL
+    legend_name <- if (!is.null(legend.label)) legend.label else if (!is.null(extra.independent.var)) AXIS_TITLES[[extra.independent.var]] else "Legend"
     plot <- ggplot2::ggplot() + 
         ggplot2::xlab(sprintf(default.x.axis)) +
-        ggplot2::ylab(default.y.axis) +
+        ggplot2::ylab(sprintf(default.y.axis)) +
         ggplot2::ggtitle(default.title) +
         ggplot2::labs(color = legend_name) +
         ggthemes::theme_few() + 
@@ -165,7 +178,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
         extra.independent.variable <- NULL
         # Set colours
         colours <- "'This is the only colour'"
-        # Turn off the legend
+        # Disable the plot legend as there's only one colour
         plot <- plot + ggplot2::guides(color = "none")
     }
     
@@ -196,15 +209,15 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     # If an y-axis label was given
     if (!is.null(y.label)) {
         # Add the label
-        plot <- plot + ggplot2::xlab(sprintf(y.label))
+        plot <- plot + ggplot2::ylab(sprintf(y.label))
     }
     # If a title was given
     if (!is.null(title)) {
         # Add the title
         plot <- plot + ggplot2::ggtitle(sprintf(title))
     }
-    # Logic for hide_legend parameter
-    if (hide_legend) {
+    # Logic for hide.legend parameter
+    if (hide.legend) {
         plot <- plot + ggplot2::theme(legend.position = "none")
     }
     # ===============================

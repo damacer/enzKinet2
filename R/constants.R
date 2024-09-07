@@ -1,18 +1,18 @@
 # constants.R
 
-# Define valid models constant
+# All models
 #' @export
 VALID_MODELS <- c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "SBK", "CBK")
 
-# Define all parameters that are used
+# All parameters
 #' @export
 ALL_PARAMETERS <- c("Km", "KmA", "KmB", "Ksi", "Ki", "Kic", "Kiu", "Ksat", "Vmax", "Hill", "KD", "Kcat", "E0", "KA")
 
-# Define all extra independent variables that are used (extra on top of the primary ones like A and FB)
+# All extra independent variables (extra on top of the primary ones like A and P)
 #' @export
 ALL_EXTRA_INDEPENDENT_VARS <- c("I", "B", "R")
 
-# Define a dictionary for model parameters
+# Each model's parameters
 #' @export
 MODEL_PARAMETERS <- list(
     MM = c("Km", "Vmax"),
@@ -30,11 +30,11 @@ MODEL_PARAMETERS <- list(
     CBK = c("KD")
 )
 
-# Define a dictionary for model variables
+# Each model's variables
 #' @export
 MODEL_VARIABLES <- list(
-    # Dependent variable always second
     # Primary independent variable always first
+    # Dependent variable always second
     MM = c("A", "V"),
     MMSI = c("A", "V"),
     OGMM = c("A", "V"),
@@ -50,7 +50,7 @@ MODEL_VARIABLES <- list(
     CBK = c("P", "FB", "R")
 )
 
-# Define a dictionary for model dependent variable domains
+# Each model's dependent variable's domain
 #' @export
 MODEL_DEPENDENT_VAR_DOMAINS <- list(
     MM = c(0, Inf),
@@ -68,7 +68,7 @@ MODEL_DEPENDENT_VAR_DOMAINS <- list(
     CBK = c(0, 1)
 )
 
-# Define a dictionary for model options
+# All model options
 #' @export
 MODEL_OPTIONS <- c(
     "Michaelis-Menten" = "MM",
@@ -86,7 +86,7 @@ MODEL_OPTIONS <- c(
     "Complex Binding Kinetics" = "CBK"
 )
 
-# Define a dictionary for model options in groups
+# All model options, but in groups
 #' @export
 MODEL_OPTIONS_GROUPED <- list(
     "Michaelis-Menten Models" = list(
@@ -109,7 +109,7 @@ MODEL_OPTIONS_GROUPED <- list(
     )
 )
 
-# Define a dictionary for plot titles
+# Each model's title
 #' @export
 PLOT_TITLES <- list(
     MM = "Michaelis-Menten",
@@ -127,7 +127,7 @@ PLOT_TITLES <- list(
     CBK = "Complex Binding Kinetics"
 )
 
-# Define a dictionary for plot axis titles
+# Each variable's title
 #' @export
 AXIS_TITLES <- list(
     V = "Velocity V",
@@ -139,10 +139,10 @@ AXIS_TITLES <- list(
     R = "Concentration of Trace\nLimiting Partner [R]"
 )
 
-# Define a dictionary for model parameter strings
+# Each model's parameters as a string
 #' @export
 MODEL_PARAMETER_STRINGS <- list(
-    MM = "Km, Vmax",
+    MM = "Km and Vmax",
     MMSI = "Km, Vmax, and Ksi",
     OGMM = "Km, Kcat, and E0",
     ALTMM = "KA, Kcat, and E0",
@@ -157,7 +157,7 @@ MODEL_PARAMETER_STRINGS <- list(
     CBK = "KD"
 )
 
-# Define a dictionary for model variable strings
+# Each model's variables as a string
 #' @export
 MODEL_VARIABLE_STRINGS <- list(
     MM = "A and V",
@@ -175,7 +175,7 @@ MODEL_VARIABLE_STRINGS <- list(
     CBK = "P, FB and R"
 )
 
-# Define a dictionary for model formulae
+# Each model's formula
 #' @export
 MODEL_FORMULAE <- list(
     MM = formula(V ~ Vmax * A / (Km + A)),
@@ -193,8 +193,7 @@ MODEL_FORMULAE <- list(
     CBK = formula(FB ~ ((R + P + KD) - sqrt((R + P + KD)^2 - 4 * R * P)) / (2 * R))
 )
 
-
-# Define a dictionary for model formulae for display
+# Each model's formula in LaTeX
 #' @export
 MODEL_FORMULAE_DISPLAY <- list(
     MM = "\\Large{V = \\frac{V_{max} \\cdot A}{K_m + A}}",
@@ -212,8 +211,7 @@ MODEL_FORMULAE_DISPLAY <- list(
     CBK = "F_B = \\frac{(R + P + K_D) - \\sqrt{(R + P + K_D)^2 - 4 \\cdot R \\cdot P}}{2 \\cdot R}"
 )
 
-
-# Define a dictionary for model variables for display
+# Each model's variables in LaTeX
 #' @export
 MODEL_VARIABLES_DISPLAY <- list(
     MM = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
@@ -299,8 +297,7 @@ MODEL_VARIABLES_DISPLAY <- list(
            {\\Large K_D}  -  \\text{Dissociation constant}"
 )
 
-
-# Define a dictionary for plotting transformation functions before plotting data
+# Each plot transformation's function
 #' @export
 PLOT_TRANSFORMATIONS <- list(
     standard = function(data.df, x.name = NULL, y.name = NULL) {
@@ -335,7 +332,7 @@ PLOT_TRANSFORMATIONS <- list(
     }
 )
 
-# Define a dictionary for options for plotting transformations
+# All plot transformation options
 #' @export
 PLOT_TRANSFORMATION_OPTIONS <- c(
     "Standard Plot (v against a)" = "standard",
@@ -346,7 +343,7 @@ PLOT_TRANSFORMATION_OPTIONS <- c(
     "Direct Linear Plot (Vmax against Km)" = "direct"
 )
 
-# Define a dictionary for plot titles for transformations
+# Each plot transformation's plot title
 #' @export
 PLOT_TRANSFORMATION_TITLES <- c(
     standard = "",
@@ -357,7 +354,7 @@ PLOT_TRANSFORMATION_TITLES <- c(
     direct = "Direct Linear Plot"
 )
 
-# Define a dictionary for x-axis titles for transformations
+# Each plot transformation's x-axis title
 #' @export
 PLOT_TRANSFORMATION_X_AXIS_TITLES <- c(
     standard = "",
@@ -368,7 +365,7 @@ PLOT_TRANSFORMATION_X_AXIS_TITLES <- c(
     direct = "Km"
 )
 
-# Define a dictionary for y-axis titles for transformations
+# Each plot transformation's y-axis title
 #' @export
 PLOT_TRANSFORMATION_Y_AXIS_TITLES <- c(
     standard = "",
@@ -379,7 +376,7 @@ PLOT_TRANSFORMATION_Y_AXIS_TITLES <- c(
     direct = "Vmax"
 )
 
-# Define a dictionary for the blocked transformations for each model
+# Each model's blocked transformations
 #' @export
 BLOCKED_TRANSFORMATIONS <- list(
     MM = c(),
@@ -397,43 +394,43 @@ BLOCKED_TRANSFORMATIONS <- list(
     CBK = c("lineweaver", "hanes", "eadie", "direct")
 )
 
-# Define a dictionary for options for fitting methods
+# All fitting method options
 #' @export
 FITTING_METHODS_OPTIONS <- c(
     "Nonlinear Least Squares" = "nls",
     "Recursive Solve" = "recursive",
-    "Sum of Squares Calculation" = "ss_calc",
+    "Sum of Squares Calculation" = "ss.calc",
     "Nonparametric" = "nonparametric"
 )
 
-# Define dictionary for model fitting methods
+# Each fitting method's valid models
 #' @export
 FITTING_METHODS <- list(
     nls = c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "SBK", "CBK"),
     recursive = c("MM"),
-    ss_calc = c("MM"),
+    ss.calc = c("MM"),
     nonparametric = c("MM")
 )
 
-# Define a dictionary for the blocked fitting options for each model
+# Each model's blocked fitting methods
 #' @export
 BLOCKED_FITTING_METHODS <- list(
     MM = c(),
-    MMSI = c("recursive", "ss_calc", "nonparametric"),
-    OGMM = c("recursive", "ss_calc", "nonparametric"),
-    ALTMM = c("recursive", "ss_calc", "nonparametric"),
-    CI = c("recursive", "ss_calc", "nonparametric"),
-    UCI = c("recursive", "ss_calc", "nonparametric"),
-    NCI = c("recursive", "ss_calc", "nonparametric"),
-    MI = c("recursive", "ss_calc", "nonparametric"),
-    TC = c("recursive", "ss_calc", "nonparametric"),
-    HILL = c("recursive", "ss_calc", "nonparametric"),
-    PP = c("recursive", "ss_calc", "nonparametric"),
-    SBK = c("recursive", "ss_calc", "nonparametric"),
-    CBK = c("recursive", "ss_calc", "nonparametric")
+    MMSI = c("recursive", "ss.calc", "nonparametric"),
+    OGMM = c("recursive", "ss.calc", "nonparametric"),
+    ALTMM = c("recursive", "ss.calc", "nonparametric"),
+    CI = c("recursive", "ss.calc", "nonparametric"),
+    UCI = c("recursive", "ss.calc", "nonparametric"),
+    NCI = c("recursive", "ss.calc", "nonparametric"),
+    MI = c("recursive", "ss.calc", "nonparametric"),
+    TC = c("recursive", "ss.calc", "nonparametric"),
+    HILL = c("recursive", "ss.calc", "nonparametric"),
+    PP = c("recursive", "ss.calc", "nonparametric"),
+    SBK = c("recursive", "ss.calc", "nonparametric"),
+    CBK = c("recursive", "ss.calc", "nonparametric")
 )
 
-# Define a dictionary for bounding variable names
+# Each model's bounding variable names
 CONFIDENCE_INTERVAL_BOUNDING_VARIABLES <- list(
     MM = c("A.lb", "A.ub", "V.lb", "V.ub"),
     MMSI = c("A.lb", "A.ub", "V.lb", "V.ub"),
@@ -450,7 +447,7 @@ CONFIDENCE_INTERVAL_BOUNDING_VARIABLES <- list(
     CBK = c("P.lb", "P.ub", "FB.lb", "FB.ub", "R.lb", "R.ub")
 )
 
-# Define a dictionary for bounding parameter names
+# Each model's bounding parameter names
 CONFIDENCE_INTERVAL_BOUNDING_PARAMS <- list(
     MM = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub"),
     MMSI = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "Ksi.lb", "Ksi.ub"),
@@ -467,7 +464,7 @@ CONFIDENCE_INTERVAL_BOUNDING_PARAMS <- list(
     CBK = c("KD.lb", "KD.ub")
 )
 
-# Define a dictionary for which bound of each parameter gives the lower bound for the function
+# Each parameter's bound that gives the lower bound for its function
 LOWER_BOUND_PARAMS <- list(
     Km = "Km.ub", 
     KmA = "KmA.ub",
@@ -485,8 +482,7 @@ LOWER_BOUND_PARAMS <- list(
     KA = "KA.lb"
 )
 
-
-# Define a dictionary for which bound of each parameter gives the upper bound for the function
+# Each parameter's bound that gives the upper bound for its function
 UPPER_BOUND_PARAMS <- list(
     Km = "Km.lb", 
     KmA = "KmA.lb",
@@ -504,7 +500,7 @@ UPPER_BOUND_PARAMS <- list(
     KA = "KA.ub"
 )
 
-# Define a list of plot colour palettes
+# All valid plot colour palettes
 #' @export
 PLOT_COLOUR_PALETTES <- c("Set1", "Set2", "Set3", "Accent", "Dark2", 
                            "Pastel2", "Pastel1", "Blues", "Greys", "Oranges", 
@@ -512,7 +508,7 @@ PLOT_COLOUR_PALETTES <- c("Set1", "Set2", "Set3", "Accent", "Dark2",
                            "YlOrBr", "RdPu", "GnBu", "YlOrRd", "PuRd", 
                            "RdYlGn", "RdGy", "RdBu")
 
-# Define model functions (takes parameters and independent variables - output perfect data)
+# Each model's function to simulate perfect data
 MODEL_FUNCTIONS <- list(
     MM = function(params, A.range, z.range) {
         # Extract parameters

@@ -18,25 +18,25 @@ fit_model(
 )
 }
 \arguments{
-\item{model}{The chosen model ("MM", "MMSI", etc.)}
+\item{model}{The model to fit the data ("MM", "CI", etc.)}
 
-\item{data.df}{The data to fit the model to}
+\item{data.df}{The data to fit the model to.}
 
-\item{start.params}{The unfitted parameters for the model (e.g. Km, Vmax)}
+\item{start.params}{The starting parameter values for the model (e.g. Km, Vmax).}
 
-\item{fit.method}{The algorithm or calculation used to fit the model.}
+\item{fit.method}{The algorithm or calculation used to fit the model ("recursive", "ss.calc", and "nonparametric").}
 
-\item{locked.params}{A vector of parameter names to lock (e.g., c("Km"))}
+\item{locked.params}{A vector of parameter names to lock while fitting.}
 
-\item{add.minor.noise}{Boolean to add a tiny amount of noise to the data before fitting.}
+\item{add.minor.noise}{Add a negligible amount of noise to the data before fitting.}
 
-\item{override.data.point.check}{Boolean to override num data points checks.}
+\item{override.data.point.check}{Override low number of data points error/warnings.}
 
-\item{get.conf.int}{Boolean to get extra parameter values for upper and lower bounds.}
+\item{get.conf.int}{Get extra parameter values for upper and lower bounds.}
 
-\item{conf.level}{Float for confidence level of confidence interval.}
+\item{conf.level}{Confidence level value of confidence interval.}
 
-\item{get.stats}{Boolean to get statistics of fit}
+\item{get.stats}{Get statistics of the fit (returned alongside fitted.params).}
 }
 \value{
 fitted.params
@@ -46,7 +46,7 @@ Fit Model
 }
 \author{
 Haig Bishop
-28/06/2024
+07/09/2024
 
-Fits the model to the data. Returns the fitted.params (NULL if could not fit)
+Fits a model to the given data. Returns fitted.params (NULL if could not fit).
 }
