@@ -24,7 +24,7 @@ make_curve <- function(model, params, x.min, x.max, z.values = NULL,
     
     # Generate noiseless data
     curve.df <- simulate_data(model, params, x.min, x.max, z.values = z.values, 
-                              noise_level = 0, n.samples = n.samples, space = space)
+                              noise.level = 0, n.samples = n.samples, space = space)
     
     
     # If confidence intervals are requested, generate lower and upper bound curves ====
@@ -78,7 +78,7 @@ make_curve <- function(model, params, x.min, x.max, z.values = NULL,
             lb.params <- lapply(lb.params, function(x) unclass(x))
             # Generate lower bound curve
             current.lb.curve.df <- simulate_data(model, lb.params, x.min, x.max, z.values = z.values, 
-                                                 noise_level = 0, n.samples = n.samples, space = space)
+                                                 noise.level = 0, n.samples = n.samples, space = space)
             # If this is the first iteration, initialize lb.curve.df with the current current.lb.curve.df
             if (is.null(lb.curve.df)) {
                 lb.curve.df <- current.lb.curve.df
@@ -102,7 +102,7 @@ make_curve <- function(model, params, x.min, x.max, z.values = NULL,
             
             # Generate upper bound curve
             current.ub.curve.df <- simulate_data(model, ub.params, x.min, x.max, z.values = z.values, 
-                                                 noise_level = 0, n.samples = n.samples, space = space)
+                                                 noise.level = 0, n.samples = n.samples, space = space)
             # If this is the first iteration, initialize ub.curve.df with the current current.ub.curve.df
             if (is.null(ub.curve.df)) {
                 ub.curve.df <- current.ub.curve.df
