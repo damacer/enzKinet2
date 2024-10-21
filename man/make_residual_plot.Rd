@@ -11,6 +11,8 @@ make_residual_plot(
   x.max,
   x.label = NULL,
   y.label = NULL,
+  x.units = NULL,
+  y.units = NULL,
   title = NULL,
   zero.line = TRUE,
   legend.label = NULL,
@@ -30,6 +32,10 @@ make_residual_plot(
 \item{x.label}{Custom x-axis label.}
 
 \item{y.label}{Custom y-axis label.}
+
+\item{x.units}{Units for the x-axis, such as "mM" or "µM". Defaults to NULL (no units).}
+
+\item{y.units}{Units for the y-axis, such as "µmol/s" or "U/mL". Defaults to NULL (no units).}
 
 \item{title}{Custom plot title.}
 

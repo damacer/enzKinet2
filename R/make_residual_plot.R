@@ -12,6 +12,8 @@
 #' @param x.max Defines the maximum x value to plot to.
 #' @param x.label Custom x-axis label.
 #' @param y.label Custom y-axis label.
+#' @param x.units Units for the x-axis, such as "mM" or "µM". Defaults to NULL (no units).
+#' @param y.units Units for the y-axis, such as "µmol/s" or "U/mL". Defaults to NULL (no units).
 #' @param title Custom plot title.
 #' @param legend.label Custom legend label.
 #' @param zero.line If TRUE (default), draws a dotted line at y=0.
@@ -22,7 +24,8 @@
 #' @export
 
 make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL, 
-                               y.label = NULL, title = NULL, zero.line = TRUE, 
+                               y.label = NULL, x.units = NULL, y.units = NULL, 
+                               title = NULL, zero.line = TRUE, 
                                legend.label = NULL, palette = "Set1", hide.legend = FALSE) {
     
     # Error Handling ================
@@ -60,6 +63,12 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     }
     if (!is.null(y.label) && !is.character(y.label)) {
         stop("y.label must be a character string.")
+    }
+    if (!is.null(x.units) && !is.character(x.units)) {
+        stop("x.units must be a character string.")
+    }
+    if (!is.null(y.units) && !is.character(y.units)) {
+        stop("y.units must be a character string.")
     }
     if (!is.null(title) && !is.character(title)) {
         stop("title must be a character string.")
@@ -148,6 +157,13 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     default.title <- paste(PLOT_TITLES[[model]], "Residuals")
     default.x.axis <- AXIS_TITLES[[first.independent.var]]
     default.y.axis <- paste("Residual", AXIS_TITLES[[dependent.var]])
+    # Append units to axis labels if x.units or y.units are provided
+    if (!is.null(x.units) && x.units != "") {
+        default.x.axis <- paste0(default.x.axis, " (", x.units, ")")
+    }
+    if (!is.null(y.units) && y.units != "") {
+        default.y.axis <- paste0(default.y.axis, " (", y.units, ")")
+    }
     
     # Make default plot
     x.max.data <- max(data.df[[first.independent.var]])
@@ -203,11 +219,19 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     # Add Extra Plot Features ===================
     # If an x-axis label was given
     if (!is.null(x.label)) {
+        # Append units to axis labels if x.units is provided
+        if (!is.null(x.units) && x.units != "") {
+            x.label <- paste0(x.label, " (", x.units, ")")
+        }
         # Add the label
         plot <- plot + ggplot2::xlab(sprintf(x.label))
     }
     # If an y-axis label was given
     if (!is.null(y.label)) {
+        # Append units to axis labels if y.units is provided
+        if (!is.null(y.units) && y.units != "") {
+            y.label <- paste0(y.label, " (", y.units, ")")
+        }
         # Add the label
         plot <- plot + ggplot2::ylab(sprintf(y.label))
     }

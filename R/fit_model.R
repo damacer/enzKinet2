@@ -110,6 +110,11 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # ===============================
     
     
+    
+    # Initialize the results
+    fitted.params <- NULL
+    statistics <- NULL
+    errorMessage <- NULL
     # If nonlinear least squares ================
     if (fit.method == "nls") {
         
@@ -152,7 +157,6 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
             fit.start.params <- fit.start.params[!names(fit.start.params) %in% locked.params]
         }
         # Fit model =================
-        fitted.params <- NULL
         tryCatch({
             # Fit with NLS
             fit <- nls(model.formula, data = data.df, start = fit.start.params, control = ctrl)
@@ -198,9 +202,10 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
             }
             
         }, error = function(e) {
-            message("Model fitting failed: ", e$message)
-            message("Failure to fit could be explained by noiseless data, poor starting parameters, over-parametrisation , etc..")
-            fitted.params <- NULL
+            # Message for web page
+            errorMessage <<- paste("Model fitting failed. Possible reasons: noiseless data, poor starting parameters, over-parameterisation, etc.")
+            # Message for console
+            message(paste0("Model fitting failed: ", e$message,". "))
         })
         # Return locked.params ===================
         # Add locked.params to fitted.params
@@ -351,15 +356,11 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # If any estimates are out of valid range
     if (!is.null(fitted.params) && (any(fitted.params <= 0) || any(fitted.params > 1e19))) {
         fitted.params <- NULL
-        message("Model fitting returned parameter values out of valid range.")
+        errorMessage <- "Model fitting returned parameter values out of valid range."
+        message(errorMessage)
     } 
     
     # Return ===============
-    if (!get.stats) {
-        # Return the fitted params (NULL if model could not fit)
-        return(fitted.params)
-    } else {
-        # Also return stats
-        return(list(fitted_params = fitted.params, statistics = statistics))
-    }
+    # Return the results, including any error message
+    return(list(fitted_params = fitted.params, statistics = statistics, error = errorMessage))
 }

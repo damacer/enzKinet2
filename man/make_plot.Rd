@@ -13,6 +13,8 @@ make_plot(
   conf.int = FALSE,
   x.label = NULL,
   y.label = NULL,
+  x.units = NULL,
+  y.units = NULL,
   title = NULL,
   legend.label = NULL,
   palette = "Set1",
@@ -35,6 +37,10 @@ make_plot(
 \item{x.label}{Custom x-axis label.}
 
 \item{y.label}{Custom y-axis label.}
+
+\item{x.units}{Units for the x-axis, such as "mM" or "µM". Defaults to NULL (no units).}
+
+\item{y.units}{Units for the y-axis, such as "µmol/s" or "U/mL". Defaults to NULL (no units).}
 
 \item{title}{Custom plot title.}
 

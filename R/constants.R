@@ -2,11 +2,11 @@
 
 # All models
 #' @export
-VALID_MODELS <- c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "SBK", "CBK")
+VALID_MODELS <- c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "BK", "QBK")
 
 # All parameters
 #' @export
-ALL_PARAMETERS <- c("Km", "KmA", "KmB", "Ksi", "Ki", "Kic", "Kiu", "Ksat", "Vmax", "Hill", "KD", "Kcat", "E0", "KA")
+ALL_PARAMETERS <- c("Km", "KmA", "KmB", "Ksi", "Ki", "Kic", "Kiu", "Ksat", "Vmax", "n", "KD", "Kcat", "E0", "KA")
 
 # All extra independent variables (extra on top of the primary ones like A and P)
 #' @export
@@ -24,10 +24,10 @@ MODEL_PARAMETERS <- list(
     NCI = c("Km", "Vmax", "Ki"),
     MI = c("Km", "Vmax", "Kic", "Kiu"),
     TC = c("KmA", "Vmax", "KmB", "Ksat"),
-    HILL = c("Km", "Vmax", "Hill"),
+    HILL = c("Km", "Vmax", "n"),
     PP = c("KmA", "Vmax", "KmB"),
-    SBK = c("KD"),
-    CBK = c("KD")
+    BK = c("KD"),
+    QBK = c("KD")
 )
 
 # Each model's variables
@@ -46,8 +46,8 @@ MODEL_VARIABLES <- list(
     TC = c("A", "V", "B"),
     HILL = c("A", "V"),
     PP = c("A", "V", "B"),
-    SBK = c("P", "FB"),
-    CBK = c("P", "FB", "R")
+    BK = c("P", "FB"),
+    QBK = c("P", "FB", "R")
 )
 
 # Each model's dependent variable's domain
@@ -64,8 +64,8 @@ MODEL_DEPENDENT_VAR_DOMAINS <- list(
     TC = c(0, Inf),
     HILL = c(0, Inf),
     PP = c(0, Inf),
-    SBK = c(0, 1),
-    CBK = c(0, 1)
+    BK = c(0, 1),
+    QBK = c(0, 1)
 )
 
 # All model options
@@ -82,8 +82,8 @@ MODEL_OPTIONS <- c(
     "Ternary Complex" = "TC",
     "Hill" = "HILL",
     "Ping-Pong" = "PP",
-    "Simple Binding Kinetics" = "SBK",
-    "Complex Binding Kinetics" = "CBK"
+    "Binding Kinetics" = "BK",
+    "Quadratic Binding Kinetics" = "QBK"
 )
 
 # All model options, but in groups
@@ -104,8 +104,8 @@ MODEL_OPTIONS_GROUPED <- list(
         "Ternary Complex" = "TC",
         "Ping-Pong" = "PP"),
     "Binding Models" = list(
-        "Simple Binding Kinetics" = "SBK",
-        "Complex Binding Kinetics" = "CBK"
+        "Binding Kinetics" = "BK",
+        "Quadratic Binding Kinetics" = "QBK"
     )
 )
 
@@ -123,8 +123,8 @@ PLOT_TITLES <- list(
     TC = "Ternary Complex",
     HILL = "Hill",
     PP = "Ping-Pong",
-    SBK = "Simple Binding Kinetics",
-    CBK = "Complex Binding Kinetics"
+    BK = "Binding Kinetics",
+    QBK = "Quadratic Binding Kinetics"
 )
 
 # Each variable's title
@@ -151,10 +151,10 @@ MODEL_PARAMETER_STRINGS <- list(
     NCI = "Km, Vmax, and Ki",
     MI = "Km, Vmax, Kic, and Kiu",
     TC = "KmA, Vmax, KmB and Ksat",
-    HILL = "Km, Vmax and Hill",
+    HILL = "Km, Vmax and n",
     PP = "KmA, Vmax and KmB",
-    SBK = "KD",
-    CBK = "KD"
+    BK = "KD",
+    QBK = "KD"
 )
 
 # Each model's variables as a string
@@ -171,8 +171,8 @@ MODEL_VARIABLE_STRINGS <- list(
     TC = "A, V and B",
     HILL = "A and V",
     PP = "A, V and B",
-    SBK = "P and FB",
-    CBK = "P, FB and R"
+    BK = "P and FB",
+    QBK = "P, FB and R"
 )
 
 # Each model's formula
@@ -187,10 +187,10 @@ MODEL_FORMULAE <- list(
     NCI = formula(V ~ Vmax * A / ((1 + I / Ki) * (Km + A))),
     MI = formula(V ~ Vmax * A / (Km * (1 + I / Kic) + A * (1 + I / Kiu))),
     TC = formula(V ~ (Vmax * A * B / (KmB * A + KmA * B + A * B + Ksat * KmB))),
-    HILL = formula(V ~ Vmax * (A^Hill) / (Km^Hill + A^Hill)),
+    HILL = formula(V ~ Vmax * (A^n) / (Km^n + A^n)),
     PP = formula(V ~ (Vmax * A * B / (KmA * B + KmB * A + A * B))),
-    SBK = formula(FB ~ (P / (P + KD))),
-    CBK = formula(FB ~ ((R + P + KD) - sqrt((R + P + KD)^2 - 4 * R * P)) / (2 * R))
+    BK = formula(FB ~ (P / (P + KD))),
+    QBK = formula(FB ~ ((R + P + KD) - sqrt((R + P + KD)^2 - 4 * R * P)) / (2 * R))
 )
 
 # Each model's formula in LaTeX
@@ -205,10 +205,10 @@ MODEL_FORMULAE_DISPLAY <- list(
     NCI = "\\Large{V = \\frac{V_{max} \\cdot A}{\\left(1 + \\frac{I}{K_i}\\right)(K_m + A)}}",
     MI = "\\Large{V = \\frac{V_{max} \\cdot A}{K_m \\left(1 + \\frac{I}{K_{ic}}\\right) + A \\left(1 + \\frac{I}{K_{iu}}\\right)}}",
     TC = "V = \\frac{V_{max} \\cdot A \\cdot B}{K_{mB} \\cdot A + K_{mA} \\cdot B + A \\cdot B + K_{sat} \\cdot K_{mB}}",
-    HILL = "\\Large{V = V_{max} \\cdot \\frac{A^{Hill}}{K_m^{Hill} + A^{Hill}}}",
+    HILL = "\\Large{V = V_{max} \\cdot \\frac{A^{n}}{K_m^{n} + A^{n}}}",
     PP = "\\Large{V = \\frac{V_{max} \\cdot A \\cdot B}{K_{mA} \\cdot B + K_{mB} \\cdot A + A \\cdot B}}",
-    SBK = "\\Large{F_B = \\frac{P}{P + K_D}}",
-    CBK = "F_B = \\frac{(R + P + K_D) - \\sqrt{(R + P + K_D)^2 - 4 \\cdot R \\cdot P}}{2 \\cdot R}"
+    BK = "\\Large{F_B = \\frac{P}{P + K_D}}",
+    QBK = "F_B = \\frac{(R + P + K_D) - \\sqrt{(R + P + K_D)^2 - 4 \\cdot R \\cdot P}}{2 \\cdot R}"
 )
 
 # Each model's variables in LaTeX
@@ -217,51 +217,51 @@ MODEL_VARIABLES_DISPLAY <- list(
     MM = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
           {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
           {\\Large K_m}  -  \\text{Michaelis constant} \\\\
-          {\\Large A}  -  \\text{Substrate concentration}",
+          {\\Large A}  -  \\text{Substrate A concentration}",
     
     MMSI = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
             {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
             {\\Large K_m}  -  \\text{Michaelis constant} \\\\
-            {\\Large A}  -  \\text{Substrate concentration} \\\\
+            {\\Large A}  -  \\text{Substrate A concentration} \\\\
             {\\Large K_{si}}  -  \\text{Substrate inhibition constant}",
     
     OGMM = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
             {\\Large K_{cat}}  -  \\text{Turnover number} \\\\
             {\\Large E_0}  -  \\text{Initial enzyme concentration} \\\\
-            {\\Large A}  -  \\text{Substrate concentration} \\\\
+            {\\Large A}  -  \\text{Substrate A concentration} \\\\
             {\\Large K_m}  -  \\text{Michaelis constant}",
     
     ALTMM = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
              {\\Large K_{cat}}  -  \\text{Turnover number} \\\\
              {\\Large K_A}  -  \\text{Association constant} \\\\
              {\\Large E_0}  -  \\text{Initial enzyme concentration} \\\\
-             {\\Large A}  -  \\text{Substrate concentration}",
+             {\\Large A}  -  \\text{Substrate A concentration}",
     
     CI = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
           {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
           {\\Large K_m}  -  \\text{Michaelis constant} \\\\
-          {\\Large A}  -  \\text{Substrate concentration} \\\\
+          {\\Large A}  -  \\text{Substrate A concentration} \\\\
           {\\Large I}  -  \\text{Inhibitor concentration} \\\\
           {\\Large K_i}  -  \\text{Inhibition constant}",
     
     UCI = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
            {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
            {\\Large K_m}  -  \\text{Michaelis constant} \\\\
-           {\\Large A}  -  \\text{Substrate concentration} \\\\
+           {\\Large A}  -  \\text{Substrate A concentration} \\\\
            {\\Large I}  -  \\text{Inhibitor concentration} \\\\
            {\\Large K_i}  -  \\text{Inhibition constant}",
     
     NCI = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
            {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
            {\\Large K_m}  -  \\text{Michaelis constant} \\\\
-           {\\Large A}  -  \\text{Substrate concentration} \\\\
+           {\\Large A}  -  \\text{Substrate A concentration} \\\\
            {\\Large I}  -  \\text{Inhibitor concentration} \\\\
            {\\Large K_i}  -  \\text{Inhibition constant}",
     
     MI = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
           {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
           {\\Large K_m}  -  \\text{Michaelis constant} \\\\
-          {\\Large A}  -  \\text{Substrate concentration} \\\\
+          {\\Large A}  -  \\text{Substrate A concentration} \\\\
           {\\Large I}  -  \\text{Inhibitor concentration} \\\\
           {\\Large K_{ic}}  -  \\text{Competitive inhibition constant} \\\\
           {\\Large K_{iu}}  -  \\text{Uncompetitive inhibition constant}",
@@ -276,9 +276,9 @@ MODEL_VARIABLES_DISPLAY <- list(
     
     HILL = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
             {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
-            {\\Large A}  -  \\text{Substrate concentration} \\\\
+            {\\Large A}  -  \\text{Substrate A concentration} \\\\
             {\\Large K_m}  -  \\text{Michaelis constant} \\\\
-            {\\Large Hill}  -  \\text{Hill coefficient}",
+            {\\Large n}  -  \\text{Hill coefficient}",
     
     PP = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
           {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
@@ -287,11 +287,11 @@ MODEL_VARIABLES_DISPLAY <- list(
           {\\Large K_{mA}}  -  \\text{Michaelis constant for A} \\\\
           {\\Large K_{mB}}  -  \\text{Michaelis constant for B}",
     
-    SBK = "{\\Large F_B}  -  \\text{Fraction bound} \\\\
+    BK = "{\\Large F_B}  -  \\text{Fraction bound} \\\\
            {\\Large P}  -  \\text{Binding partner in excess concentration} \\\\
            {\\Large K_D}  -  \\text{Dissociation constant}",
     
-    CBK = "{\\Large F_B}  -  \\text{Fraction bound} \\\\
+    QBK = "{\\Large F_B}  -  \\text{Fraction bound} \\\\
            {\\Large R}  -  \\text{Trace limiting partner concentration} \\\\
            {\\Large P}  -  \\text{Binding partner in excess concentration} \\\\
            {\\Large K_D}  -  \\text{Dissociation constant}"
@@ -390,8 +390,8 @@ BLOCKED_TRANSFORMATIONS <- list(
     TC = c("direct"),
     HILL = c("lineweaver", "hanes", "eadie", "direct"),
     PP = c("direct"),
-    SBK = c("lineweaver", "hanes", "eadie", "direct"),
-    CBK = c("lineweaver", "hanes", "eadie", "direct")
+    BK = c("lineweaver", "hanes", "eadie", "direct"),
+    QBK = c("lineweaver", "hanes", "eadie", "direct")
 )
 
 # All fitting method options
@@ -406,7 +406,7 @@ FITTING_METHODS_OPTIONS <- c(
 # Each fitting method's valid models
 #' @export
 FITTING_METHODS <- list(
-    nls = c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "SBK", "CBK"),
+    nls = c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "BK", "QBK"),
     recursive = c("MM"),
     ss.calc = c("MM"),
     nonparametric = c("MM")
@@ -426,8 +426,8 @@ BLOCKED_FITTING_METHODS <- list(
     TC = c("recursive", "ss.calc", "nonparametric"),
     HILL = c("recursive", "ss.calc", "nonparametric"),
     PP = c("recursive", "ss.calc", "nonparametric"),
-    SBK = c("recursive", "ss.calc", "nonparametric"),
-    CBK = c("recursive", "ss.calc", "nonparametric")
+    BK = c("recursive", "ss.calc", "nonparametric"),
+    QBK = c("recursive", "ss.calc", "nonparametric")
 )
 
 # Each model's bounding variable names
@@ -443,8 +443,8 @@ CONFIDENCE_INTERVAL_BOUNDING_VARIABLES <- list(
     TC = c("A.lb", "A.ub", "V.lb", "V.ub", "B.lb", "B.ub"),
     HILL = c("A.lb", "A.ub", "V.lb", "V.ub"),
     PP = c("A.lb", "A.ub", "V.lb", "V.ub", "B.lb", "B.ub"),
-    SBK = c("P.lb", "P.ub", "FB.lb", "FB.ub"),
-    CBK = c("P.lb", "P.ub", "FB.lb", "FB.ub", "R.lb", "R.ub")
+    BK = c("P.lb", "P.ub", "FB.lb", "FB.ub"),
+    QBK = c("P.lb", "P.ub", "FB.lb", "FB.ub", "R.lb", "R.ub")
 )
 
 # Each model's bounding parameter names
@@ -458,10 +458,10 @@ CONFIDENCE_INTERVAL_BOUNDING_PARAMS <- list(
     NCI = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "Ki.lb", "Ki.ub"),
     MI = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "Kic.lb", "Kic.ub", "Kiu.lb", "Kiu.ub"),
     TC = c("KmA.lb", "KmA.ub", "Vmax.lb", "Vmax.ub", "KmB.lb", "KmB.ub", "Ksat.lb", "Ksat.ub"),
-    HILL = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "Hill.lb", "Hill.ub"),
+    HILL = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "n.lb", "n.ub"),
     PP = c("KmA.lb", "KmA.ub", "Vmax.lb", "Vmax.ub", "KmB.lb", "KmB.ub"),
-    SBK = c("KD.lb", "KD.ub"),
-    CBK = c("KD.lb", "KD.ub")
+    BK = c("KD.lb", "KD.ub"),
+    QBK = c("KD.lb", "KD.ub")
 )
 
 # Each parameter's bound that gives the lower bound for its function
@@ -475,7 +475,7 @@ LOWER_BOUND_PARAMS <- list(
     Kiu = "Kiu.lb",
     Ksat = "Ksat.ub",
     Vmax = "Vmax.lb",
-    Hill = c("Hill.lb", "Hill.ub"),
+    n = c("n.lb", "n.ub"),
     KD = "KD.ub",
     Kcat = "Kcat.lb",
     E0 = "E0.lb",
@@ -493,7 +493,7 @@ UPPER_BOUND_PARAMS <- list(
     Kiu = "Kiu.ub",
     Ksat = "Ksat.lb",
     Vmax = "Vmax.ub",
-    Hill = c("Hill.lb", "Hill.ub"),
+    n = c("n.lb", "n.ub"),
     KD = "KD.lb",
     Kcat = "Kcat.ub",
     E0 = "E0.ub",
@@ -623,11 +623,11 @@ MODEL_FUNCTIONS <- list(
         # Extract parameters
         Km <- params$Km
         Vmax <- params$Vmax
-        Hill <- params$Hill
+        n <- params$n
         # Create a data frame with all combinations of A.range
         grid <- expand.grid(A = A.range)
         # Calculate V for each combination
-        grid$V <- Vmax * (grid$A^Hill) / (Km^Hill + grid$A^Hill)
+        grid$V <- Vmax * (grid$A^n) / (Km^n + grid$A^n)
         # Return data frame
         return(grid)
     },
@@ -643,7 +643,7 @@ MODEL_FUNCTIONS <- list(
         # Return data frame
         return(grid)
     },
-    SBK = function(params, P.range, z.range) {
+    BK = function(params, P.range, z.range) {
         # Extract parameters
         KD <- params$KD
         # Create a data frame with all combinations of P.range
@@ -653,7 +653,7 @@ MODEL_FUNCTIONS <- list(
         # Return data frame
         return(grid)
     },
-    CBK = function(params, P.range, R.range) {
+    QBK = function(params, P.range, R.range) {
         # Extract parameters
         KD <- params$KD
         # Create a data frame with all combinations of P.range

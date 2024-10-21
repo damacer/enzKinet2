@@ -14,6 +14,8 @@
 #' @param conf.int Whether or not to plot confidence intervals.
 #' @param x.label Custom x-axis label.
 #' @param y.label Custom y-axis label.
+#' @param x.units Units for the x-axis, such as "mM" or "µM". Defaults to NULL (no units).
+#' @param y.units Units for the y-axis, such as "µmol/s" or "U/mL". Defaults to NULL (no units).
 #' @param title Custom plot title.
 #' @param legend.label Custom legend label.
 #' @param palette Custom plot colour palette (e.g., "Set1", "Set2", etc.).
@@ -24,7 +26,8 @@
 
 make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL, 
                       plot.transformation = "standard", conf.int = FALSE,
-                      x.label = NULL, y.label = NULL, title = NULL, 
+                      x.label = NULL, y.label = NULL,
+                      x.units = NULL, y.units = NULL, title = NULL, 
                       legend.label = NULL, palette = "Set1", hide.legend = FALSE) {
     
     # Error Handling ================
@@ -70,6 +73,12 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     }
     if (!is.null(y.label) && !is.character(y.label)) {
         stop("y.label must be a character string.")
+    }
+    if (!is.null(x.units) && !is.character(x.units)) {
+        stop("x.units must be a character string.")
+    }
+    if (!is.null(y.units) && !is.character(y.units)) {
+        stop("y.units must be a character string.")
     }
     if (!is.null(title) && !is.character(title)) {
         stop("title must be a character string.")
@@ -146,6 +155,13 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         transformation_text <- gsub("X-AXIS", default.x.axis, transformation_text)
         transformation_text <- gsub("Y-AXIS", default.y.axis, transformation_text)
         y.axis <- paste(transformation_text, default.y.axis)
+    }
+    # Append units to axis labels if x.units or y.units are provided
+    if (!is.null(x.units) && x.units != "") {
+        x.axis <- paste0(x.axis, " (", x.units, ")")
+    }
+    if (!is.null(y.units) && y.units != "") {
+        y.axis <- paste0(y.axis, " (", y.units, ")")
     }
     
     # Make default plot
@@ -435,11 +451,19 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     
     # If an x-axis label was given
     if (!is.null(x.label)) {
+        # Append units to axis labels if x.units is provided
+        if (!is.null(x.units) && x.units != "") {
+            x.label <- paste0(x.label, " (", x.units, ")")
+        }
         # Add the label
         plot <- plot + ggplot2::xlab(sprintf(x.label))
     }
     # If an y-axis label was given
     if (!is.null(y.label)) {
+        # Append units to axis labels if y.units is provided
+        if (!is.null(y.units) && y.units != "") {
+            y.label <- paste0(y.label, " (", y.units, ")")
+        }
         # Add the label
         plot <- plot + ggplot2::ylab(sprintf(y.label))
     }
