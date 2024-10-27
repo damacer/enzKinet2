@@ -92,5 +92,5 @@ The enzKinet2 package had a previous version. This previous version is found in 
 
 ## Contact
 For more information, please contact:  
-   **Email**:   haig.bishop@gp.canterbury.ac.nz  
+   **Email**:   haig.bishop@pg.canterbury.ac.nz  
    **GitHub**:  HaigBishop  
