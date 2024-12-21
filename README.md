@@ -19,9 +19,11 @@ To install the enzKinet2 package, you can clone the repository and
 install it using devtools.
 
 1.  Clone the repository (CLI)
+
     `git clone https://github.com/damacer/enzKinet2.git`
 
 2.  Install the R package (R)
+
     `devtools::install("enzKinet2")`
 
 ## Usage
@@ -212,5 +214,7 @@ For more detailed information on EKA, you can refer to our academic [paper](http
 
 ## Contact
 For more information, please contact:
-**Email**: [haig.bishop\@pg.canterbury.ac.nz](mailto:haig.bishop@pg.canterbury.ac.nz){.email}
+
+**Email**: [haig.bishop\@pg.canterbury.ac.nz](mailto:haig.bishop@pg.canterbury.ac.nz)
+
 **GitHub**: HaigBishop
