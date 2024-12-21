@@ -1,6 +1,6 @@
-# enzKinet2
+# enzKinet2 Version 2.0
 
-enzKinet2 is an R package useful for the analysis of enzyme kinetics. This is version 2 of the package, which to begin with is just a refactor, but in future will include more features. It includes functions for calculating and plotting various models, including:
+enzKinet2 is an R package useful for the analysis of enzyme kinetics. It includes functions for calculating and plotting various models, including:
 
 - Michaelis-Menten (MM)
 - Michaelis-Menten with Substrate Inhibition (MMSI)
@@ -84,10 +84,6 @@ print(plot)
 Enzyme Kinetics Analysis (EKA) is a web application that provides an easy to use inferface for the enzKinet2 package. EKA can be accessed [here](https://enzyme-kinetics.shinyapps.io/enzkinet_webpage/).
 #### Academic Paper
 For more detailed information on EKA, you can refer to our academic [paper](https://iubmb.onlinelibrary.wiley.com/doi/10.1002/bmb.21823).
-
-
-## EnzKinet2 Version 1
-The enzKinet2 package had a previous version. This previous version is found in the GitHub repo. It functioned differently this version of enzKinet2, and was suited to work with the current version of the EKA website, which will be upgraded later this year.
 
 
 ## Contact
