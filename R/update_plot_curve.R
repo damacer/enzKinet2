@@ -1,3 +1,5 @@
+## Function file for enzKinet2 package
+
 #' Update Plot Curve
 #'
 #' @author Haig Bishop

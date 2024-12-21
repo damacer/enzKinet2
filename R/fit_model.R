@@ -362,5 +362,5 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     
     # Return ===============
     # Return the results, including any error message
-    return(list(fitted_params = fitted.params, statistics = statistics, error = errorMessage))
+    return(list(fitted.params = fitted.params, statistics = statistics, error = errorMessage))
 }
