@@ -15,7 +15,7 @@ Authors@R:
 Description: This package contains models of enzyme kinetics. It includes 
     functions to fit models to data, returning parameters (Km, Vmax, etc.). 
     It also enables simulation of data, given parameters.
-License: use_gpl3_license()
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
