@@ -18,16 +18,18 @@ Quadratic Binding Kinetics (QBK)
 To install the enzKinet2 package, you can clone the repository and
 install it using devtools.
 
-1.  Clone the repository (CLI)\
+1.  Clone the repository (CLI)
     `git clone https://github.com/damacer/enzKinet2.git`
 
-2.  Install the R package (R)\
+2.  Install the R package (R)
     `devtools::install("enzKinet2")`
 
 ## Usage
 
 Once installed, you can load the package and start using its functions
-to analyze enzyme kinetics data. \#### Example usage
+to analyze enzyme kinetics data. 
+
+#### Example usage
 
 ``` r
 
@@ -203,17 +205,12 @@ Replaces or updates the curve in an existing kinetics plot.
 The updated `ggplot` object.
 
 ## Enzyme Kinetics Analysis (EKA)
+Enzyme Kinetics Analysis (EKA) is a web application that provides an intuitive inferface for the enzKinet2 package. EKA can be accessed [here](https://enzyme-kinetics.shinyapps.io/enzkinet_webpage/). 
 
-Enzyme Kinetics Analysis (EKA) is a web application that provides an
-intuitive inferface for the enzKinet2 package. EKA can be accessed
-[here](https://enzyme-kinetics.shinyapps.io/enzkinet_webpage/). \####
-Academic Paper For more detailed information on EKA, you can refer to
-our academic
-[paper](https://iubmb.onlinelibrary.wiley.com/doi/10.1002/bmb.21823).
+#### Academic Paper
+For more detailed information on EKA, you can refer to our academic [paper](https://iubmb.onlinelibrary.wiley.com/doi/10.1002/bmb.21823).
 
 ## Contact
-
-For more information, please contact:\
-**Email**:
-[haig.bishop\@pg.canterbury.ac.nz](mailto:haig.bishop@pg.canterbury.ac.nz){.email}\
+For more information, please contact:
+**Email**: [haig.bishop\@pg.canterbury.ac.nz](mailto:haig.bishop@pg.canterbury.ac.nz){.email}
 **GitHub**: HaigBishop
