@@ -83,142 +83,123 @@ print(plot3)
 
 ## Functions
 
-#### `simulate_data`
-
+### `simulate_data`
 Generates synthetic enzyme kinetics data for a specified model.
 
-**Parameters**\
-- **model**: Character string indicating the model ("MM", "CI", etc.).\
-- **params**: List of parameter values for the model (e.g. Km, Vmax).\
-- **x.min, x.max**: Numeric ranges to generate the primary independent
-variable.\
-- **z.values**: Optional numeric vector for models with a second
-independent variable.\
-- **n.samples**: Positive integer for how many unique x values to
-generate.\
-- **n.replicates**: Positive integer for replicates of those x values.\
-- **noise.level**: Numeric; 0 for no noise, or a positive value.\
-- **noise.type**: `"absolute"` or `"relative"` noise.\
-- **space**: Distribution of x values (`"linear"`, `"exponential"`,
-`"dilution.series"`, etc.).\
-- **dilution.factor**: Factor for serial dilutions if using
-`space = "dilution.series"`.\
-- **x.range**: Custom x values if using `space = "custom"`.\
-- **distribution**: Noise distribution (`"norm"` or `"truncated.norm"`).
+**Parameters**  
+- **model**: Character string indicating the model ("MM", "CI", etc.).  
+- **params**: List of parameter values for the model (e.g. Km, Vmax).  
+- **x.min, x.max**: Numeric ranges to generate the primary independent variable.  
+- **z.values**: Optional numeric vector for models with a second independent variable.  
+- **n.samples**: Positive integer for how many unique x values to generate.  
+- **n.replicates**: Positive integer for replicates of those x values.  
+- **noise.level**: Numeric; 0 for no noise, or a positive value.  
+- **noise.type**: `"absolute"` or `"relative"` noise.  
+- **space**: Distribution of x values (`"linear"`, `"exponential"`, `"dilution.series"`, etc.).  
+- **dilution.factor**: Factor for serial dilutions if using `space = "dilution.series"`.  
+- **x.range**: Custom x values if using `space = "custom"`.  
+- **distribution**: Noise distribution (`"norm"` or `"truncated.norm"`).  
 
-**Returns**\
-A data frame containing the generated data.
+**Returns**  
+A data frame containing the generated data.  
 
-#### `fit_model`
+---
 
-Fits a model to observed data and optionally returns confidence
-intervals and statistics.
+### `fit_model`
+Fits a model to observed data and optionally returns confidence intervals and statistics.
 
-**Parameters**\
-- **model**: Character string of the model to fit ("MM", "CI", etc.).\
-- **data.df**: Data frame containing the variables required by the
-chosen model.\
-- **start.params**: Starting values for parameters (list).\
-- **fit.method**: Fitting approach (`"nls"`, `"recursive"`, `"ss.calc"`,
-`"nonparametric"`).\
-- **locked.params**: Vector of parameter names to hold constant (only
-for `"nls"`).\
-- **add.minor.noise**: If `TRUE`, adds a tiny amount of noise prior to
-fitting.\
-- **override.data.point.check**: If `TRUE`, bypasses data-point quantity
-checks.\
-- **get.conf.int**: If `TRUE`, attempts to compute parameter confidence
-intervals.\
-- **conf.level**: Confidence level (0 \< value \< 1).\
-- **get.stats**: If `TRUE`, returns model fit statistics (R², AIC, BIC,
-etc.).
+**Parameters**  
+- **model**: Character string of the model to fit ("MM", "CI", etc.).  
+- **data.df**: Data frame containing the variables required by the chosen model.  
+- **start.params**: Starting values for parameters (list).  
+- **fit.method**: Fitting approach (`"nls"`, `"recursive"`, `"ss.calc"`, `"nonparametric"`).  
+- **locked.params**: Vector of parameter names to hold constant (only for `"nls"`).  
+- **add.minor.noise**: If `TRUE`, adds a tiny amount of noise prior to fitting.  
+- **override.data.point.check**: If `TRUE`, bypasses data-point quantity checks.  
+- **get.conf.int**: If `TRUE`, attempts to compute parameter confidence intervals.  
+- **conf.level**: Confidence level (0 < value < 1).  
+- **get.stats**: If `TRUE`, returns model fit statistics (R², AIC, BIC, etc.).  
 
-**Returns**\
-A list containing:\
-- **fitted.params**: Estimated parameter values or `NULL` if fitting
-failed.\
-- **statistics**: Fit statistics if requested (or `NULL` otherwise).\
-- **error**: A character message if fitting failed.
+**Returns**  
+A list containing:  
+- **fitted.params**: Estimated parameter values or `NULL` if fitting failed.  
+- **statistics**: Fit statistics if requested (or `NULL` otherwise).  
+- **error**: A character message if fitting failed.  
 
-#### `make_curve`
+---
 
-Generates a noiseless curve (dense points) for a specified model and
-parameter set.
+### `make_curve`
+Generates a noiseless curve (dense points) for a specified model and parameter set.
 
-**Parameters**\
-- **model**: Model name ("MM", "CI", etc.).\
-- **params**: Named list of parameter values (e.g. Km, Vmax).\
-- **x.min, x.max**: Numeric range for the primary independent variable.\
-- **z.values**: Optional numeric vector for a second independent
-variable.\
-- **n.samples**: Resolution (number of x points) for the curve.\
-- **space**: Distribution of x values (`"linear"`, `"exponential"`,
-etc.).\
-- **conf.int**: If `TRUE`, uses parameter bounds (e.g. `.lb`, `.ub`) to
-produce bounding curves.
+**Parameters**  
+- **model**: Model name ("MM", "CI", etc.).  
+- **params**: Named list of parameter values (e.g. Km, Vmax).  
+- **x.min, x.max**: Numeric range for the primary independent variable.  
+- **z.values**: Optional numeric vector for a second independent variable.  
+- **n.samples**: Resolution (number of x points) for the curve.  
+- **space**: Distribution of x values (`"linear"`, `"exponential"`, etc.).  
+- **conf.int**: If `TRUE`, uses parameter bounds (e.g. `.lb`, `.ub`) to produce bounding curves.  
 
-**Returns**\
-A data frame of noiseless data for the chosen model, optionally
-including lower and upper bound columns if `conf.int` is `TRUE`.
+**Returns**  
+A data frame of noiseless data for the chosen model, optionally including lower and upper bound columns if `conf.int` is `TRUE`.  
 
-#### `make_plot`
+---
 
+### `make_plot`
 Creates a ggplot-based enzyme kinetics plot for data and/or curves.
 
-**Parameters**\
-- **model**: Model name ("MM", "CI", etc.).\
-- **data.df**: Data frame to be plotted (optional).\
-- **curve.df**: Data frame for the model curve (optional).\
-- **extra.curve**: An additional curve (optional).\
-- **plot.transformation**: Plot transformation (`"standard"`,
-`"lineweaver"`, `"direct"`, etc.).\
-- **conf.int**: If `TRUE`, plots confidence interval ribbons using `.lb`
-and `.ub` columns.\
-- **x.label, y.label**: Custom axis labels (strings).\
-- **x.units, y.units**: Units to appear next to axis labels.\
-- **title**: Custom title.\
-- **legend.label**: Title of the legend.\
-- **palette**: Colour palette (e.g. `"Set1"`).\
-- **hide.legend**: If `TRUE`, hides the legend.
+**Parameters**  
+- **model**: Model name ("MM", "CI", etc.).  
+- **data.df**: Data frame to be plotted (optional).  
+- **curve.df**: Data frame for the model curve (optional).  
+- **extra.curve**: An additional curve (optional).  
+- **plot.transformation**: Plot transformation (`"standard"`, `"lineweaver"`, `"direct"`, etc.).  
+- **conf.int**: If `TRUE`, plots confidence interval ribbons using `.lb` and `.ub` columns.  
+- **x.label, y.label**: Custom axis labels (strings).  
+- **x.units, y.units**: Units to appear next to axis labels.  
+- **title**: Custom title.  
+- **legend.label**: Title of the legend.  
+- **palette**: Colour palette (e.g. `"Set1"`).  
+- **hide.legend**: If `TRUE`, hides the legend.  
 
-**Returns**\
-A `ggplot` object showing the desired enzyme kinetics plot.
+**Returns**  
+A `ggplot` object showing the desired enzyme kinetics plot.  
 
-#### `make_residual_plot`
+---
 
-Creates a residual plot to help evaluate how well the model fits the
-data.
+### `make_residual_plot`
+Creates a residual plot to help evaluate how well the model fits the data.
 
-**Parameters**\
-- **model**: Model name ("MM", "CI", etc.).\
-- **params**: Parameter list used to compute the fitted model.\
-- **data.df**: Data to calculate residuals against the model.\
-- **x.max**: Maximum value to display on the x-axis.\
-- **x.label, y.label**: Custom axis labels (strings).\
-- **x.units, y.units**: Units to appear next to axis labels.\
-- **title**: Custom title.\
-- **zero.line**: If `TRUE`, draws a line at y=0.\
-- **legend.label**: Legend title.\
-- **palette**: Colour palette (e.g. `"Set1"`).\
-- **hide.legend**: If `TRUE`, hides the legend.
+**Parameters**  
+- **model**: Model name ("MM", "CI", etc.).  
+- **params**: Parameter list used to compute the fitted model.  
+- **data.df**: Data to calculate residuals against the model.  
+- **x.max**: Maximum value to display on the x-axis.  
+- **x.label, y.label**: Custom axis labels (strings).  
+- **x.units, y.units**: Units to appear next to axis labels.  
+- **title**: Custom title.  
+- **zero.line**: If `TRUE`, draws a line at y=0.  
+- **legend.label**: Legend title.  
+- **palette**: Colour palette (e.g. `"Set1"`).  
+- **hide.legend**: If `TRUE`, hides the legend.  
 
-**Returns**\
-A `ggplot` object of residuals vs. the independent variable.
+**Returns**  
+A `ggplot` object of residuals vs. the independent variable.  
 
-#### `update_plot_curve`
+---
 
+### `update_plot_curve`
 Replaces or updates the curve in an existing kinetics plot.
 
-**Parameters**\
-- **model**: Model name ("MM", "MMSI", etc.).\
-- **plot**: The existing plot (a `ggplot` object).\
-- **curve.df**: Data frame for the new curve (optional).\
-- **extra.curve**: Additional curve to overlay (optional).\
-- **plot.transformation**: Plot transformation (`"standard"`,
-`"lineweaver"`, `"direct"`, etc.).\
-- **conf.int**: If `TRUE`, plots confidence intervals from curve.df.
+**Parameters**  
+- **model**: Model name ("MM", "MMSI", etc.).  
+- **plot**: The existing plot (a `ggplot` object).  
+- **curve.df**: Data frame for the new curve (optional).  
+- **extra.curve**: Additional curve to overlay (optional).  
+- **plot.transformation**: Plot transformation (`"standard"`, `"lineweaver"`, `"direct"`, etc.).  
+- **conf.int**: If `TRUE`, plots confidence intervals from curve.df.  
 
-**Returns**\
+**Returns**  
 The updated `ggplot` object.
 
 ## Enzyme Kinetics Analysis (EKA)
