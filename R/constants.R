@@ -664,3 +664,127 @@ MODEL_FUNCTIONS <- list(
         return(grid)
     }
 )
+
+
+
+# Each model's template in EnzymeML friendly format for ease of conversion
+#' @export
+ENZYME_ML_MODEL_TEMPLATES <- list(
+    MM = list(
+        name = "Michaelis-Menten",
+        equation = "Vmax * A / (Km + A)",
+        parameters = list(
+            list(name = "Km", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Vmax", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    MMSI = list(
+        name = "Michaelis-Menten with Substrate Inhibition",
+        equation = "Vmax * A / (Km + A + (A^2 / Ksi))",
+        parameters = list(
+            list(name = "Km", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Vmax", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Ksi", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    OGMM = list(
+        name = "Original Michaelis-Menten",
+        equation = "Kcat * E0 * A / (Km + A)",
+        parameters = list(
+            list(name = "Km", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Kcat", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "E0", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    ALTMM = list(
+        name = "Alternative Michaelis-Menten",
+        equation = "Kcat * KA * E0 * A / (Kcat + KA * A)",
+        parameters = list(
+            list(name = "KA", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Kcat", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "E0", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    CI = list(
+        name = "Competitive Inhibition",
+        equation = "Vmax * A / (Km * (1 + I / Ki) + A)",
+        parameters = list(
+            list(name = "Km", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Vmax", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Ki", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    UCI = list(
+        name = "Uncompetitive Inhibition",
+        equation = "Vmax * A / (Km + A * (1 + I / Ki))",
+        parameters = list(
+            list(name = "Km", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Vmax", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Ki", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    NCI = list(
+        name = "Non-competitive Inhibition",
+        equation = "Vmax * A / ((1 + I / Ki) * (Km + A))",
+        parameters = list(
+            list(name = "Km", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Vmax", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Ki", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    MI = list(
+        name = "Mixed Inhibition",
+        equation = "Vmax * A / (Km * (1 + I / Kic) + A * (1 + I / Kiu))",
+        parameters = list(
+            list(name = "Km", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Vmax", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Kic", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Kiu", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    TC = list(
+        name = "Ternary Complex",
+        equation = "Vmax * A * B / (KmB * A + KmA * B + A * B + Ksat * KmB)",
+        parameters = list(
+            list(name = "KmA", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "KmB", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Vmax", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Ksat", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    HILL = list(
+        name = "Hill",
+        equation = "Vmax * (A^n) / (Km^n + A^n)",
+        parameters = list(
+            list(name = "Km", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Vmax", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "n", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    PP = list(
+        name = "Ping-Pong",
+        equation = "Vmax * A * B / (KmA * B + KmB * A + A * B)",
+        parameters = list(
+            list(name = "KmA", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "KmB", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "Vmax", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    BK = list(
+        name = "Binding Kinetics",
+        equation = "P / (P + KD)",
+        parameters = list(
+            list(name = "KD", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    ),
+    QBK = list(
+        name = "Quadratic Binding Kinetics",
+        equation = "((R + P + KD) - sqrt((R + P + KD)^2 - 4 * R * P)) / (2 * R)",
+        parameters = list(
+            list(name = "KD", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "R", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL),
+            list(name = "P", value = NULL, unit = NULL, stdev = NULL, initial_value = NULL)
+        )
+    )
+)
+
