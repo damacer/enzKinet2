@@ -12,12 +12,14 @@
 #' @param extra.curve An extra curve to be displayed on top of the other
 #' @param plot.transformation Transformation to give the data.
 #' @param conf.int Boolean for whether or not to plot confidence intervals.
+#' @param y.range Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).
 #' @return Updated plot
 #' 
 #' @export
 
 update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL, 
-                              plot.transformation = "standard",  conf.int = FALSE) {
+                              plot.transformation = "standard",  conf.int = FALSE,
+                              y.range = NULL) {
     
     # Error Handling ================
     # Check if model is valid
@@ -43,6 +45,14 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     if (plot.transformation == "direct") {
         if (!is.null(curve.df) || !is.null(extra.curve)) {
             stop("Curves are not used in direct linear plot transformations. Please remove curve.df and extra.curve.")
+        }
+    }
+    if (!is.null(y.range)) {
+        if (!is.numeric(y.range) || length(y.range) != 2) {
+            stop("y.range must be a numeric vector of length 2, e.g., c(0, 10).")
+        }
+        if (y.range[1] >= y.range[2]) {
+            stop("y.range must specify a valid range where the first value is less than the second.")
         }
     }
     # ===============================
@@ -226,6 +236,10 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
                                    ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = NULL), 
                                    inherit.aes = FALSE)
         }
+    }
+    # If a y range was given
+    if (!is.null(y.range)) {
+        plot <- plot + ggplot2::scale_y_continuous(limits = y.range)
     }
     
     return(plot)

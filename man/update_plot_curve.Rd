@@ -10,7 +10,8 @@ update_plot_curve(
   curve.df = NULL,
   extra.curve = NULL,
   plot.transformation = "standard",
-  conf.int = FALSE
+  conf.int = FALSE,
+  y.range = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ update_plot_curve(
 \item{plot.transformation}{Transformation to give the data.}
 
 \item{conf.int}{Boolean for whether or not to plot confidence intervals.}
+
+\item{y.range}{Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).}
 }
 \value{
 Updated plot

@@ -18,7 +18,8 @@ make_plot(
   title = NULL,
   legend.label = NULL,
   palette = "Set1",
-  hide.legend = FALSE
+  hide.legend = FALSE,
+  y.range = NULL
 )
 }
 \arguments{
@@ -49,6 +50,8 @@ make_plot(
 \item{palette}{Custom plot colour palette (e.g., "Set1", "Set2", etc.).}
 
 \item{hide.legend}{Boolean to hide the plot legend.}
+
+\item{y.range}{Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).}
 }
 \value{
 A ggplot object representing the enzyme kinetics plot.

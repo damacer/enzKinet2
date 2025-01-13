@@ -19,6 +19,7 @@
 #' @param zero.line If TRUE (default), draws a dotted line at y=0.
 #' @param palette Custom plot colour palette.
 #' @param hide.legend Boolean to hide the plot legend.
+#' @param y.range Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).
 #' @return plot
 #' 
 #' @export
@@ -26,7 +27,8 @@
 make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL, 
                                y.label = NULL, x.units = NULL, y.units = NULL, 
                                title = NULL, zero.line = TRUE, 
-                               legend.label = NULL, palette = "Set1", hide.legend = FALSE) {
+                               legend.label = NULL, palette = "Set1", hide.legend = FALSE,
+                               y.range = NULL) {
     
     # Error Handling ================
     # Check if model is valid
@@ -75,6 +77,14 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     }
     if (!is.null(legend.label) && !is.character(legend.label)) {
         stop("legend.label must be a character string.")
+    }
+    if (!is.null(y.range)) {
+        if (!is.numeric(y.range) || length(y.range) != 2) {
+            stop("y.range must be a numeric vector of length 2, e.g., c(0, 10).")
+        }
+        if (y.range[1] >= y.range[2]) {
+            stop("y.range must specify a valid range where the first value is less than the second.")
+        }
     }
     # ===============================
     
@@ -243,6 +253,10 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     # Logic for hide.legend parameter
     if (hide.legend) {
         plot <- plot + ggplot2::theme(legend.position = "none")
+    }
+    # If a y range was given
+    if (!is.null(y.range)) {
+        plot <- plot + ggplot2::scale_y_continuous(limits = y.range)
     }
     # ===============================
     
