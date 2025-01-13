@@ -50,6 +50,46 @@ MODEL_VARIABLES <- list(
     QBK = c("P", "FB", "R")
 )
 
+# Each model's variables with nice names
+#' @export
+MODEL_VARIABLES_PRETTY <- list(
+    # Primary independent variable always first
+    # Dependent variable always second
+    MM = list("Substrate Conc. (A)" = "A", 
+              "Velocity (V)" = "V"),
+    MMSI = list("Substrate Conc. (A)" = "A", 
+                "Velocity (V)" = "V"),
+    OGMM = list("Substrate Conc. (A)" = "A", 
+                "Velocity (V)" = "V"),
+    ALTMM = list("Substrate Conc. (A)" = "A", 
+                 "Velocity (V)" = "V"),
+    CI = list("Substrate Conc. (A)" = "A", 
+              "Velocity (V)" = "V", 
+              "Inhibitor Conc. (I)" = "I"),
+    UCI = list("Substrate Conc. (A)" = "A", 
+               "Velocity (V)" = "V", 
+               "Inhibitor Conc. (I)" = "I"),
+    NCI = list("Substrate Conc. (A)" = "A", 
+               "Velocity (V)" = "V", 
+               "Inhibitor Conc. (I)" = "I"),
+    MI = list("Substrate Conc. (A)" = "A", 
+              "Velocity (V)" = "V", 
+              "Inhibitor Conc. (I)" = "I"),
+    TC = list("Substrate A Conc. (A)" = "A", 
+              "Velocity (V)" = "V", 
+              "Substrate B Conc. (B)" = "B"),
+    HILL = list("Substrate Conc. (A)" = "A", 
+                "Velocity (V)" = "V"),
+    PP = list("Substrate A Conc. (A)" = "A", 
+              "Velocity (V)" = "V", 
+              "Substrate B Conc. (B)" = "B"),
+    BK = list("Partner in Excess Conc. (P)" = "P", 
+              "Fraction Bound (FB)" = "FB"),
+    QBK = list("Partner in Excess Conc. (P)" = "P", 
+               "Fraction Bound (FB)" = "FB", 
+               "Trace Limiting Partner Conc. (R)" = "R")
+)
+
 # Each model's dependent variable's domain
 #' @export
 MODEL_DEPENDENT_VAR_DOMAINS <- list(
