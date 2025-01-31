@@ -30,6 +30,9 @@ install it using devtools.
 
     `devtools::install("enzKinet2")`
 
+## Dependencies:
+`ggplot2 (3.5.1), ggthemes (5.1.0), pracma (2.4.4), modelr (0.1.11), broom (1.0.7), nlstools (2.1.0), truncnorm (1.0.9)`
+
 ## Usage
 
 Once installed, you can load the package and start using its functions
