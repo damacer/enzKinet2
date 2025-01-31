@@ -1,4 +1,3 @@
-
 # enzKinet2 Version 2.0
 
 enzKinet2 is an R package used for the analysis of enzyme kinetics. It's
@@ -165,6 +164,8 @@ Creates a ggplot-based enzyme kinetics plot for data and/or curves.
 - **legend.label**: Title of the legend.  
 - **palette**: Colour palette (e.g. `"Set1"`).  
 - **hide.legend**: If `TRUE`, hides the legend.  
+- **y.range**: Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).  
+- **show.grid**: Boolean to show grid lines on the plot. Defaults to FALSE.  
 
 **Returns**  
 A `ggplot` object showing the desired enzyme kinetics plot.  
@@ -186,6 +187,8 @@ Creates a residual plot to help evaluate how well the model fits the data.
 - **legend.label**: Legend title.  
 - **palette**: Colour palette (e.g. `"Set1"`).  
 - **hide.legend**: If `TRUE`, hides the legend.  
+- **y.range**: Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).  
+- **show.grid**: Boolean to show grid lines on the plot. Defaults to FALSE.  
 
 **Returns**  
 A `ggplot` object of residuals vs. the independent variable.  
