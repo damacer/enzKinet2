@@ -190,7 +190,12 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
         ggplot2::ggtitle(default.title) +
         ggplot2::labs(color = legend_name) +
         ggthemes::theme_few() + 
-        ggplot2::theme(panel.grid = if(show.grid) ggplot2::element_line() else ggplot2::element_blank()) +
+        ggplot2::theme(
+            panel.grid = if(show.grid) 
+                ggplot2::element_line(color = "grey69", size = 0.5) 
+            else 
+                ggplot2::element_blank()
+        ) +
         ggplot2::scale_color_brewer(palette = palette) +
         ggplot2::geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
         ggplot2::ylim(y.limits) +

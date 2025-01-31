@@ -188,7 +188,12 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         ggplot2::ggtitle(plot.title) +
         ggplot2::labs(color = legend_name) +
         ggthemes::theme_few() +
-        ggplot2::theme(panel.grid = if(show.grid) ggplot2::element_line() else ggplot2::element_blank())
+        ggplot2::theme(
+            panel.grid = if(show.grid) 
+                ggplot2::element_line(color = "grey69", size = 0.5) 
+            else 
+                ggplot2::element_blank()
+        )
     
     # Get the valid domain of the dependent variable
     dependent.var.domain <- MODEL_DEPENDENT_VAR_DOMAINS[[model]]
@@ -500,3 +505,5 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     
     return(plot)
 }
+
+
