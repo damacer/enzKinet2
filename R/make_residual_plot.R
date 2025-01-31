@@ -20,6 +20,7 @@
 #' @param palette Custom plot colour palette.
 #' @param hide.legend Boolean to hide the plot legend.
 #' @param y.range Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).
+#' @param show.grid Boolean to show grid lines on the plot. Defaults to FALSE.
 #' @return plot
 #' 
 #' @export
@@ -28,7 +29,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
                                y.label = NULL, x.units = NULL, y.units = NULL, 
                                title = NULL, zero.line = TRUE, 
                                legend.label = NULL, palette = "Set1", hide.legend = FALSE,
-                               y.range = NULL) {
+                               y.range = NULL, show.grid = FALSE) {
     
     # Error Handling ================
     # Check if model is valid
@@ -85,6 +86,10 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
         if (y.range[1] >= y.range[2]) {
             stop("y.range must specify a valid range where the first value is less than the second.")
         }
+    }
+    # Check if show.grid is a boolean
+    if (!is.logical(show.grid)) {
+        stop("show.grid must be TRUE or FALSE.")
     }
     # ===============================
     
@@ -185,6 +190,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
         ggplot2::ggtitle(default.title) +
         ggplot2::labs(color = legend_name) +
         ggthemes::theme_few() + 
+        ggplot2::theme(panel.grid = if(show.grid) ggplot2::element_line() else ggplot2::element_blank()) +
         ggplot2::scale_color_brewer(palette = palette) +
         ggplot2::geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
         ggplot2::ylim(y.limits) +

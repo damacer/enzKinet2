@@ -21,6 +21,7 @@
 #' @param palette Custom plot colour palette (e.g., "Set1", "Set2", etc.).
 #' @param hide.legend Boolean to hide the plot legend.
 #' @param y.range Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).
+#' @param show.grid Boolean to show grid lines on the plot. Defaults to FALSE.
 #' @return A ggplot object representing the enzyme kinetics plot.
 #' 
 #' @export
@@ -30,7 +31,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
                       x.label = NULL, y.label = NULL,
                       x.units = NULL, y.units = NULL, title = NULL, 
                       legend.label = NULL, palette = "Set1", hide.legend = FALSE, 
-                      y.range = NULL) {
+                      y.range = NULL, show.grid = FALSE) {
     
     # Error Handling ================
     # Check if model is valid
@@ -95,6 +96,10 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         if (y.range[1] >= y.range[2]) {
             stop("y.range must specify a valid range where the first value is less than the second.")
         }
+    }
+    # Check if show.grid is a boolean
+    if (!is.logical(show.grid)) {
+        stop("show.grid must be TRUE or FALSE.")
     }
     # ===============================
     
@@ -182,7 +187,8 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         ggplot2::ylab(sprintf(y.axis)) +
         ggplot2::ggtitle(plot.title) +
         ggplot2::labs(color = legend_name) +
-        ggthemes::theme_few()
+        ggthemes::theme_few() +
+        ggplot2::theme(panel.grid = if(show.grid) ggplot2::element_line() else ggplot2::element_blank())
     
     # Get the valid domain of the dependent variable
     dependent.var.domain <- MODEL_DEPENDENT_VAR_DOMAINS[[model]]

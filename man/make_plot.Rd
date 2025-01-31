@@ -19,7 +19,8 @@ make_plot(
   legend.label = NULL,
   palette = "Set1",
   hide.legend = FALSE,
-  y.range = NULL
+  y.range = NULL,
+  show.grid = FALSE
 )
 }
 \arguments{
@@ -52,6 +53,8 @@ make_plot(
 \item{hide.legend}{Boolean to hide the plot legend.}
 
 \item{y.range}{Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).}
+
+\item{show.grid}{Boolean to show grid lines on the plot. Defaults to FALSE.}
 }
 \value{
 A ggplot object representing the enzyme kinetics plot.
