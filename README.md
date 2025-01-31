@@ -1,3 +1,8 @@
+<p align="center">
+    <img src="resources/logo.png" alt="EKA Logo" width="300">
+</p>
+
+
 # enzKinet2 Version 2.0
 
 enzKinet2 is an R package used for the analysis of enzyme kinetics. It's
