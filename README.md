@@ -1,5 +1,5 @@
 
-# enzKinet2 (v2.0)
+# enzKinet2
 
 enzKinet2 is an R package used for the analysis of enzyme kinetics. 
 
