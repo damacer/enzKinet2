@@ -1,44 +1,53 @@
-<p align="center">
-    <img src="resources/logo.png" alt="EKA Logo" width="300">
-</p>
 
+# enzKinet2 (v2.0)
 
-# enzKinet2 Version 2.0
+enzKinet2 is an R package used for the analysis of enzyme kinetics. 
 
-enzKinet2 is an R package used for the analysis of enzyme kinetics. It's
-primary functions are: 1) fitting models to kinetics data, 2) simulating
-kinetics data, and 3) plotting these data along with curves.
+### Primary Uses: 
+1) Simulating kinetics data
+2) Fitting models to kinetics data
+3) Plotting kinetics data
 
-**The package supports a range of kinetics models, including:** -
-Michaelis-Menten (MM) - Michaelis-Menten with Substrate Inhibition
-(MMSI) - Original Michaelis-Menten (OGMM) - Alternative Michaelis-Menten
-(ALTMM) - Competitive Inhibition (CI) - Uncompetitive Inhibition (UCI) -
-Non-competitive Inhibition (NCI) - Mixed Inhibition (MI) - Ternary
-Complex (TC) - Hill (HILL) - Ping-Pong (PP) - Binding Kinetics (BK) -
-Quadratic Binding Kinetics (QBK)
+### Supported Models:
+ - Michaelis-Menten (MM)
+ - Michaelis-Menten with Substrate Inhibition (MMSI)
+ - Original Michaelis-Menten (OGMM)
+ - Alternative Michaelis-Menten (ALTMM)
+ - Competitive Inhibition (CI)
+ - Uncompetitive Inhibition (UCI)
+ - Non-competitive Inhibition (NCI)
+ - Mixed Inhibition (MI)
+ - Ternary Complex (TC)
+ - Hill (HILL)
+ - Ping-Pong (PP)
+ - Binding Kinetics (BK)
+ - Quadratic Binding Kinetics (QBK)
 
 ## Installation
 
 To install the enzKinet2 package, you can clone the repository and
 install it using devtools.
 
-1.  Clone the repository (CLI)
+```bash
+# 1. Clone the repository (CLI)
+git clone https://github.com/damacer/enzKinet2.git
+```
+```r
+# 2. Install the R package (R)
+devtools::install("enzKinet2")
+```
 
-    `git clone https://github.com/damacer/enzKinet2.git`
+## Enzyme Kinetics Analysis (EKA)
 
-2.  Install the R package (R)
+<p align="center">
+    <img src="resources/logo.png" alt="EKA Logo" width="200">
+</p>
 
-    `devtools::install("enzKinet2")`
+Enzyme Kinetics Analysis (EKA) is an R Shiny web application powered by the enzKinet2 package. EKA can be accessed at https://enzyme-kinetics.shinyapps.io/enzkinet_webpage/. 
 
-## Dependencies:
-`ggplot2 (3.5.1), ggthemes (5.1.0), pracma (2.4.4), modelr (0.1.11), broom (1.0.7), nlstools (2.1.0), truncnorm (1.0.9)`
+For more detailed information on EKA, you can refer to the associated [publication](https://iubmb.onlinelibrary.wiley.com/doi/10.1002/bmb.21823).
 
-## Usage
-
-Once installed, you can load the package and start using its functions
-to analyze enzyme kinetics data. 
-
-#### Example usage
+## Example Usage
 
 ``` r
 
@@ -217,15 +226,19 @@ Replaces or updates the curve in an existing kinetics plot.
 **Returns**  
 The updated `ggplot` object.
 
-## Enzyme Kinetics Analysis (EKA)
-Enzyme Kinetics Analysis (EKA) is a web application that provides an intuitive inferface for the enzKinet2 package. EKA can be accessed [here](https://enzyme-kinetics.shinyapps.io/enzkinet_webpage/). 
+## Dependencies:
+ - ggplot2 (3.5.1)
+ - ggthemes (5.1.0)
+ - pracma (2.4.4)
+ - modelr (0.1.11)
+ - broom (1.0.7)
+ - nlstools (2.1.0)
+ - truncnorm (1.0.9)
 
-#### Academic Paper
-For more detailed information on EKA, you can refer to our academic [paper](https://iubmb.onlinelibrary.wiley.com/doi/10.1002/bmb.21823).
+## Authors
+- **Primary Developer:** Haig Bishop
+- **Previous Developer:** Daniel Mak
 
-## Contact
-For more information, please contact:
-
-**Email**: [haig.bishop\@pg.canterbury.ac.nz](mailto:haig.bishop@pg.canterbury.ac.nz)
-
-**GitHub**: HaigBishop
+For more information, please contact Haig:
+- **Email**: [haig.bishop\@pg.canterbury.ac.nz](mailto:haig.bishop@pg.canterbury.ac.nz)
+- **GitHub**: HaigBishop
