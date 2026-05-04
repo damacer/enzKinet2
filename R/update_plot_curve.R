@@ -26,6 +26,10 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     if (!model %in% VALID_MODELS) {
         stop("Invalid model. Please choose a valid model such as 'MM' or 'MMSI'.")
     }
+    # Check if plot is a ggplot object
+    if (!inherits(plot, "gg")) {
+        stop("plot must be a ggplot object.")
+    }
     # Check if curve.df is a dataframe if provided
     if (!is.null(curve.df) && !is.data.frame(curve.df)) {
         stop("curve.df must be a dataframe.")
@@ -34,6 +38,10 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     if (!is.null(extra.curve) && !is.data.frame(extra.curve)) {
         stop("extra.curve must be a dataframe.")
     }
+    # Check if conf.int is a logical
+    if (!is.logical(conf.int)) {
+        stop("conf.int must be TRUE or FALSE.")
+    }
     # Check if confidence interval curves were provided (if used)
     if (conf.int && is.null(curve.df)) {
         stop("Confidence intervals requested, but curve.df is missing.")
@@ -41,6 +49,10 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     # Check if confidence interval curves were provided (if used)
     if (conf.int && !all(CONFIDENCE_INTERVAL_BOUNDING_VARIABLES[[model]] %in% colnames(curve.df))) {
         stop("Confidence interval curves (e.g. 'V.lb', 'V.ub') not provided.")
+    }
+    # Check if plot.transformation is valid
+    if (!plot.transformation %in% names(PLOT_TRANSFORMATIONS)) {
+        stop("plot.transformation is invalid.")
     }
     if (plot.transformation == "direct") {
         if (!is.null(curve.df) || !is.null(extra.curve)) {
@@ -64,6 +76,10 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     first.independent.var <- model.vars[1]
     full.model.name <- PLOT_TITLES[[model]]
     model.vars.string <- MODEL_VARIABLE_STRINGS[[model]]
+    # Check if plot.transformation is blocked for this model
+    if (plot.transformation %in% BLOCKED_TRANSFORMATIONS[[model]]) {
+        stop(paste("The", plot.transformation, "transformation is not supported for the", full.model.name, "model."))
+    }
     # If curve.df is provided, check if it has the necessary columns (variables)
     if (!is.null(curve.df)) {
         if (!all(model.vars %in% colnames(curve.df))) {

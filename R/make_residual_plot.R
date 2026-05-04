@@ -91,6 +91,14 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     if (!is.logical(show.grid)) {
         stop("show.grid must be TRUE or FALSE.")
     }
+    # Check if zero.line is a logical
+    if (!is.logical(zero.line)) {
+        stop("zero.line must be TRUE or FALSE.")
+    }
+    # Check if hide.legend is a logical
+    if (!is.logical(hide.legend)) {
+        stop("hide.legend must be TRUE or FALSE.")
+    }
     # ===============================
     
     

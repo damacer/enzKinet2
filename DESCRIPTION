@@ -10,7 +10,7 @@ Authors@R:
     person(given = "Haig",
            family = "Bishop",
            role = c("aut", "cre"),
-           email = "haig.bishop@pg.canterbury.ac.nz",
+           email = "haigvbishop@gmail.com",
            comment = c(ORCID = "0000-0003-4118-3598"))
 Description: This package contains models of enzyme kinetics. It includes 
     functions to fit models to data, returning parameters (Km, Vmax, etc.). 

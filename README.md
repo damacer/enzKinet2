@@ -240,5 +240,5 @@ The updated `ggplot` object.
 - **Previous Developer:** Daniel Mak
 
 For more information, please contact Haig:
-- **Email**: [haig.bishop\@pg.canterbury.ac.nz](mailto:haig.bishop@pg.canterbury.ac.nz)
+- **Email**: [haigvbishop\@gmail.com](mailto:haigvbishop@gmail.com)
 - **GitHub**: HaigBishop

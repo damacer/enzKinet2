@@ -44,6 +44,22 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     if (nrow(data.df) == 0) {
         stop("data.df must not be empty.")
     }
+    # Check if add.minor.noise is a logical
+    if (!is.logical(add.minor.noise)) {
+        stop("add.minor.noise must be TRUE or FALSE.")
+    }
+    # Check if override.data.point.check is a logical
+    if (!is.logical(override.data.point.check)) {
+        stop("override.data.point.check must be TRUE or FALSE.")
+    }
+    # Check if get.conf.int is a logical
+    if (!is.logical(get.conf.int)) {
+        stop("get.conf.int must be TRUE or FALSE.")
+    }
+    # Check if get.stats is a logical
+    if (!is.logical(get.stats)) {
+        stop("get.stats must be TRUE or FALSE.")
+    }
     # Check if fit.method is valid
     if (!is.null(fit.method) && !fit.method %in% names(FITTING_METHODS)) {
         stop("Invalid fit method. Please choose a valid method such as 'nls', 'recursive', 'ss.calc' or 'nonparametric.")
@@ -86,6 +102,16 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # Check if data.df has the necessary columns (variables)
     if (!all(model.vars %in% colnames(data.df))) {
             stop(paste("For the", full.model.name, "model, data.df must contain columns (variables) named", model.vars.string, "."))
+    }
+    # Check if required columns are numeric
+    for (var in model.vars) {
+        if (!is.numeric(data.df[[var]])) {
+            stop(paste("Column", var, "in data.df must be numeric."))
+        }
+    }
+    # Check for NA values in required columns
+    if (anyNA(data.df[, model.vars, drop = FALSE])) {
+        stop("data.df must not contain NA values in the required columns.")
     }
     # ===============================
     
@@ -135,6 +161,10 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         # Ensure all values of locked.params are in param.names
         if (!is.null(locked.params) && !all(locked.params %in% param.names)) {
             stop("All values of locked.params must be from:", model.params.string, ".")
+        }
+        # Ensure not all parameters are locked (nothing left to fit)
+        if (!is.null(locked.params) && all(param.names %in% locked.params)) {
+            stop("All parameters are locked. Unlock at least one parameter to fit.")
         }
         # ===============================
         

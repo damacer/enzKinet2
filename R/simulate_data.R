@@ -46,6 +46,10 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL,
     if (x.min >= x.max) {
         stop("x.min must be less than x.max.")
     }
+    # Check if x.min is non-negative
+    if (x.min < 0) {
+        stop("x.min must be a non-negative value.")
+    }
     # Check if n.samples is a positive integer
     if (!is.numeric(n.samples) || n.samples <= 0 || floor(n.samples) != n.samples) {
         stop("n.samples must be a positive integer.")
@@ -95,6 +99,9 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL,
     if (num.independent.vars == 2) {
         if (is.null(z.values) || length(z.values) < 1) {
             stop("For models with two independent variables, z.values must be provided and contain at least one value.")
+        }
+        if (!is.numeric(z.values)) {
+            stop("z.values must be a numeric vector.")
         }
         if (any(z.values < 0)) {
             stop("All values in z.values must be greater than or equal to 0.")

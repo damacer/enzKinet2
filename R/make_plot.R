@@ -101,6 +101,14 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     if (!is.logical(show.grid)) {
         stop("show.grid must be TRUE or FALSE.")
     }
+    # Check if conf.int is a logical
+    if (!is.logical(conf.int)) {
+        stop("conf.int must be TRUE or FALSE.")
+    }
+    # Check if hide.legend is a logical
+    if (!is.logical(hide.legend)) {
+        stop("hide.legend must be TRUE or FALSE.")
+    }
     # ===============================
     
     
@@ -111,6 +119,10 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     first.independent.var <- model.vars[1]
     full.model.name <- PLOT_TITLES[[model]]
     model.vars.string <- MODEL_VARIABLE_STRINGS[[model]]
+    # Check if plot.transformation is blocked for this model
+    if (plot.transformation %in% BLOCKED_TRANSFORMATIONS[[model]]) {
+        stop(paste("The", plot.transformation, "transformation is not supported for the", full.model.name, "model."))
+    }
     # If data.df is provided, check if it has the necessary columns (variables)
     if (!is.null(data.df)) {
         if (!all(model.vars %in% colnames(data.df))) {
