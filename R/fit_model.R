@@ -17,6 +17,7 @@
 #' @param conf.level Confidence level value of confidence interval.
 #' @param get.stats Get statistics of the fit (returned alongside fitted.params).
 #' @return fitted.params
+#' @importFrom stats as.formula coef median nls nls.control rnorm
 #' 
 #' @export
 
@@ -88,7 +89,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     num_data_points <- nrow(data.df)
     if (!override.data.point.check) {
         if (num_data_points < 3) {
-            stop("Less than 3 data points is unlikely insufficient to fit the model. Override this by setting override.data.point.check to TRUE.")
+            stop("Less than 3 data points is likely insufficient to fit the model. Override this by setting override.data.point.check to TRUE.")
         }
     }
     # ===============================
@@ -120,8 +121,9 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     if (add.minor.noise) {
         # For reproducibility
         set.seed(24)
+        dependent.var.name <- MODEL_VARIABLES[[model]][2]
         noise <- rnorm(n = nrow(data.df), mean = 0, sd = 1e-6)
-        data.df <- data.df + noise
+        data.df[[dependent.var.name]] <- data.df[[dependent.var.name]] + noise
     }
     # ===============================
     

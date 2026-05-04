@@ -1,17 +1,18 @@
 Package: enzKinet2
 Title: Models for Enzyme Kinetic Analysis
 Version: 2.0.5
-Authors@R: 
+Authors@R: c(
     person(given = "Daniel",
            family = "Mak",
            role = c("aut"),
            email = "dam121@uclive.ac.nz",
-           comment = c(ORCID = "0000-0002-3355-0696"))
+           comment = c(ORCID = "0000-0002-3355-0696")),
     person(given = "Haig",
            family = "Bishop",
            role = c("aut", "cre"),
            email = "haigvbishop@gmail.com",
            comment = c(ORCID = "0000-0003-4118-3598"))
+    )
 Description: This package contains models of enzyme kinetics. It includes 
     functions to fit models to data, returning parameters (Km, Vmax, etc.). 
     It also enables simulation of data, given parameters.

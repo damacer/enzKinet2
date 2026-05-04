@@ -1,5 +1,26 @@
 # constants.R
 
+#' Exported package constants
+#'
+#' Shared model metadata used by enzKinet2 functions, including valid model
+#' names, model parameters, variables, formulas, plotting transformations,
+#' fitting methods, and EnzymeML templates.
+#'
+#' @format Named vectors and lists.
+#' @name package_constants
+#' @aliases VALID_MODELS ALL_PARAMETERS ALL_EXTRA_INDEPENDENT_VARS
+#' @aliases MODEL_PARAMETERS MODEL_VARIABLES MODEL_VARIABLES_PRETTY
+#' @aliases MODEL_DEPENDENT_VAR_DOMAINS MODEL_OPTIONS MODEL_OPTIONS_GROUPED
+#' @aliases PLOT_TITLES AXIS_TITLES MODEL_PARAMETER_STRINGS
+#' @aliases MODEL_VARIABLE_STRINGS MODEL_FORMULAE MODEL_FORMULAE_DISPLAY
+#' @aliases MODEL_VARIABLES_DISPLAY PLOT_TRANSFORMATIONS
+#' @aliases PLOT_TRANSFORMATION_OPTIONS PLOT_TRANSFORMATION_TITLES
+#' @aliases PLOT_TRANSFORMATION_X_AXIS_TITLES
+#' @aliases PLOT_TRANSFORMATION_Y_AXIS_TITLES BLOCKED_TRANSFORMATIONS
+#' @aliases FITTING_METHODS_OPTIONS FITTING_METHODS BLOCKED_FITTING_METHODS
+#' @aliases PLOT_COLOUR_PALETTES ENZYME_ML_MODEL_TEMPLATES
+NULL
+
 # All models
 #' @export
 VALID_MODELS <- c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "BK", "QBK")
@@ -699,7 +720,7 @@ MODEL_FUNCTIONS <- list(
         # Create a data frame with all combinations of P.range
         grid <- expand.grid(P = P.range, R = R.range)
         # Calculate FB for each combination
-        grid$ FB <- ((grid$R + grid$P + KD) - sqrt((grid$R + grid$P + KD)^2 - 4 * grid$R * grid$P)) / (2 * grid$R)
+        grid$FB <- ((grid$R + grid$P + KD) - sqrt((grid$R + grid$P + KD)^2 - 4 * grid$R * grid$P)) / (2 * grid$R)
         # Return data frame
         return(grid)
     }
@@ -827,4 +848,3 @@ ENZYME_ML_MODEL_TEMPLATES <- list(
         )
     )
 )
-
