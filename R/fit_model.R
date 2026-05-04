@@ -211,7 +211,13 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         # Add locked.params to fitted.params
         if (!is.null(fitted.params) && !is.null(locked.params)) {
             for (locked.param in locked.params) {
-                fitted.params[locked.param] <- start.params[[locked.param]]
+                locked.value <- start.params[[locked.param]]
+                fitted.params[locked.param] <- locked.value
+                # A locked parameter has a CI of [value, value]
+                if (get.conf.int) {
+                    fitted.params[[paste0(locked.param, ".lb")]] <- locked.value
+                    fitted.params[[paste0(locked.param, ".ub")]] <- locked.value
+                }
             }
         }
     }
