@@ -11,7 +11,7 @@
 #' @param curve.df Curve to be plotted as line.
 #' @param extra.curve An extra curve to be plotted on top of the other (black).
 #' @param plot.transformation Transformation to apply to data before plotting (e.g., "standard", "lineweaver", "direct").
-#' @param conf.int Whether or not to plot confidence intervals.
+#' @param conf.int If TRUE, plots a parameter uncertainty band (shaded envelope derived from parameter confidence interval bounds).
 #' @param x.label Custom x-axis label.
 #' @param y.label Custom y-axis label.
 #' @param x.units Units for the x-axis, such as "mM" or "µM". Defaults to NULL (no units).
@@ -149,12 +149,12 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
             extra.curve <- NULL
         }
     }
-    # Check if confidence interval curves were provided (if used)
+    # Check if confidence band curves were provided (if used)
     if (conf.int && is.null(curve.df)) {
-        stop("Confidence intervals requested, but curve.df is missing.")
+        stop("Confidence band requested, but curve.df is missing.")
     }
     if (conf.int && !all(CONFIDENCE_INTERVAL_BOUNDING_VARIABLES[[model]] %in% colnames(curve.df))) {
-        stop("Confidence interval curves (e.g. 'V.lb', 'V.ub') not provided.")
+        stop("Parameter confidence band curves (e.g. 'V.lb', 'V.ub') not provided.")
     }
     # ===============================
     
@@ -294,7 +294,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         }
         # Loop through each data df
         for (i in seq_along(curve.dfs)) {
-            # Add a confidence interval ribbon to the plot
+            # Add a parameter uncertainty band ribbon to the plot
             plot <- plot + ggplot2::geom_ribbon(
                 data = curve.dfs[[i]], 
                 ggplot2::aes_string(
