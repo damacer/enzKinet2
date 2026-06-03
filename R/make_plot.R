@@ -236,7 +236,14 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
             names(ub.curve.df) <- sub("\\.ub$", "", names(ub.curve.df))
             ub.curve.df <- transformation(ub.curve.df, x.name = first.independent.var, y.name = dependent.var)
             names(ub.curve.df) <- paste0(names(ub.curve.df), ".ub")
-            
+
+            # Lineweaver (1/V) and Hanes (A/V) are decreasing in V, so what was the
+            # lower-V curve is now the higher value in transformed space. Swap labels.
+            if (plot.transformation %in% c("lineweaver", "hanes")) {
+                names(lb.curve.df) <- sub("\\.lb$", ".ub", names(lb.curve.df))
+                names(ub.curve.df) <- sub("\\.ub$", ".lb", names(ub.curve.df))
+            }
+
             # Reintegrate transformed lower and upper bound curves into curve.df
             curve.df <- cbind(curve.df[, !grepl("\\.lb$|\\.ub$", names(curve.df))], lb.curve.df, ub.curve.df)
         }
