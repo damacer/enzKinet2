@@ -176,7 +176,7 @@ Creates a ggplot-based enzyme kinetics plot for data and/or curves.
 - **plot.transformation**: Plot transformation (`"standard"`, `"lineweaver"`, `"direct"`, etc.).  
 - **conf.int**: If `TRUE`, plots confidence interval ribbons using `.lb` and `.ub` columns.  
 - **x.label, y.label**: Custom axis labels (strings).  
-- **x.units, y.units**: Units to appear next to axis labels.  
+- **x.units, y.units**: Units of the raw data variables (e.g. `"mM"`, `"µmol/s"`).
 - **title**: Custom title.  
 - **legend.label**: Title of the legend.  
 - **palette**: Colour palette (e.g. `"Set1"`).  
@@ -198,7 +198,7 @@ Creates a residual plot to help evaluate how well the model fits the data.
 - **data.df**: Data to calculate residuals against the model.  
 - **x.max**: Maximum value to display on the x-axis.  
 - **x.label, y.label**: Custom axis labels (strings).  
-- **x.units, y.units**: Units to appear next to axis labels.  
+- **x.units, y.units**: Units of the raw data variables (e.g. `"mM"`, `"µmol/s"`).  
 - **title**: Custom title.  
 - **zero.line**: If `TRUE`, draws a line at y=0.  
 - **legend.label**: Legend title.  

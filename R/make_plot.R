@@ -14,8 +14,8 @@
 #' @param conf.int If TRUE, plots a parameter uncertainty band (shaded envelope derived from parameter confidence interval bounds).
 #' @param x.label Custom x-axis label.
 #' @param y.label Custom y-axis label.
-#' @param x.units Units for the x-axis, such as "mM" or "µM". Defaults to NULL (no units).
-#' @param y.units Units for the y-axis, such as "µmol/s" or "U/mL". Defaults to NULL (no units).
+#' @param x.units Units of the raw x-variable, such as "mM" or "µM".
+#' @param y.units Units of the raw y-variable, such as "µmol/s" or "U/mL".
 #' @param title Custom plot title.
 #' @param legend.label Custom legend label.
 #' @param palette Custom plot colour palette (e.g., "Set1", "Set2", etc.).
@@ -183,12 +183,43 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         transformation_text <- gsub("Y-AXIS", default.y.axis, transformation_text)
         y.axis <- paste(transformation_text, default.y.axis)
     }
-    # Append units to axis labels if x.units or y.units are provided
-    if (!is.null(x.units) && x.units != "") {
-        x.axis <- paste0(x.axis, " (", x.units, ")")
+    # Derive the units appropriate for the plotted (transformed) quantity. 
+    # x.units and y.units describe the raw data variables. 
+    # For transformed axes, the displayed units must reflect the mathematical operation applied.
+    effective.x.units <- x.units
+    effective.y.units <- y.units
+    if (plot.transformation == "lineweaver") {
+        # Both axes are reciprocals: 1/x and 1/y
+        if (!is.null(x.units) && x.units != "") effective.x.units <- paste0("1/", x.units)
+        if (!is.null(y.units) && y.units != "") effective.y.units <- paste0("1/", y.units)
+    } else if (plot.transformation == "hanes") {
+        # y-axis is [A]/V; x-axis is unchanged
+        if (!is.null(x.units) && x.units != "" && !is.null(y.units) && y.units != "") {
+            effective.y.units <- paste0(x.units, "/", y.units)
+        } else if (!is.null(x.units) && x.units != "") {
+            effective.y.units <- x.units
+        } else {
+            effective.y.units <- NULL
+        }
+    } else if (plot.transformation == "eadie") {
+        # x-axis is V/[A]; y-axis is unchanged
+        if (!is.null(y.units) && y.units != "" && !is.null(x.units) && x.units != "") {
+            effective.x.units <- paste0(y.units, "/", x.units)
+        } else if (!is.null(y.units) && y.units != "") {
+            effective.x.units <- y.units
+        } else {
+            effective.x.units <- NULL
+        }
+    } else if (plot.transformation == "log10") {
+        # log10 transforms the x-axis to a dimensionless quantity
+        effective.x.units <- NULL
     }
-    if (!is.null(y.units) && y.units != "") {
-        y.axis <- paste0(y.axis, " (", y.units, ")")
+    # Append units to axis labels if x.units or y.units are provided
+    if (!is.null(effective.x.units) && effective.x.units != "") {
+        x.axis <- paste0(x.axis, " (", effective.x.units, ")")
+    }
+    if (!is.null(effective.y.units) && effective.y.units != "") {
+        y.axis <- paste0(y.axis, " (", effective.y.units, ")")
     }
     
     # Make default plot
@@ -492,8 +523,8 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     # If an x-axis label was given
     if (!is.null(x.label)) {
         # Append units to axis labels if x.units is provided
-        if (!is.null(x.units) && x.units != "") {
-            x.label <- paste0(x.label, " (", x.units, ")")
+        if (!is.null(effective.x.units) && effective.x.units != "") {
+            x.label <- paste0(x.label, " (", effective.x.units, ")")
         }
         # Add the label
         plot <- plot + ggplot2::xlab(sprintf(x.label))
@@ -501,8 +532,8 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     # If an y-axis label was given
     if (!is.null(y.label)) {
         # Append units to axis labels if y.units is provided
-        if (!is.null(y.units) && y.units != "") {
-            y.label <- paste0(y.label, " (", y.units, ")")
+        if (!is.null(effective.y.units) && effective.y.units != "") {
+            y.label <- paste0(y.label, " (", effective.y.units, ")")
         }
         # Add the label
         plot <- plot + ggplot2::ylab(sprintf(y.label))
