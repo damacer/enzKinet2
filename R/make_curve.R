@@ -13,7 +13,7 @@
 #' @param z.values The z values to cover (discrete).
 #' @param n.samples The resolution of the curve (~150 is usually enough).
 #' @param space The distribution of the space to generate data.
-#' @param conf.int If TRUE, uses parameter confidence interval bounds to generate a parameter uncertainty band (lower and upper envelope curves).
+#' @param conf.int If TRUE, uses parameter confidence interval bounds to generate a parameter uncertainty envelope (lower and upper envelope curves).
 #' @return curve.df
 #' 
 #' @export
@@ -27,7 +27,7 @@ make_curve <- function(model, params, x.min, x.max, z.values = NULL,
                               noise.level = 0, n.samples = n.samples, space = space)
     
     
-    # If a confidence band is requested, generate envelope curves from parameter CI bounds ====
+    # If a confidence envelope is requested, generate envelope curves from parameter CI bounds ====
     if (conf.int) {
         # Check params has all necessary lower and upper bounds
         needed.bounding.params <- CONFIDENCE_INTERVAL_BOUNDING_PARAMS[[model]]

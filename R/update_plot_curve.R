@@ -11,7 +11,7 @@
 #' @param model The chosen model ("MM", "MMSI", etc.)
 #' @param extra.curve An extra curve to be displayed on top of the other
 #' @param plot.transformation Transformation to give the data.
-#' @param conf.int If TRUE, plots a parameter uncertainty band (shaded envelope derived from parameter confidence interval bounds).
+#' @param conf.int If TRUE, plots a parameter uncertainty envelope (shaded envelope derived from parameter confidence interval bounds).
 #' @param y.range Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).
 #' @return Updated plot
 #' 
@@ -42,12 +42,12 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     if (!is.logical(conf.int)) {
         stop("conf.int must be TRUE or FALSE.")
     }
-    # Check if confidence band curves were provided (if used)
+    # Check if confidence envelope curves were provided (if used)
     if (conf.int && is.null(curve.df)) {
-        stop("Confidence band requested, but curve.df is missing.")
+        stop("Confidence envelope requested, but curve.df is missing.")
     }
     if (conf.int && !all(CONFIDENCE_INTERVAL_BOUNDING_VARIABLES[[model]] %in% colnames(curve.df))) {
-        stop("Parameter confidence band curves (e.g. 'V.lb', 'V.ub') not provided.")
+        stop("Parameter confidence envelope curves (e.g. 'V.lb', 'V.ub') not provided.")
     }
     # Check if plot.transformation is valid
     if (!plot.transformation %in% names(PLOT_TRANSFORMATIONS)) {
@@ -133,7 +133,7 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     
     # Confidence Intervals ============
     if (conf.int) {
-        # Add a grey parameter uncertainty band ribbon to the plot
+        # Add a grey parameter uncertainty envelope ribbon to the plot
         plot <- plot + ggplot2::geom_ribbon(
             data = curve.df, 
             ggplot2::aes_string(
