@@ -114,6 +114,10 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     if (anyNA(data.df[, model.vars, drop = FALSE])) {
         stop("data.df must not contain NA values in the required columns.")
     }
+    # QBK divides by R, so R must be strictly positive
+    if (model == "QBK" && any(data.df$R <= 0)) {
+        stop("For the Quadratic Binding Kinetics model, R values must be greater than 0.")
+    }
     # ===============================
     
     

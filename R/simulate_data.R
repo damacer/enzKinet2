@@ -106,6 +106,9 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL,
         if (any(z.values < 0)) {
             stop("All values in z.values must be greater than or equal to 0.")
         }
+        if (model == "QBK" && any(z.values <= 0)) {
+            stop("For the Quadratic Binding Kinetics model, R values must be greater than 0.")
+        }
     }
     # ===================================
     

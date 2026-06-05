@@ -119,6 +119,10 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     if (!all(param.names %in% names(params))) {
         stop(paste("For the", full.model.name, "model, params must include", model.params.string, "."))
     }
+    # QBK divides by R, so R must be strictly positive
+    if (model == "QBK" && any(data.df$R <= 0)) {
+        stop("For the Quadratic Binding Kinetics model, R values must be greater than 0.")
+    }
     
     # Check if the parameters are numeric and greater than 0
     for (param in param.names) {
