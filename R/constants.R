@@ -23,7 +23,7 @@ NULL
 
 # All models
 #' @export
-VALID_MODELS <- c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "BK", "QBK")
+VALID_MODELS <- c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "BK", "BKH", "QBK")
 
 # All parameters
 #' @export
@@ -48,6 +48,7 @@ MODEL_PARAMETERS <- list(
     HILL = c("Km", "Vmax", "n"),
     PP = c("KmA", "Vmax", "KmB"),
     BK = c("KD"),
+    BKH = c("KD", "n"),
     QBK = c("KD")
 )
 
@@ -68,6 +69,7 @@ MODEL_VARIABLES <- list(
     HILL = c("A", "V"),
     PP = c("A", "V", "B"),
     BK = c("P", "FB"),
+    BKH = c("P", "FB"),
     QBK = c("P", "FB", "R")
 )
 
@@ -104,9 +106,11 @@ MODEL_VARIABLES_PRETTY <- list(
     PP = list("Substrate A Conc. (A)" = "A", 
               "Velocity (V)" = "V", 
               "Substrate B Conc. (B)" = "B"),
-    BK = list("Partner in Excess Conc. (P)" = "P", 
+    BK = list("Partner in Excess Conc. (P)" = "P",
               "Fraction Bound (FB)" = "FB"),
-    QBK = list("Partner in Excess Conc. (P)" = "P", 
+    BKH = list("Partner in Excess Conc. (P)" = "P",
+               "Fraction Bound (FB)" = "FB"),
+    QBK = list("Partner in Excess Conc. (P)" = "P",
                "Fraction Bound (FB)" = "FB", 
                "Trace Limiting Partner Conc. (R)" = "R")
 )
@@ -126,6 +130,7 @@ MODEL_DEPENDENT_VAR_DOMAINS <- list(
     HILL = c(0, Inf),
     PP = c(0, Inf),
     BK = c(0, 1),
+    BKH = c(0, 1),
     QBK = c(0, 1)
 )
 
@@ -144,6 +149,7 @@ MODEL_OPTIONS <- c(
     "Hill" = "HILL",
     "Ping-Pong" = "PP",
     "Binding Kinetics" = "BK",
+    "Hill Binding Kinetics" = "BKH",
     "Quadratic Binding Kinetics" = "QBK"
 )
 
@@ -166,6 +172,7 @@ MODEL_OPTIONS_GROUPED <- list(
         "Ping-Pong" = "PP"),
     "Binding Models" = list(
         "Binding Kinetics" = "BK",
+        "Hill Binding Kinetics" = "BKH",
         "Quadratic Binding Kinetics" = "QBK"
     )
 )
@@ -185,6 +192,7 @@ PLOT_TITLES <- list(
     HILL = "Hill",
     PP = "Ping-Pong",
     BK = "Binding Kinetics",
+    BKH = "Hill Binding Kinetics",
     QBK = "Quadratic Binding Kinetics"
 )
 
@@ -215,6 +223,7 @@ MODEL_PARAMETER_STRINGS <- list(
     HILL = "Km, Vmax and n",
     PP = "KmA, Vmax and KmB",
     BK = "KD",
+    BKH = "KD and n",
     QBK = "KD"
 )
 
@@ -233,6 +242,7 @@ MODEL_VARIABLE_STRINGS <- list(
     HILL = "A and V",
     PP = "A, V and B",
     BK = "P and FB",
+    BKH = "P and FB",
     QBK = "P, FB and R"
 )
 
@@ -251,6 +261,7 @@ MODEL_FORMULAE <- list(
     HILL = formula(V ~ Vmax * (A^n) / (Km^n + A^n)),
     PP = formula(V ~ (Vmax * A * B / (KmA * B + KmB * A + A * B))),
     BK = formula(FB ~ (P / (P + KD))),
+    BKH = formula(FB ~ (P^n / (KD^n + P^n))),
     QBK = formula(FB ~ ((R + P + KD) - sqrt((R + P + KD)^2 - 4 * R * P)) / (2 * R))
 )
 
@@ -269,6 +280,7 @@ MODEL_FORMULAE_DISPLAY <- list(
     HILL = "\\Large{V = V_{max} \\cdot \\frac{A^{n}}{K_m^{n} + A^{n}}}",
     PP = "\\Large{V = \\frac{V_{max} \\cdot A \\cdot B}{K_{mA} \\cdot B + K_{mB} \\cdot A + A \\cdot B}}",
     BK = "\\Large{F_B = \\frac{P}{P + K_D}}",
+    BKH = "\\Large{F_B = \\frac{P^{n}}{K_D^{n} + P^{n}}}",
     QBK = "F_B = \\frac{(R + P + K_D) - \\sqrt{(R + P + K_D)^2 - 4 \\cdot R \\cdot P}}{2 \\cdot R}"
 )
 
@@ -351,7 +363,12 @@ MODEL_VARIABLES_DISPLAY <- list(
     BK = "{\\Large F_B}  -  \\text{Fraction bound} \\\\
            {\\Large P}  -  \\text{Binding partner in excess concentration} \\\\
            {\\Large K_D}  -  \\text{Dissociation constant}",
-    
+
+    BKH = "{\\Large F_B}  -  \\text{Fraction bound} \\\\
+           {\\Large P}  -  \\text{Binding partner in excess concentration} \\\\
+           {\\Large K_D}  -  \\text{Dissociation constant} \\\\
+           {\\Large n}  -  \\text{Hill coefficient}",
+
     QBK = "{\\Large F_B}  -  \\text{Fraction bound} \\\\
            {\\Large R}  -  \\text{Trace limiting partner concentration} \\\\
            {\\Large P}  -  \\text{Binding partner in excess concentration} \\\\
@@ -452,6 +469,7 @@ BLOCKED_TRANSFORMATIONS <- list(
     HILL = c("lineweaver", "hanes", "eadie", "direct"),
     PP = c("direct"),
     BK = c("lineweaver", "hanes", "eadie", "direct"),
+    BKH = c("lineweaver", "hanes", "eadie", "direct"),
     QBK = c("lineweaver", "hanes", "eadie", "direct")
 )
 
@@ -467,7 +485,7 @@ FITTING_METHODS_OPTIONS <- c(
 # Each fitting method's valid models
 #' @export
 FITTING_METHODS <- list(
-    nls = c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "BK", "QBK"),
+    nls = c("MM", "MMSI", "OGMM", "ALTMM", "CI", "UCI", "NCI", "MI", "TC", "HILL", "PP", "BK", "BKH", "QBK"),
     recursive = c("MM"),
     ss.calc = c("MM"),
     nonparametric = c("MM")
@@ -488,6 +506,7 @@ BLOCKED_FITTING_METHODS <- list(
     HILL = c("recursive", "ss.calc", "nonparametric"),
     PP = c("recursive", "ss.calc", "nonparametric"),
     BK = c("recursive", "ss.calc", "nonparametric"),
+    BKH = c("recursive", "ss.calc", "nonparametric"),
     QBK = c("recursive", "ss.calc", "nonparametric")
 )
 
@@ -505,6 +524,7 @@ CONFIDENCE_INTERVAL_BOUNDING_VARIABLES <- list(
     HILL = c("A.lb", "A.ub", "V.lb", "V.ub"),
     PP = c("A.lb", "A.ub", "V.lb", "V.ub", "B.lb", "B.ub"),
     BK = c("P.lb", "P.ub", "FB.lb", "FB.ub"),
+    BKH = c("P.lb", "P.ub", "FB.lb", "FB.ub"),
     QBK = c("P.lb", "P.ub", "FB.lb", "FB.ub", "R.lb", "R.ub")
 )
 
@@ -522,6 +542,7 @@ CONFIDENCE_INTERVAL_BOUNDING_PARAMS <- list(
     HILL = c("Km.lb", "Km.ub", "Vmax.lb", "Vmax.ub", "n.lb", "n.ub"),
     PP = c("KmA.lb", "KmA.ub", "Vmax.lb", "Vmax.ub", "KmB.lb", "KmB.ub"),
     BK = c("KD.lb", "KD.ub"),
+    BKH = c("KD.lb", "KD.ub", "n.lb", "n.ub"),
     QBK = c("KD.lb", "KD.ub")
 )
 
@@ -711,6 +732,17 @@ MODEL_FUNCTIONS <- list(
         grid <- expand.grid(P = P.range)
         # Calculate FB for each combination
         grid$FB <- grid$P / (grid$P + KD)
+        # Return data frame
+        return(grid)
+    },
+    BKH = function(params, P.range, z.range) {
+        # Extract parameters
+        KD <- params$KD
+        n <- params$n
+        # Create a data frame with all combinations of P.range
+        grid <- expand.grid(P = P.range)
+        # Calculate FB for each combination
+        grid$FB <- (grid$P^n) / (KD^n + grid$P^n)
         # Return data frame
         return(grid)
     },

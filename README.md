@@ -21,6 +21,7 @@ enzKinet2 is an R package used for the analysis of enzyme kinetics.
  - Hill (HILL)
  - Ping-Pong (PP)
  - Binding Kinetics (BK)
+ - Hill Binding Kinetics (BKH)
  - Quadratic Binding Kinetics (QBK)
 
 ## Installation
