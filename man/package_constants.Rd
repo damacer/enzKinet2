@@ -28,7 +28,6 @@
 \alias{FITTING_METHODS}
 \alias{BLOCKED_FITTING_METHODS}
 \alias{PLOT_COLOUR_PALETTES}
-\alias{ENZYME_ML_MODEL_TEMPLATES}
 \title{Exported package constants}
 \format{
 Named vectors and lists.
@@ -36,5 +35,5 @@ Named vectors and lists.
 \description{
 Shared model metadata used by enzKinet2 functions, including valid model
 names, model parameters, variables, formulas, plotting transformations,
-fitting methods, and EnzymeML templates.
+and fitting methods.
 }

@@ -4,7 +4,7 @@
 #'
 #' Shared model metadata used by enzKinet2 functions, including valid model
 #' names, model parameters, variables, formulas, plotting transformations,
-#' fitting methods, and EnzymeML templates.
+#' and fitting methods.
 #'
 #' @format Named vectors and lists.
 #' @name package_constants
@@ -18,7 +18,7 @@
 #' @aliases PLOT_TRANSFORMATION_X_AXIS_TITLES
 #' @aliases PLOT_TRANSFORMATION_Y_AXIS_TITLES BLOCKED_TRANSFORMATIONS
 #' @aliases FITTING_METHODS_OPTIONS FITTING_METHODS BLOCKED_FITTING_METHODS
-#' @aliases PLOT_COLOUR_PALETTES ENZYME_ML_MODEL_TEMPLATES
+#' @aliases PLOT_COLOUR_PALETTES
 NULL
 
 # All models
@@ -724,127 +724,4 @@ MODEL_FUNCTIONS <- list(
         # Return data frame
         return(grid)
     }
-)
-
-
-
-# Each model's template in EnzymeML friendly format for ease of conversion
-#' @export
-ENZYME_ML_MODEL_TEMPLATES <- list(
-    MM = list(
-        name = "Michaelis-Menten",
-        equation = "Vmax * A / (Km + A)",
-        parameters = list(
-            list(name = "Km"),
-            list(name = "Vmax")
-        )
-    ),
-    MMSI = list(
-        name = "Michaelis-Menten with Substrate Inhibition",
-        equation = "Vmax * A / (Km + A + (A^2 / Ksi))",
-        parameters = list(
-            list(name = "Km"),
-            list(name = "Vmax"),
-            list(name = "Ksi")
-        )
-    ),
-    OGMM = list(
-        name = "Original Michaelis-Menten",
-        equation = "Kcat * E0 * A / (Km + A)",
-        parameters = list(
-            list(name = "Km"),
-            list(name = "Kcat"),
-            list(name = "E0")
-        )
-    ),
-    ALTMM = list(
-        name = "Alternative Michaelis-Menten",
-        equation = "Kcat * KA * E0 * A / (Kcat + KA * A)",
-        parameters = list(
-            list(name = "KA"),
-            list(name = "Kcat"),
-            list(name = "E0")
-        )
-    ),
-    CI = list(
-        name = "Competitive Inhibition",
-        equation = "Vmax * A / (Km * (1 + I / Ki) + A)",
-        parameters = list(
-            list(name = "Km"),
-            list(name = "Vmax"),
-            list(name = "Ki")
-        )
-    ),
-    UCI = list(
-        name = "Uncompetitive Inhibition",
-        equation = "Vmax * A / (Km + A * (1 + I / Ki))",
-        parameters = list(
-            list(name = "Km"),
-            list(name = "Vmax"),
-            list(name = "Ki")
-        )
-    ),
-    NCI = list(
-        name = "Non-competitive Inhibition",
-        equation = "Vmax * A / ((1 + I / Ki) * (Km + A))",
-        parameters = list(
-            list(name = "Km"),
-            list(name = "Vmax"),
-            list(name = "Ki")
-        )
-    ),
-    MI = list(
-        name = "Mixed Inhibition",
-        equation = "Vmax * A / (Km * (1 + I / Kic) + A * (1 + I / Kiu))",
-        parameters = list(
-            list(name = "Km"),
-            list(name = "Vmax"),
-            list(name = "Kic"),
-            list(name = "Kiu")
-        )
-    ),
-    TC = list(
-        name = "Ternary Complex",
-        equation = "Vmax * A * B / (KmB * A + KmA * B + A * B + Ksat * KmB)",
-        parameters = list(
-            list(name = "KmA"),
-            list(name = "KmB"),
-            list(name = "Vmax"),
-            list(name = "Ksat")
-        )
-    ),
-    HILL = list(
-        name = "Hill",
-        equation = "Vmax * (A^n) / (Km^n + A^n)",
-        parameters = list(
-            list(name = "Km"),
-            list(name = "Vmax"),
-            list(name = "n")
-        )
-    ),
-    PP = list(
-        name = "Ping-Pong",
-        equation = "Vmax * A * B / (KmA * B + KmB * A + A * B)",
-        parameters = list(
-            list(name = "KmA"),
-            list(name = "KmB"),
-            list(name = "Vmax")
-        )
-    ),
-    BK = list(
-        name = "Binding Kinetics",
-        equation = "P / (P + KD)",
-        parameters = list(
-            list(name = "KD")
-        )
-    ),
-    QBK = list(
-        name = "Quadratic Binding Kinetics",
-        equation = "((R + P + KD) - sqrt((R + P + KD)^2 - 4 * R * P)) / (2 * R)",
-        parameters = list(
-            list(name = "KD"),
-            list(name = "R"),
-            list(name = "P")
-        )
-    )
 )
