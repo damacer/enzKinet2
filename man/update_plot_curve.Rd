@@ -25,7 +25,7 @@ update_plot_curve(
 
 \item{plot.transformation}{Transformation to give the data.}
 
-\item{conf.int}{Boolean for whether or not to plot confidence intervals.}
+\item{conf.int}{If TRUE, plots a parameter uncertainty envelope (shaded envelope derived from parameter confidence interval bounds).}
 
 \item{y.range}{Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).}
 }

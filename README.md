@@ -139,6 +139,7 @@ Fits a model to observed data and optionally returns confidence intervals and st
 - **override.data.point.check**: If `TRUE`, bypasses data-point quantity checks.  
 - **get.conf.int**: If `TRUE`, attempts to compute parameter confidence intervals.  
 - **conf.level**: Confidence level (0 < value < 1).  
+- **conf.method**: Confidence interval method: `"profile"` (profile likelihood, the default) or `"asymptotic"` (Wald / standard error). 
 - **get.stats**: If `TRUE`, returns model fit statistics (R², AIC, BIC, etc.).  
 
 **Returns**  
@@ -235,6 +236,7 @@ The updated `ggplot` object.
  - broom (1.0.7)
  - nlstools (2.1.0)
  - truncnorm (1.0.9)
+ - MASS (7.3.60)
 
 ## Authors
 - **Primary Developer:** Haig Bishop

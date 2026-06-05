@@ -34,15 +34,15 @@ make_plot(
 
 \item{plot.transformation}{Transformation to apply to data before plotting (e.g., "standard", "lineweaver", "direct").}
 
-\item{conf.int}{Whether or not to plot confidence intervals.}
+\item{conf.int}{If TRUE, plots a parameter uncertainty envelope (shaded envelope derived from parameter confidence interval bounds).}
 
 \item{x.label}{Custom x-axis label.}
 
 \item{y.label}{Custom y-axis label.}
 
-\item{x.units}{Units for the x-axis, such as "mM" or "µM". Defaults to NULL (no units).}
+\item{x.units}{Units of the raw x-variable, such as "mM" or "µM".}
 
-\item{y.units}{Units for the y-axis, such as "µmol/s" or "U/mL". Defaults to NULL (no units).}
+\item{y.units}{Units of the raw y-variable, such as "µmol/s" or "U/mL".}
 
 \item{title}{Custom plot title.}
 

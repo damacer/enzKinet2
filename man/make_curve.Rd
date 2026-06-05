@@ -30,7 +30,7 @@ make_curve(
 
 \item{space}{The distribution of the space to generate data.}
 
-\item{conf.int}{Whether or not to generate upper and lower bound curves.}
+\item{conf.int}{If TRUE, uses parameter confidence interval bounds to generate a parameter uncertainty envelope (lower and upper envelope curves).}
 }
 \value{
 curve.df

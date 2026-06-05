@@ -14,6 +14,7 @@ fit_model(
   override.data.point.check = FALSE,
   get.conf.int = FALSE,
   conf.level = 0.95,
+  conf.method = "profile",
   get.stats = FALSE
 )
 }
@@ -35,6 +36,8 @@ fit_model(
 \item{get.conf.int}{Get extra parameter values for upper and lower bounds.}
 
 \item{conf.level}{Confidence level value of confidence interval.}
+
+\item{conf.method}{Confidence interval method ("profile" or "asymptotic").}
 
 \item{get.stats}{Get statistics of the fit (returned alongside fitted.params).}
 }

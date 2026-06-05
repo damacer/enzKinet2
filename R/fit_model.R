@@ -15,15 +15,16 @@
 #' @param override.data.point.check Override low number of data points error/warnings.
 #' @param get.conf.int Get extra parameter values for upper and lower bounds.
 #' @param conf.level Confidence level value of confidence interval.
+#' @param conf.method Confidence interval method ("profile" or "asymptotic").
 #' @param get.stats Get statistics of the fit (returned alongside fitted.params).
 #' @return fitted.params
-#' @importFrom stats as.formula coef median nls nls.control rnorm
-#' 
+#' @importFrom stats as.formula coef confint median nls nls.control rnorm
+#'
 #' @export
 
-fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", locked.params = NULL, 
+fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", locked.params = NULL,
                       add.minor.noise = FALSE, override.data.point.check = FALSE,
-                      get.conf.int = FALSE, conf.level = 0.95, get.stats = FALSE) {
+                      get.conf.int = FALSE, conf.level = 0.95, conf.method = "profile", get.stats = FALSE) {
     # Error Handling ================
     # Check if model is valid
     if (!model %in% VALID_MODELS) {
@@ -84,6 +85,10 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # Check if using confidence level is valid
     if (get.conf.int && !(is.numeric(conf.level) && conf.level > 0 && conf.level < 1)) {
         stop("Confidence level must be a numeric value between 0 and 1 (exclusive).")
+    }
+    # Check if confidence interval method is valid
+    if (get.conf.int && !(is.character(conf.method) && length(conf.method) == 1 && conf.method %in% c("profile", "asymptotic"))) {
+        stop("conf.method must be either 'profile' or 'asymptotic'.")
     }
     # Check number of data points
     num_data_points <- nrow(data.df)
@@ -198,20 +203,55 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
             fit <- nls(model.formula, data = data.df, start = fit.start.params, control = ctrl)
             fitted.params <- as.list(coef(fit))
             names(fitted.params) <- names(coef(fit))
-            # Get confidence intervals 
+            # Get confidence intervals
             if (get.conf.int) {
-                confidence.intervals = nlstools::confint2(fit, level = conf.level)
-                # Unpack into fitted params (e.g. Km.lb and Km.ub)
-                for (param in rownames(confidence.intervals)) {
-                    lower_bound <- confidence.intervals[param, 1]
-                    # Ensure above 0
-                    if (lower_bound <= 0) {lower_bound <- 1e-5}
-                    upper_bound <- confidence.intervals[param, 2]
-                    fitted.params[[paste0(param, ".lb")]] <- lower_bound
-                    fitted.params[[paste0(param, ".ub")]] <- upper_bound
+                # Compute the confidence intervals using the chosen method.
+                #  - "profile":    profile likelihood via stats::confint(), which dispatches
+                #                  to MASS:::confint.nls. Preferred for nonlinear fits as it
+                #                  captures asymmetric parameter uncertainty, but it can fail
+                #                  or return non-finite bounds for weakly identified parameters.
+                #  - "asymptotic": Wald / standard-error intervals via nlstools::confint2().
+                #                  Fast and symmetric, but can cross impossible parameter ranges.
+                confidence.intervals <- tryCatch(
+                    switch(
+                        conf.method,
+                        profile = {
+                            # Profile likelihood relies on MASS's confint.nls S3 method.
+                            if (!requireNamespace("MASS", quietly = TRUE)) {
+                                stop("Package 'MASS' is required for profile likelihood confidence intervals.")
+                            }
+                            suppressMessages(stats::confint(fit, level = conf.level))
+                        },
+                        asymptotic = nlstools::confint2(fit, level = conf.level)
+                    ),
+                    error = function(e) {
+                        message(paste0("Confidence interval computation failed: ", e$message, ". "))
+                        NULL
+                    }
+                )
+                # A failed or degenerate CI (an error, or any non-finite bound) is not a valid
+                # statistical result. Abort the fit and return a method-specific message so the
+                # caller can guide the user. The estimates are discarded along with the CI.
+                if (is.null(confidence.intervals) || !all(is.finite(confidence.intervals))) {
+                    fitted.params <- NULL
+                    errorMessage <- if (conf.method == "profile") {
+                        "Profile likelihood confidence intervals could not be computed. Try the Asymptotic CI method."
+                    } else {
+                        "Asymptotic confidence intervals could not be computed. The fit may be poorly conditioned."
+                    }
+                } else {
+                    # Unpack into fitted params (e.g. Km.lb and Km.ub). Bounds are reported
+                    # exactly as returned, including non-positive lower bounds; any clamping
+                    # for plotting is the caller's responsibility (see EKA's confidence envelope).
+                    for (param in rownames(confidence.intervals)) {
+                        lower_bound <- confidence.intervals[param, 1]
+                        upper_bound <- confidence.intervals[param, 2]
+                        fitted.params[[paste0(param, ".lb")]] <- lower_bound
+                        fitted.params[[paste0(param, ".ub")]] <- upper_bound
+                    }
                 }
             }
-            if (get.stats) {
+            if (get.stats && !is.null(fitted.params)) {
                 # Extract the standard errors for each parameter
                 standard.errors <- unname(summary(fit)$coefficients[, 2])
                 # Extract the parameter names
@@ -235,6 +275,10 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                 statistics$BIC <- glance$BIC
                 statistics$Log.likelihood <- glance$logLik
                 statistics$Confidence.level = conf.level
+                # Record which CI method produced the bounds, so exported results stay interpretable
+                if (get.conf.int) {
+                    statistics$CI.method <- conf.method
+                }
             }
             
         }, error = function(e) {
