@@ -36,11 +36,8 @@ make_curve(
 curve.df
 }
 \description{
-Make Curve
+Generates a curve for a model. The "curve" is equivalent to dense noiseless data.
 }
 \author{
 Haig Bishop
-07/09/2024
-
-Generates a curve for a model. The "curve" is equivalent to dense noiseless data.
 }

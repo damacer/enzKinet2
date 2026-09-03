@@ -2,14 +2,14 @@
 
 #' Fit Model
 #'
-#' @author Haig Bishop
-#' 07/09/2024
+#' Fits a model to the given data. Returns a list with fitted.params
+#' (NULL if fitting failed), statistics, and error.
 #'
-#' Fits a model to the given data. Returns fitted.params (NULL if could not fit).
+#' @author Haig Bishop
 #' @param model The model to fit the data ("MM", "CI", etc.)
 #' @param data.df The data to fit the model to.
 #' @param start.params The starting parameter values for the model (e.g. Km, Vmax).
-#' @param fit.method The algorithm or calculation used to fit the model ("recursive", "ss.calc", and "nonparametric").
+#' @param fit.method The algorithm or calculation used to fit the model ("nls", "recursive", "ss.calc", and "nonparametric").
 #' @param locked.params A vector of parameter names to lock while fitting.
 #' @param add.minor.noise Add a negligible amount of noise to the data before fitting.
 #' @param override.data.point.check Override low number of data points error/warnings.
@@ -17,8 +17,8 @@
 #' @param conf.level Confidence level value of confidence interval.
 #' @param conf.method Confidence interval method ("profile" or "asymptotic").
 #' @param get.stats Get statistics of the fit (returned alongside fitted.params).
-#' @return fitted.params
-#' @importFrom stats as.formula coef confint median nls nls.control rnorm
+#' @return A list containing fitted.params, statistics, and error.
+#' @importFrom stats coef confint median nls nls.control rnorm
 #'
 #' @export
 
@@ -152,6 +152,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     fitted.params <- NULL
     statistics <- NULL
     errorMessage <- NULL
+    ci.ok <- FALSE
     # If nonlinear least squares ================
     if (fit.method == "nls") {
         
@@ -181,13 +182,10 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         
         # Define model
         model.formula <- MODEL_FORMULAE[[model]]
-        # Replace variables in model.formula with values from locked.params
+        # Hold locked parameters constant by supplying them as data, not as nls parameters
         if (!is.null(locked.params)) {
             for (locked.param in locked.params) {
-                if (locked.param %in% param.names) {
-                    param.value <- start.params[[locked.param]]
-                    model.formula <- as.formula(gsub(as.character(locked.param), param.value, deparse(model.formula)))
-                }
+                data.df[[locked.param]] <- start.params[[locked.param]]
             }
         }
         # Define some NLS control parameters
@@ -230,10 +228,8 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                     }
                 )
                 # A failed or degenerate CI (an error, or any non-finite bound) is not a valid
-                # statistical result. Abort the fit and return a method-specific message so the
-                # caller can guide the user. The estimates are discarded along with the CI.
+                # statistical result. Keep the parameter estimates and report the CI failure.
                 if (is.null(confidence.intervals) || !all(is.finite(confidence.intervals))) {
-                    fitted.params <- NULL
                     errorMessage <- if (conf.method == "profile") {
                         "Profile likelihood confidence intervals could not be computed. Try the Asymptotic CI method."
                     } else {
@@ -249,6 +245,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                         fitted.params[[paste0(param, ".lb")]] <- lower_bound
                         fitted.params[[paste0(param, ".ub")]] <- upper_bound
                     }
+                    ci.ok <- TRUE
                 }
             }
             if (get.stats && !is.null(fitted.params)) {
@@ -276,7 +273,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                 statistics$Log.likelihood <- glance$logLik
                 statistics$Confidence.level = conf.level
                 # Record which CI method produced the bounds, so exported results stay interpretable
-                if (get.conf.int) {
+                if (ci.ok) {
                     statistics$CI.method <- conf.method
                 }
             }
@@ -294,7 +291,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                 locked.value <- start.params[[locked.param]]
                 fitted.params[locked.param] <- locked.value
                 # A locked parameter has a CI of [value, value]
-                if (get.conf.int) {
+                if (ci.ok) {
                     fitted.params[[paste0(locked.param, ".lb")]] <- locked.value
                     fitted.params[[paste0(locked.param, ".ub")]] <- locked.value
                 }
@@ -439,11 +436,14 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     # ===============================
     
     
-    # If any estimates are out of valid range
-    if (!is.null(fitted.params) && (any(fitted.params <= 0) || any(fitted.params > 1e19))) {
-        fitted.params <- NULL
-        errorMessage <- "Model fitting returned parameter values out of valid range."
-        message(errorMessage)
+    # If any fitted parameter estimates are out of valid range (ignore CI bounds)
+    if (!is.null(fitted.params)) {
+        param.values <- unlist(fitted.params[param.names])
+        if (any(param.values <= 0) || any(param.values > 1e19)) {
+            fitted.params <- NULL
+            errorMessage <- "Model fitting returned parameter values out of valid range."
+            message(errorMessage)
+        }
     } 
     
     # Return ===============

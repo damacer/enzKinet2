@@ -60,11 +60,8 @@ make_plot(
 A ggplot object representing the enzyme kinetics plot.
 }
 \description{
-Make Plot
+Generates a plot for an enzyme kinetics model.
 }
 \author{
 Haig Bishop
-07/09/2024
-
-Generates a plot for an enzyme kinetics model.
 }

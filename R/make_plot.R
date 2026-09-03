@@ -2,10 +2,9 @@
 
 #' Make Plot
 #'
-#' @author Haig Bishop
-#' 07/09/2024
-#'
 #' Generates a plot for an enzyme kinetics model.
+#'
+#' @author Haig Bishop
 #' @param model The model we are plotting ("MM", "CI", etc.).
 #' @param data.df Data to be plotted as dots.
 #' @param curve.df Curve to be plotted as line.
@@ -46,13 +45,13 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     if (!is.null(data.df) && nrow(data.df) == 0) {
         stop("data.df must contain at least one row of data.")
     }
-    # Ensure curve.df is not an empty dataframe (if provided)
-    if (!is.null(curve.df) && nrow(curve.df) == 0) {
-        stop("curve.df must contain at least one row of data.")
-    }
     # Check if curve.df is a dataframe if provided
     if (!is.null(curve.df) && !is.data.frame(curve.df)) {
         stop("curve.df must be a dataframe.")
+    }
+    # Ensure curve.df is not an empty dataframe (if provided)
+    if (!is.null(curve.df) && nrow(curve.df) == 0) {
+        stop("curve.df must contain at least one row of data.")
     }
     # Check if extra.curve is a dataframe if provided
     if (!is.null(extra.curve) && !is.data.frame(extra.curve)) {
@@ -226,8 +225,8 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     extra.independent.var <- if (length(model.vars) > 2) model.vars[3] else NULL
     legend_name <- if (!is.null(legend.label)) legend.label else if (!is.null(extra.independent.var)) AXIS_TITLES[[extra.independent.var]] else "Legend"
     plot <- ggplot2::ggplot() + 
-        ggplot2::xlab(sprintf(x.axis)) +
-        ggplot2::ylab(sprintf(y.axis)) +
+        ggplot2::xlab(x.axis) +
+        ggplot2::ylab(y.axis) +
         ggplot2::ggtitle(plot.title) +
         ggplot2::labs(color = legend_name) +
         ggthemes::theme_few() +
@@ -527,7 +526,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
             x.label <- paste0(x.label, " (", effective.x.units, ")")
         }
         # Add the label
-        plot <- plot + ggplot2::xlab(sprintf(x.label))
+        plot <- plot + ggplot2::xlab(x.label)
     }
     # If an y-axis label was given
     if (!is.null(y.label)) {
@@ -536,12 +535,12 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
             y.label <- paste0(y.label, " (", effective.y.units, ")")
         }
         # Add the label
-        plot <- plot + ggplot2::ylab(sprintf(y.label))
+        plot <- plot + ggplot2::ylab(y.label)
     }
     # If a title was given
     if (!is.null(title)) {
         # Add the title
-        plot <- plot + ggplot2::ggtitle(sprintf(title))
+        plot <- plot + ggplot2::ggtitle(title)
     }
     # Logic for hide.legend parameter
     if (hide.legend) {

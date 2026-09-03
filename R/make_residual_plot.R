@@ -2,10 +2,9 @@
 
 #' Make a Residual Plot
 #'
-#' @author Haig Bishop
-#' 07/09/2024
-#'
 #' Generates a residual plot for an enzyme kinetics model given parameters and data.
+#'
+#' @author Haig Bishop
 #' @param model The model we are plotting ("MM", "CI", etc.).
 #' @param params The parameter values for the model (e.g. Km, Vmax, Ksi).
 #' @param data.df The data to calculate residuals from.
@@ -197,8 +196,8 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     extra.independent.var <- if (length(model.vars) > 2) model.vars[3] else NULL
     legend_name <- if (!is.null(legend.label)) legend.label else if (!is.null(extra.independent.var)) AXIS_TITLES[[extra.independent.var]] else "Legend"
     plot <- ggplot2::ggplot() + 
-        ggplot2::xlab(sprintf(default.x.axis)) +
-        ggplot2::ylab(sprintf(default.y.axis)) +
+        ggplot2::xlab(default.x.axis) +
+        ggplot2::ylab(default.y.axis) +
         ggplot2::ggtitle(default.title) +
         ggplot2::labs(color = legend_name) +
         ggthemes::theme_few() + 
@@ -209,9 +208,11 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
                 ggplot2::element_blank()
         ) +
         ggplot2::scale_color_brewer(palette = palette) +
-        ggplot2::geom_hline(yintercept = 0, linetype = "dotted", color = "black") +
         ggplot2::ylim(y.limits) +
         ggplot2::xlim(0, max(x.max, x.max.data))
+    if (zero.line) {
+        plot <- plot + ggplot2::geom_hline(yintercept = 0, linetype = "dotted", color = "black")
+    }
     # ===============================
     
     
@@ -257,7 +258,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
             x.label <- paste0(x.label, " (", x.units, ")")
         }
         # Add the label
-        plot <- plot + ggplot2::xlab(sprintf(x.label))
+        plot <- plot + ggplot2::xlab(x.label)
     }
     # If an y-axis label was given
     if (!is.null(y.label)) {
@@ -266,12 +267,12 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
             y.label <- paste0(y.label, " (", y.units, ")")
         }
         # Add the label
-        plot <- plot + ggplot2::ylab(sprintf(y.label))
+        plot <- plot + ggplot2::ylab(y.label)
     }
     # If a title was given
     if (!is.null(title)) {
         # Add the title
-        plot <- plot + ggplot2::ggtitle(sprintf(title))
+        plot <- plot + ggplot2::ggtitle(title)
     }
     # Logic for hide.legend parameter
     if (hide.legend) {

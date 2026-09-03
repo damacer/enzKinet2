@@ -33,11 +33,8 @@ update_plot_curve(
 Updated plot
 }
 \description{
-Update Plot Curve
+Updates (replaces) the curve in an existing enzyme kinetics plot.
 }
 \author{
 Haig Bishop
-07/09/2024
-
-Updates (replaces) the curve in an existing enzyme kinetics plot.
 }

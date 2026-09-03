@@ -57,11 +57,8 @@ make_residual_plot(
 plot
 }
 \description{
-Make a Residual Plot
+Generates a residual plot for an enzyme kinetics model given parameters and data.
 }
 \author{
 Haig Bishop
-07/09/2024
-
-Generates a residual plot for an enzyme kinetics model given parameters and data.
 }

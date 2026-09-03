@@ -2,10 +2,9 @@
 
 #' Simulate Data
 #'
-#' @author Haig Bishop
-#' 07/09/2024
-#'
 #' Generates synthetic data for a model.
+#'
+#' @author Haig Bishop
 #' @param model The model to generate the data from ("MM", "CI", etc.)
 #' @param params The parameter values for the model (e.g. Km, Vmax, Ksi).
 #' @param x.min The minimum x value to cover.
@@ -125,8 +124,8 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL,
     } else if (space == "inverse.exponential"){
         # Generate an exponentially spaced sequence from 0 to 1
         exp_seq <- (seq(0, 1, length.out = n.samples))^3
-        # Flip it
-        #exp_seq <- (exp_seq - 1) * -1
+        # Flip it so points are denser near x.max
+        exp_seq <- (exp_seq - 1) * -1
         # Normalize the sequence to the desired range
         x.range <- exp_seq * (x.max - x.min) + x.min
     } else if (space == "dilution.series"){

@@ -51,11 +51,8 @@ simulate_data(
 synthetic.data
 }
 \description{
-Simulate Data
+Generates synthetic data for a model.
 }
 \author{
 Haig Bishop
-07/09/2024
-
-Generates synthetic data for a model.
 }

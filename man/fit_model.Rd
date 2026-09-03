@@ -25,7 +25,7 @@ fit_model(
 
 \item{start.params}{The starting parameter values for the model (e.g. Km, Vmax).}
 
-\item{fit.method}{The algorithm or calculation used to fit the model ("recursive", "ss.calc", and "nonparametric").}
+\item{fit.method}{The algorithm or calculation used to fit the model ("nls", "recursive", "ss.calc", and "nonparametric").}
 
 \item{locked.params}{A vector of parameter names to lock while fitting.}
 
@@ -42,14 +42,12 @@ fit_model(
 \item{get.stats}{Get statistics of the fit (returned alongside fitted.params).}
 }
 \value{
-fitted.params
+A list containing fitted.params, statistics, and error.
 }
 \description{
-Fit Model
+Fits a model to the given data. Returns a list with fitted.params
+(NULL if fitting failed), statistics, and error.
 }
 \author{
 Haig Bishop
-07/09/2024
-
-Fits a model to the given data. Returns fitted.params (NULL if could not fit).
 }

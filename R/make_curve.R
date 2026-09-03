@@ -2,10 +2,9 @@
 
 #' Make Curve
 #'
-#' @author Haig Bishop
-#' 07/09/2024
-#'
 #' Generates a curve for a model. The "curve" is equivalent to dense noiseless data.
+#'
+#' @author Haig Bishop
 #' @param model The model to generate the curve from ("MM", "CI", etc.)
 #' @param params The parameter values for the model (e.g. Km, Vmax, Ksi)
 #' @param x.min The minimum x value to cover.
@@ -65,6 +64,9 @@ make_curve <- function(model, params, x.min, x.max, z.values = NULL,
                 ub.params[[param]] <- result.vec
             }
         }
+        # Model functions require positive parameters; clamp non-positive CI bounds
+        lb.params <- lapply(lb.params, function(x) pmax(x, 1e-10))
+        ub.params <- lapply(ub.params, function(x) pmax(x, 1e-10))
         # Generate all combinations of parameter values
         lb.param_combinations <- expand.grid(lb.params)
         # Initialize a variable to store the minimum values across all simulations
