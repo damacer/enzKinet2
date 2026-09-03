@@ -43,10 +43,12 @@ fit_model(
 }
 \value{
 A list containing fitted.params, statistics, and error.
+Note that error can be a CI-only problem with a valid fit.
 }
 \description{
 Fits a model to the given data. Returns a list with fitted.params
-(NULL if fitting failed), statistics, and error.
+(NULL if fitting failed), statistics, and error. Note that error can be a
+CI-only problem with a valid fit (fitted.params still populated, without .lb/.ub bounds).
 }
 \author{
 Haig Bishop

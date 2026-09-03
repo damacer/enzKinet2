@@ -1,5 +1,35 @@
 ## Function file for enzKinet2 package
 
+drop_nonfinite_xy <- function(df, x.name, y.name, transformation.name) {
+    if (is.null(df) || nrow(df) == 0) {
+        return(df)
+    }
+    keep <- is.finite(df[[x.name]]) & is.finite(df[[y.name]])
+    if (!all(keep)) {
+        warning("Dropped ", sum(!keep), " non-finite row(s) after the ", transformation.name, " transformation.")
+        df <- df[keep, , drop = FALSE]
+    }
+    return(df)
+}
+
+colour_aes <- function(x.name, y.name, extra.var) {
+    if (is.null(extra.var)) {
+        ggplot2::aes(x = .data[[x.name]], y = .data[[y.name]], colour = "This is the only colour")
+    } else {
+        ggplot2::aes(x = .data[[x.name]], y = .data[[y.name]], colour = factor(.data[[extra.var]]))
+    }
+}
+
+ribbon_aes <- function(x.name, y.name, extra.var) {
+    ymin.name <- paste0(y.name, ".lb")
+    ymax.name <- paste0(y.name, ".ub")
+    if (is.null(extra.var)) {
+        ggplot2::aes(x = .data[[x.name]], ymin = .data[[ymin.name]], ymax = .data[[ymax.name]], fill = "This is the only colour")
+    } else {
+        ggplot2::aes(x = .data[[x.name]], ymin = .data[[ymin.name]], ymax = .data[[ymax.name]], fill = factor(.data[[extra.var]]))
+    }
+}
+
 #' Make Plot
 #'
 #' Generates a plot for an enzyme kinetics model.
@@ -22,6 +52,7 @@
 #' @param y.range Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).
 #' @param show.grid Boolean to show grid lines on the plot. Defaults to FALSE.
 #' @return A ggplot object representing the enzyme kinetics plot.
+#' @importFrom ggplot2 .data
 #' 
 #' @export
 
@@ -63,7 +94,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     }
     # Ensure palette is valid
     if (!palette %in% PLOT_COLOUR_PALETTES) {
-        stop(paste("Invalid colour palette. Please choose a valid palette from:", PLOT_COLOUR_PALETTES))
+        stop("Invalid colour palette. Please choose a valid palette from: ", paste(PLOT_COLOUR_PALETTES, collapse = ", "))
     }
     # Ensure data is provided if it is a direct linear plot
     if (plot.transformation == "direct" && is.null(data.df)) {
@@ -155,6 +186,10 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     if (conf.int && !all(CONFIDENCE_INTERVAL_BOUNDING_VARIABLES[[model]] %in% colnames(curve.df))) {
         stop("Parameter confidence envelope curves (e.g. 'V.lb', 'V.ub') not provided.")
     }
+    # Eadie maps x to V/A so the lower and upper curves move sideways. A vertical ribbon at the main curve's x is not the envelope.
+    if (plot.transformation == "eadie") {
+        conf.int <- FALSE
+    }
     # ===============================
     
     
@@ -232,17 +267,16 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
         ggthemes::theme_few() +
         ggplot2::theme(
             panel.grid = if(show.grid) 
-                ggplot2::element_line(color = "grey69", size = 0.5) 
+                ggplot2::element_line(color = "grey69", linewidth = 0.5) 
             else 
                 ggplot2::element_blank()
         )
     
     # Get the valid domain of the dependent variable
     dependent.var.domain <- MODEL_DEPENDENT_VAR_DOMAINS[[model]]
-    # If it doesn't include infinity
-    if (!Inf %in% dependent.var.domain) {
-        # Set y-axis range to it (e.g. between 0 and 1)
-        plot <- plot + ggplot2::scale_y_continuous(limits = dependent.var.domain)
+    # If it doesn't include infinity, zoom without dropping out-of-domain points
+    if (!Inf %in% dependent.var.domain && is.null(y.range)) {
+        plot <- plot + ggplot2::coord_cartesian(ylim = dependent.var.domain)
     }
     # ===============================
     
@@ -251,6 +285,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     transformation <- PLOT_TRANSFORMATIONS[[plot.transformation]]
     if (!is.null(data.df)) {
         data.df = transformation(data.df, x.name = first.independent.var, y.name = dependent.var)
+        data.df <- drop_nonfinite_xy(data.df, first.independent.var, dependent.var, plot.transformation)
     }
     if (!is.null(curve.df)) {
         curve.df = transformation(curve.df, x.name = first.independent.var, y.name = dependent.var)
@@ -277,9 +312,11 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
             # Reintegrate transformed lower and upper bound curves into curve.df
             curve.df <- cbind(curve.df[, !grepl("\\.lb$|\\.ub$", names(curve.df))], lb.curve.df, ub.curve.df)
         }
+        curve.df <- drop_nonfinite_xy(curve.df, first.independent.var, dependent.var, plot.transformation)
     }
     if (!is.null(extra.curve)) {
         extra.curve = transformation(extra.curve, x.name = first.independent.var, y.name = dependent.var)
+        extra.curve <- drop_nonfinite_xy(extra.curve, first.independent.var, dependent.var, plot.transformation)
     }
     # ===============================
     
@@ -287,7 +324,6 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     # Add Extra Plot Features ===================
     # Add colour palette
     plot <- plot + ggplot2::scale_color_brewer(palette = palette)
-    fill_palette <- ggplot2::scale_fill_brewer(palette = palette)
     
     # If this is a lineweaver-burk plot add a line at the y-axis
     if (plot.transformation == "lineweaver") {
@@ -327,16 +363,12 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
             # Add a parameter uncertainty envelope ribbon to the plot
             plot <- plot + ggplot2::geom_ribbon(
                 data = curve.dfs[[i]], 
-                ggplot2::aes_string(
-                    x = first.independent.var, 
-                    ymin = paste0(dependent.var, ".lb"), 
-                    ymax = paste0(dependent.var, ".ub"),
-                    fill = colours
-                ), 
+                ribbon_aes(first.independent.var, dependent.var, extra.independent.variable), 
                 alpha=0.3, inherit.aes = FALSE,
                 show.legend = FALSE
-            ) + fill_palette
+            )
         }
+        plot <- plot + ggplot2::scale_fill_brewer(palette = palette)
         # Now we can for sure remove upper and lower curves to prevent issues later in the function
         curve.df <- curve.df[, !grepl("\\.lb$|\\.ub$", names(curve.df))]
     }
@@ -350,9 +382,11 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
             lines.df <- data.frame(x1 = numeric(), y1 = numeric(), x2 = numeric(), y2 = numeric())
             # Loop through every observation (row) in data.df
             for (i in 1:nrow(data.df)) {
-                # Calculate points for the lines
                 a <- data.df$A[i]
                 v <- data.df$V[i]
+                if (a == 0) {
+                    next
+                }
                 x1 <- -1 * a
                 y1 <- 0
                 x2 <- 0
@@ -361,39 +395,41 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
                 lines.df <- rbind(lines.df, data.frame(x1 = x1, y1 = y1, x2 = x2, y2 = y2))
                 
             }
-            # Compute maximum x and y values
-            max.x <- max(data.df$A)
-            y_multiplier <- 1.5     # Expand y-axis range by arbitrary amount
-            max.y <- max(data.df$V) * y_multiplier  
-            
-            # Extend each line to max values, while keeping their slopes the same
-            for (i in 1:nrow(lines.df)) {
-                # Calculate the slope of the line
-                slope <- (lines.df$y2[i] - lines.df$y1[i]) / (lines.df$x2[i] - lines.df$x1[i])
-                y_intercept <- lines.df$y1[i] - slope * lines.df$x1[i]
+            if (nrow(lines.df) > 0) {
+                # Compute maximum x and y values
+                max.x <- max(data.df$A)
+                y_multiplier <- 1.5     # Expand y-axis range by arbitrary amount
+                max.y <- max(data.df$V) * y_multiplier  
                 
-                # Calculate intersection with max.x
-                y_at_max_x <- slope * max.x + y_intercept
-                
-                # Calculate intersection with max.y
-                x_at_max_y <- (max.y - y_intercept) / slope
-                
-                # Determine which points to use as endpoints
-                if (0 <= x_at_max_y && x_at_max_y <= max.x) {
-                    # x_at_max_y is within the bounds
-                    lines.df$x2[i] <- x_at_max_y
-                    lines.df$y2[i] <- max.y
-                } else {
-                    # y_at_max_x is within the bounds
-                    lines.df$x2[i] <- max.x
-                    lines.df$y2[i] <- y_at_max_x
+                # Extend each line to max values, while keeping their slopes the same
+                for (i in 1:nrow(lines.df)) {
+                    # Calculate the slope of the line
+                    slope <- (lines.df$y2[i] - lines.df$y1[i]) / (lines.df$x2[i] - lines.df$x1[i])
+                    y_intercept <- lines.df$y1[i] - slope * lines.df$x1[i]
+                    
+                    # Calculate intersection with max.x
+                    y_at_max_x <- slope * max.x + y_intercept
+                    
+                    # Calculate intersection with max.y
+                    x_at_max_y <- (max.y - y_intercept) / slope
+                    
+                    # Determine which points to use as endpoints
+                    if (0 <= x_at_max_y && x_at_max_y <= max.x) {
+                        # x_at_max_y is within the bounds
+                        lines.df$x2[i] <- x_at_max_y
+                        lines.df$y2[i] <- max.y
+                    } else {
+                        # y_at_max_x is within the bounds
+                        lines.df$x2[i] <- max.x
+                        lines.df$y2[i] <- y_at_max_x
+                    }
                 }
+                # Draw the lines
+                plot <- plot + 
+                    ggplot2::geom_segment(data = lines.df, 
+                                       ggplot2::aes(x = x1, y = y1, xend = x2, yend = y2, colour = "This is the only colour"), 
+                                       inherit.aes = FALSE)
             }
-            # Draw the lines
-            plot <- plot + 
-                ggplot2::geom_segment(data = lines.df, 
-                                   ggplot2::aes(x = x1, y = y1, xend = x2, yend = y2, color = colours), 
-                                   inherit.aes = FALSE)
         }
         # Draw the y-axis
         plot <- plot + 
@@ -422,7 +458,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
                 # Add the data points
                 plot <- plot + 
                     ggplot2::geom_point(data = data.dfs[[i]], 
-                                        ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
+                                        colour_aes(first.independent.var, dependent.var, extra.independent.variable), 
                                         inherit.aes = FALSE)
             }
         }
@@ -468,7 +504,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
                 # Draw the curve
                 plot <- plot + 
                     ggplot2::geom_path(data = this.curve.df, 
-                                       ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
+                                       colour_aes(first.independent.var, dependent.var, extra.independent.variable), 
                                        inherit.aes = FALSE)
             }
         }
@@ -513,7 +549,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
                 # Draw the curve
                 plot <- plot + 
                     ggplot2::geom_path(data = this.curve.df, 
-                                       ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = NULL), 
+                                       ggplot2::aes(x = .data[[first.independent.var]], y = .data[[dependent.var]]), 
                                        inherit.aes = FALSE)
             }
         }

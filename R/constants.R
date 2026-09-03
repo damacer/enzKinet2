@@ -182,8 +182,8 @@ MODEL_OPTIONS_GROUPED <- list(
 PLOT_TITLES <- list(
     MM = "Michaelis-Menten",
     MMSI = "Michaelis-Menten with Substrate Inhibition",
-    OGMM = "Michaelis-Menten",
-    ALTMM = "Michaelis-Menten",
+    OGMM = "Original Michaelis-Menten",
+    ALTMM = "Alternative Michaelis-Menten",
     CI = "Competitive Inhibition",
     UCI = "Uncompetitive Inhibition",
     NCI = "Non-competitive Inhibition",
@@ -262,7 +262,8 @@ MODEL_FORMULAE <- list(
     PP = formula(V ~ (Vmax * A * B / (KmA * B + KmB * A + A * B))),
     BK = formula(FB ~ (P / (P + KD))),
     BKH = formula(FB ~ (P^n / (KD^n + P^n))),
-    QBK = formula(FB ~ ((R + P + KD) - sqrt((R + P + KD)^2 - 4 * R * P)) / (2 * R))
+    # Rearranged from (S - sqrt(S^2 - 4RP)) / (2R), which cancels to 0 for small R.
+    QBK = formula(FB ~ 2 * P / (R + P + KD + sqrt(pmax((R + P + KD)^2 - 4 * R * P, 0))))
 )
 
 # Each model's formula in LaTeX
@@ -751,8 +752,10 @@ MODEL_FUNCTIONS <- list(
         KD <- params$KD
         # Create a data frame with all combinations of P.range
         grid <- expand.grid(P = P.range, R = R.range)
-        # Calculate FB for each combination
-        grid$FB <- ((grid$R + grid$P + KD) - sqrt((grid$R + grid$P + KD)^2 - 4 * grid$R * grid$P)) / (2 * grid$R)
+        # Rearranged from (S - sqrt(S^2 - 4RP)) / (2R), which cancels to 0 for small R.
+        # Floor the discriminant at 0 so tight binding cannot go negative from rounding.
+        disc <- pmax((grid$R + grid$P + KD)^2 - 4 * grid$R * grid$P, 0)
+        grid$FB <- 2 * grid$P / (grid$R + grid$P + KD + sqrt(disc))
         # Return data frame
         return(grid)
     }

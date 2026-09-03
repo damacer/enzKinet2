@@ -3,7 +3,8 @@
 #' Fit Model
 #'
 #' Fits a model to the given data. Returns a list with fitted.params
-#' (NULL if fitting failed), statistics, and error.
+#' (NULL if fitting failed), statistics, and error. Note that error can be a
+#' CI-only problem with a valid fit (fitted.params still populated, without .lb/.ub bounds).
 #'
 #' @author Haig Bishop
 #' @param model The model to fit the data ("MM", "CI", etc.)
@@ -18,6 +19,7 @@
 #' @param conf.method Confidence interval method ("profile" or "asymptotic").
 #' @param get.stats Get statistics of the fit (returned alongside fitted.params).
 #' @return A list containing fitted.params, statistics, and error.
+#'   Note that error can be a CI-only problem with a valid fit.
 #' @importFrom stats coef confint median nls nls.control rnorm
 #'
 #' @export
@@ -90,11 +92,16 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     if (get.conf.int && !(is.character(conf.method) && length(conf.method) == 1 && conf.method %in% c("profile", "asymptotic"))) {
         stop("conf.method must be either 'profile' or 'asymptotic'.")
     }
-    # Check number of data points
+    # Check number of data points against free parameters
     num_data_points <- nrow(data.df)
+    n.free <- length(MODEL_PARAMETERS[[model]])
+    if (fit.method == "nls" && !is.null(locked.params)) {
+        n.free <- n.free - sum(locked.params %in% MODEL_PARAMETERS[[model]])
+    }
     if (!override.data.point.check) {
-        if (num_data_points < 3) {
-            stop("Less than 3 data points is likely insufficient to fit the model. Override this by setting override.data.point.check to TRUE.")
+        min.points <- n.free + 1
+        if (num_data_points < min.points) {
+            stop("This model has ", n.free, " free parameter(s), so at least ", min.points, " data points are needed to fit. Override this by setting override.data.point.check to TRUE.")
         }
     }
     # ===============================
@@ -128,11 +135,18 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     
     # Add minor noise =========================
     if (add.minor.noise) {
-        # For reproducibility
+        # For reproducibility of the jitter. Restore the caller's RNG afterwards.
+        had.seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+        saved.seed <- if (had.seed) get(".Random.seed", envir = .GlobalEnv) else NULL
         set.seed(24)
         dependent.var.name <- MODEL_VARIABLES[[model]][2]
         noise <- rnorm(n = nrow(data.df), mean = 0, sd = 1e-6)
         data.df[[dependent.var.name]] <- data.df[[dependent.var.name]] + noise
+        if (had.seed) {
+            assign(".Random.seed", saved.seed, envir = .GlobalEnv)
+        } else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
+            rm(".Random.seed", envir = .GlobalEnv)
+        }
     }
     # ===============================
     
@@ -302,6 +316,9 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     
     
     # If recursive method ================
+    # TODO: this solver needs review. It is not actually recursive.
+    # After the first estimate it replaces measured V with a perfect MM curve
+    # so later iterations cannot change the answer. Treat as a one-shot closed form until rewritten.
     if (fit.method == "recursive") {
         # Get the MM function
         MM_function <- MODEL_FUNCTIONS[[model]]
@@ -404,8 +421,10 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         # Loop through every pair of observations
         for (i in 1:nrow(data.df)) {
             for (j in 1:nrow(data.df)) {
-                # If these are nonduplicate
-                if (data.df$A[i] != data.df$A[j]) {
+                # Skip tied A and origin / zero-rate points (those pairs inject mixed-sign Km, Vmax)
+                if (data.df$A[i] != data.df$A[j] &&
+                    data.df$A[i] > 0 && data.df$A[j] > 0 &&
+                    data.df$V[i] > 0 && data.df$V[j] > 0) {
                     # Extract values Ai, Vi, Aj, Vj
                     Ai <- data.df$A[i]
                     Vi <- data.df$V[i]
@@ -427,11 +446,16 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                 }
             }
         }
-        # Find medians of both (if even number of obs, take mean of centre two)
-        median.est.Vmax <- median(all.est.Vmax)
-        median.est.Km <- median(all.est.Km)
-        # Return estimates
-        fitted.params <- list("Km" = median.est.Km, "Vmax" = median.est.Vmax)
+        if (length(all.est.Km) == 0) {
+            fitted.params <- NULL
+            errorMessage <- "Nonparametric fitting needs at least two observations with different, positive A and V."
+        } else {
+            # Find medians of both (if even number of obs, take mean of centre two)
+            median.est.Vmax <- median(all.est.Vmax)
+            median.est.Km <- median(all.est.Km)
+            # Return estimates
+            fitted.params <- list("Km" = median.est.Km, "Vmax" = median.est.Vmax)
+        }
     }
     # ===============================
     

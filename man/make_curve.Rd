@@ -12,7 +12,9 @@ make_curve(
   z.values = NULL,
   n.samples = 250,
   space = "linear",
-  conf.int = FALSE
+  conf.int = FALSE,
+  dilution.factor = NULL,
+  x.range = NULL
 )
 }
 \arguments{
@@ -31,6 +33,10 @@ make_curve(
 \item{space}{The distribution of the space to generate data.}
 
 \item{conf.int}{If TRUE, uses parameter confidence interval bounds to generate a parameter uncertainty envelope (lower and upper envelope curves).}
+
+\item{dilution.factor}{Dilution factor if space == "dilution.series".}
+
+\item{x.range}{If space is "custom" these are the x values.}
 }
 \value{
 curve.df

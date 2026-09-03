@@ -8,7 +8,7 @@ make_residual_plot(
   model,
   params,
   data.df,
-  x.max,
+  x.max = NULL,
   x.label = NULL,
   y.label = NULL,
   x.units = NULL,
@@ -29,7 +29,7 @@ make_residual_plot(
 
 \item{data.df}{The data to calculate residuals from.}
 
-\item{x.max}{Defines the maximum x value to plot to.}
+\item{x.max}{Defines the maximum x value to plot to. Defaults to NULL (use the maximum x in the data).}
 
 \item{x.label}{Custom x-axis label.}
 

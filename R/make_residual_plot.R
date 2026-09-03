@@ -8,7 +8,7 @@
 #' @param model The model we are plotting ("MM", "CI", etc.).
 #' @param params The parameter values for the model (e.g. Km, Vmax, Ksi).
 #' @param data.df The data to calculate residuals from.
-#' @param x.max Defines the maximum x value to plot to.
+#' @param x.max Defines the maximum x value to plot to. Defaults to NULL (use the maximum x in the data).
 #' @param x.label Custom x-axis label.
 #' @param y.label Custom y-axis label.
 #' @param x.units Units for the x-axis, such as "mM" or "µM". Defaults to NULL (no units).
@@ -24,7 +24,7 @@
 #' 
 #' @export
 
-make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL, 
+make_residual_plot <- function(model, params, data.df, x.max = NULL, x.label = NULL, 
                                y.label = NULL, x.units = NULL, y.units = NULL, 
                                title = NULL, zero.line = TRUE, 
                                legend.label = NULL, palette = "Set1", hide.legend = FALSE,
@@ -51,13 +51,18 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     if (!is.null(data.df) && nrow(data.df) == 0) {
         stop("data.df must contain at least one row of data.")
     }
-    # Check if x.max is numeric
-    if (!is.numeric(x.max)) {
-        stop("x.max must be a numeric value.")
+    # Check if x.max is numeric if provided
+    if (!is.null(x.max)) {
+        if (!is.numeric(x.max)) {
+            stop("x.max must be a numeric value.")
+        }
+        if (x.max <= 0) {
+            stop("x.max must be a positive value.")
+        }
     }
-    # Check if x.max is positive
-    if (x.max <= 0) {
-        stop("x.max must be a positive value.")
+    # Ensure palette is valid
+    if (!palette %in% PLOT_COLOUR_PALETTES) {
+        stop("Invalid colour palette. Please choose a valid palette from: ", paste(PLOT_COLOUR_PALETTES, collapse = ", "))
     }
     # Check if x.label, y.label, title and legend.label are characters if provided
     if (!is.null(x.label) && !is.character(x.label)) {
@@ -163,7 +168,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     # Make copy of data
     perfect.data.df <- data.df
     # Repopulate the dependent.var column using params, first.independent.var, and (if applicable) extra.independent.variable
-    perfect.data.df[[dependent.var]] <- apply(perfect.data.df, 1, calculate_dependent_var, 
+    perfect.data.df[[dependent.var]] <- apply(perfect.data.df[, model.vars, drop = FALSE], 1, calculate_dependent_var, 
                                               formula = model.formula, 
                                               params = params, 
                                               independent.var = first.independent.var, 
@@ -193,6 +198,9 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
     
     # Make default plot
     x.max.data <- max(data.df[[first.independent.var]])
+    if (is.null(x.max)) {
+        x.max <- x.max.data
+    }
     extra.independent.var <- if (length(model.vars) > 2) model.vars[3] else NULL
     legend_name <- if (!is.null(legend.label)) legend.label else if (!is.null(extra.independent.var)) AXIS_TITLES[[extra.independent.var]] else "Legend"
     plot <- ggplot2::ggplot() + 
@@ -203,7 +211,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
         ggthemes::theme_few() + 
         ggplot2::theme(
             panel.grid = if(show.grid) 
-                ggplot2::element_line(color = "grey69", size = 0.5) 
+                ggplot2::element_line(color = "grey69", linewidth = 0.5) 
             else 
                 ggplot2::element_blank()
         ) +
@@ -246,7 +254,7 @@ make_residual_plot <- function(model, params, data.df, x.max, x.label = NULL,
         # Add the data points
         plot <- plot + 
             ggplot2::geom_point(data = residuals.dfs[[i]], 
-                    ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
+                    colour_aes(first.independent.var, dependent.var, extra.independent.variable), 
                     inherit.aes = FALSE)
     }
     

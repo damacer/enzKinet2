@@ -12,18 +12,22 @@
 #' @param z.values The z values to cover (discrete).
 #' @param n.samples The resolution of the curve (~150 is usually enough).
 #' @param space The distribution of the space to generate data.
+#' @param dilution.factor Dilution factor if space == "dilution.series".
+#' @param x.range If space is "custom" these are the x values.
 #' @param conf.int If TRUE, uses parameter confidence interval bounds to generate a parameter uncertainty envelope (lower and upper envelope curves).
 #' @return curve.df
 #' 
 #' @export
 
 make_curve <- function(model, params, x.min, x.max, z.values = NULL, 
-                       n.samples = 250, space = "linear", conf.int = FALSE) {
+                       n.samples = 250, space = "linear", conf.int = FALSE,
+                       dilution.factor = NULL, x.range = NULL) {
     
     
     # Generate noiseless data
     curve.df <- simulate_data(model, params, x.min, x.max, z.values = z.values, 
-                              noise.level = 0, n.samples = n.samples, space = space)
+                              noise.level = 0, n.samples = n.samples, space = space,
+                              dilution.factor = dilution.factor, x.range = x.range)
     
     
     # If a confidence envelope is requested, generate envelope curves from parameter CI bounds ====
@@ -64,7 +68,8 @@ make_curve <- function(model, params, x.min, x.max, z.values = NULL,
                 ub.params[[param]] <- result.vec
             }
         }
-        # Model functions require positive parameters; clamp non-positive CI bounds
+        # Model functions require positive parameters. Clamp non-positive CI bounds.
+        # A near-zero Km.lb makes the upper MM envelope sit at Vmax.
         lb.params <- lapply(lb.params, function(x) pmax(x, 1e-10))
         ub.params <- lapply(ub.params, function(x) pmax(x, 1e-10))
         # Generate all combinations of parameter values
@@ -80,7 +85,8 @@ make_curve <- function(model, params, x.min, x.max, z.values = NULL,
             lb.params <- lapply(lb.params, function(x) unclass(x))
             # Generate lower bound curve
             current.lb.curve.df <- simulate_data(model, lb.params, x.min, x.max, z.values = z.values, 
-                                                 noise.level = 0, n.samples = n.samples, space = space)
+                                                 noise.level = 0, n.samples = n.samples, space = space,
+                                                 dilution.factor = dilution.factor, x.range = x.range)
             # If this is the first iteration, initialize lb.curve.df with the current current.lb.curve.df
             if (is.null(lb.curve.df)) {
                 lb.curve.df <- current.lb.curve.df
@@ -104,7 +110,8 @@ make_curve <- function(model, params, x.min, x.max, z.values = NULL,
             
             # Generate upper bound curve
             current.ub.curve.df <- simulate_data(model, ub.params, x.min, x.max, z.values = z.values, 
-                                                 noise.level = 0, n.samples = n.samples, space = space)
+                                                 noise.level = 0, n.samples = n.samples, space = space,
+                                                 dilution.factor = dilution.factor, x.range = x.range)
             # If this is the first iteration, initialize ub.curve.df with the current current.ub.curve.df
             if (is.null(ub.curve.df)) {
                 ub.curve.df <- current.ub.curve.df

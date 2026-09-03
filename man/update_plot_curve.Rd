@@ -11,7 +11,8 @@ update_plot_curve(
   extra.curve = NULL,
   plot.transformation = "standard",
   conf.int = FALSE,
-  y.range = NULL
+  y.range = NULL,
+  palette = "Set1"
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ update_plot_curve(
 \item{conf.int}{If TRUE, plots a parameter uncertainty envelope (shaded envelope derived from parameter confidence interval bounds).}
 
 \item{y.range}{Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).}
+
+\item{palette}{Custom plot colour palette (e.g., "Set1", "Set2", etc.).}
 }
 \value{
 Updated plot

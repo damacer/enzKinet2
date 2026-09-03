@@ -11,6 +11,7 @@
 #' @param extra.curve An extra curve to be displayed on top of the other
 #' @param plot.transformation Transformation to give the data.
 #' @param conf.int If TRUE, plots a parameter uncertainty envelope (shaded envelope derived from parameter confidence interval bounds).
+#' @param palette Custom plot colour palette (e.g., "Set1", "Set2", etc.).
 #' @param y.range Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).
 #' @return Updated plot
 #' 
@@ -18,7 +19,7 @@
 
 update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL, 
                               plot.transformation = "standard",  conf.int = FALSE,
-                              y.range = NULL) {
+                              y.range = NULL, palette = "Set1") {
     
     # Error Handling ================
     # Check if model is valid
@@ -48,6 +49,10 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     if (conf.int && !all(CONFIDENCE_INTERVAL_BOUNDING_VARIABLES[[model]] %in% colnames(curve.df))) {
         stop("Parameter confidence envelope curves (e.g. 'V.lb', 'V.ub') not provided.")
     }
+    # Eadie maps x to V/A so the lower and upper curves move sideways. A vertical ribbon at the main curve's x is not the envelope.
+    if (plot.transformation == "eadie") {
+        conf.int <- FALSE
+    }
     # Check if plot.transformation is valid
     if (!plot.transformation %in% names(PLOT_TRANSFORMATIONS)) {
         stop("plot.transformation is invalid.")
@@ -64,6 +69,9 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
         if (y.range[1] >= y.range[2]) {
             stop("y.range must specify a valid range where the first value is less than the second.")
         }
+    }
+    if (!palette %in% PLOT_COLOUR_PALETTES) {
+        stop("Invalid colour palette. Please choose a valid palette from: ", paste(PLOT_COLOUR_PALETTES, collapse = ", "))
     }
     # ===============================
     
@@ -98,8 +106,10 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     }
     # ===============================
     
-    # Remove the current curve
-    plot$layers <- plot$layers[!sapply(plot$layers, function(layer) inherits(layer$geom, "GeomPath"))]
+    # Remove the current curve and confidence envelope
+    plot$layers <- plot$layers[!sapply(plot$layers, function(layer) {
+        inherits(layer$geom, "GeomPath") || inherits(layer$geom, "GeomRibbon")
+    })]
     
     
     # Transform the curve(s) ===============
@@ -129,27 +139,42 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
             # Reintegrate transformed lower and upper bound curves into curve.df
             curve.df <- cbind(curve.df[, !grepl("\\.lb$|\\.ub$", names(curve.df))], lb.curve.df, ub.curve.df)
         }
+        curve.df <- drop_nonfinite_xy(curve.df, first.independent.var, dependent.var, plot.transformation)
     }
     if (!is.null(extra.curve)) {
         extra.curve = transformation(extra.curve, x.name = first.independent.var, y.name = dependent.var)
+        extra.curve <- drop_nonfinite_xy(extra.curve, first.independent.var, dependent.var, plot.transformation)
     }
     # ===============================
     
     
+    # If using an extra independent variable
+    if (length(model.vars) > 2) {
+        extra.independent.variable <- model.vars[3]
+    } else {
+        extra.independent.variable <- NULL
+        plot <- plot + ggplot2::guides(color = "none")
+    }
     
     # Confidence Intervals ============
     if (conf.int) {
-        # Add a grey parameter uncertainty envelope ribbon to the plot
-        plot <- plot + ggplot2::geom_ribbon(
-            data = curve.df, 
-            ggplot2::aes_string(
-                x = first.independent.var, 
-                ymin = paste0(dependent.var, ".lb"), 
-                ymax = paste0(dependent.var, ".ub")
-            ), 
-            fill = "grey", alpha = 0.2, inherit.aes = FALSE
-        )
-        
+        # If we are using 2 independent variables
+        if (!is.null(extra.independent.variable)) {
+            curve.df <- curve.df[order(curve.df[[extra.independent.variable]]), ]
+            curve.dfs <- split(curve.df, curve.df[[extra.independent.variable]])
+        } else {
+            curve.dfs <- list(curve.df)
+        }
+        for (i in seq_along(curve.dfs)) {
+            plot <- plot + ggplot2::geom_ribbon(
+                data = curve.dfs[[i]],
+                ribbon_aes(first.independent.var, dependent.var, extra.independent.variable),
+                alpha = 0.3, inherit.aes = FALSE,
+                show.legend = FALSE
+            )
+        }
+        plot$scales$scales <- plot$scales$scales[!sapply(plot$scales$scales, function(s) "fill" %in% s$aesthetics)]
+        plot <- plot + ggplot2::scale_fill_brewer(palette = palette)
         # Now we can for sure remove upper and lower curves to prevent issues later in the function
         curve.df <- curve.df[, !grepl("\\.lb$|\\.ub$", names(curve.df))]
     }
@@ -159,20 +184,10 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
     # If a curve(s) was given
     if (!is.null(curve.df)) {
         # If using an extra independent variable
-        if (length(model.vars) > 2) {
-            # Get the name of that var (e.g. "I")
-            extra.independent.variable <- model.vars[3]
-            # Set colours
-            colours <- paste0("factor(", extra.independent.variable, ")")
+        if (!is.null(extra.independent.variable)) {
             # Split the dataframe into list of multiple df - one per curve
             curve.dfs <- split(curve.df, curve.df[[extra.independent.variable]])
         } else {
-            # No extra independent variable
-            extra.independent.variable <- NULL
-            # Set colours
-            colours <- "'This is the only colour'"
-            # Turn off the legend
-            plot <- plot + ggplot2::guides(color = "none")
             # "Split" the dataframe into a list one one df - because only one curve
             curve.dfs <- list(curve.df)
         }
@@ -206,21 +221,17 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
             # Add curve
             plot <- plot + 
                 ggplot2::geom_path(data = this.curve.df, 
-                                   ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = colours), 
+                                   colour_aes(first.independent.var, dependent.var, extra.independent.variable), 
                                    inherit.aes = FALSE)
         }
     }
     # If an extra curve was given
     if (!is.null(extra.curve)) {
         # If using an extra independent variable
-        if (length(model.vars) > 2) {
-            # Get the name of that var (e.g. "I")
-            extra.independent.variable <- model.vars[3]
+        if (!is.null(extra.independent.variable)) {
             # Split the dataframe into list of multiple df - one per curve
             curve.dfs <- split(extra.curve, extra.curve[[extra.independent.variable]])
         } else {
-            # No extra independent variable
-            extra.independent.variable <- NULL
             # "Split" the dataframe into a list one one df - because only one curve
             curve.dfs <- list(extra.curve)
         }
@@ -254,7 +265,7 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
             # Add curve
             plot <- plot + 
                 ggplot2::geom_path(data = this.curve.df, 
-                                   ggplot2::aes_string(x = first.independent.var, y = dependent.var, color = NULL), 
+                                   ggplot2::aes(x = .data[[first.independent.var]], y = .data[[dependent.var]]), 
                                    inherit.aes = FALSE)
         }
     }

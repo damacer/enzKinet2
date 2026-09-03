@@ -198,12 +198,21 @@ simulate_data <- function(model, params, x.min, x.max, z.values = NULL,
         } else if (distribution == "truncated.norm") {
             noisy_data <- truncnorm::rtruncnorm(num_observations, a = minimum, b = maximum, mean = means, sd = sds)
         }
+        # Zero-width noise (e.g. relative noise at V = 0): keep the mean. rtruncnorm(sd = 0) returns NaN.
+        zero.sd <- !is.na(sds) & sds == 0
+        if (any(zero.sd)) {
+            noisy_data[zero.sd] <- means[zero.sd]
+        }
+        if (any(!is.finite(noisy_data))) {
+            noisy_data[!is.finite(noisy_data)] <- means[!is.finite(noisy_data)]
+        }
         
-        # Ensure the data is within the range
+        # Ensure the data is within the range.
+        # Clipping one-sided (e.g. FB to 1) biases the mean of simulated data relative to the true curve.
         clipped_noisy_data <- pmax(pmin(noisy_data, maximum), minimum)
         
         # Warn user if any data was clipped
-        if (any(noisy_data != clipped_noisy_data)) {
+        if (any(is.finite(noisy_data) & noisy_data != clipped_noisy_data)) {
             warning("Some data values clipped to domain [", minimum, ", ", maximum, "]. Consider using truncated normal distribution.")
         }
         
