@@ -215,7 +215,7 @@ make_residual_plot <- function(model, params, data.df, x.max = NULL, x.label = N
             else 
                 ggplot2::element_blank()
         ) +
-        ggplot2::scale_color_brewer(palette = palette) +
+        colour_scale(palette, if (!is.null(extra.independent.var)) length(unique(data.df[[extra.independent.var]])) else 1) +
         ggplot2::ylim(y.limits) +
         ggplot2::xlim(0, max(x.max, x.max.data))
     if (zero.line) {

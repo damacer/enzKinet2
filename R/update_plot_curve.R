@@ -174,7 +174,8 @@ update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL,
             )
         }
         plot$scales$scales <- plot$scales$scales[!sapply(plot$scales$scales, function(s) "fill" %in% s$aesthetics)]
-        plot <- plot + ggplot2::scale_fill_brewer(palette = palette)
+        n.series <- if (!is.null(extra.independent.variable)) length(unique(curve.df[[extra.independent.variable]])) else 1
+        plot <- plot + colour_scale(palette, n.series, aesthetic = "fill")
         # Now we can for sure remove upper and lower curves to prevent issues later in the function
         curve.df <- curve.df[, !grepl("\\.lb$|\\.ub$", names(curve.df))]
     }

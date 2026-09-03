@@ -20,6 +20,21 @@ colour_aes <- function(x.name, y.name, extra.var) {
     }
 }
 
+# Return a colour scale appropriate for the number of series.
+# Falls back to ggplot2's default hue scale when the palette has fewer colours than needed.
+colour_scale <- function(palette, n.series, aesthetic = "colour") {
+    max.colours <- tryCatch(
+        suppressWarnings(length(RColorBrewer::brewer.pal(n.series, palette))),
+        error = function(e) 0
+    )
+    if (n.series <= max.colours) {
+        if (aesthetic == "fill") return(ggplot2::scale_fill_brewer(palette = palette))
+        return(ggplot2::scale_color_brewer(palette = palette))
+    }
+    if (aesthetic == "fill") return(ggplot2::scale_fill_hue())
+    return(ggplot2::scale_color_hue())
+}
+
 ribbon_aes <- function(x.name, y.name, extra.var) {
     ymin.name <- paste0(y.name, ".lb")
     ymax.name <- paste0(y.name, ".ub")
@@ -322,8 +337,17 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     
     
     # Add Extra Plot Features ===================
-    # Add colour palette
-    plot <- plot + ggplot2::scale_color_brewer(palette = palette)
+    # Count the number of colour series (unique levels of the extra independent variable)
+    n.series <- 1
+    if (length(model.vars) > 2) {
+        extra.var.name <- model.vars[3]
+        all.levels <- c()
+        if (!is.null(data.df)) all.levels <- c(all.levels, unique(data.df[[extra.var.name]]))
+        if (!is.null(curve.df)) all.levels <- c(all.levels, unique(curve.df[[extra.var.name]]))
+        n.series <- max(1, length(unique(all.levels)))
+    }
+    # Add colour palette (falls back to hue scale if palette has too few colours)
+    plot <- plot + colour_scale(palette, n.series)
     
     # If this is a lineweaver-burk plot add a line at the y-axis
     if (plot.transformation == "lineweaver") {
@@ -368,7 +392,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
                 show.legend = FALSE
             )
         }
-        plot <- plot + ggplot2::scale_fill_brewer(palette = palette)
+        plot <- plot + colour_scale(palette, n.series, aesthetic = "fill")
         # Now we can for sure remove upper and lower curves to prevent issues later in the function
         curve.df <- curve.df[, !grepl("\\.lb$|\\.ub$", names(curve.df))]
     }

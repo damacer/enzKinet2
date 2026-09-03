@@ -130,6 +130,20 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     if (model == "QBK" && any(data.df$R <= 0)) {
         stop("For the Quadratic Binding Kinetics model, R values must be greater than 0.")
     }
+    # OGMM and ALTMM have a product (Kcat*E0) that cannot be decomposed from rate data alone.
+    # E0 must be locked to a known value for the fit to be identifiable.
+    if (model %in% c("OGMM", "ALTMM") && (is.null(locked.params) || !"E0" %in% locked.params)) {
+        stop("For the ", PLOT_TITLES[[model]], " model, E0 must be locked to a known value (set locked.params = c('E0', ...)).")
+    }
+    # Models with an extra independent variable (e.g. I, B, R) need more than one unique level
+    # of that variable for the corresponding parameter (e.g. Ki) to be identifiable.
+    if (length(model.vars) > 2) {
+        extra.var <- model.vars[3]
+        n.unique <- length(unique(data.df[[extra.var]]))
+        if (n.unique < 2) {
+            stop("The ", PLOT_TITLES[[model]], " model requires at least 2 unique values of ", extra.var, " in the data.")
+        }
+    }
     # ===============================
     
     
@@ -285,9 +299,9 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                 statistics$AIC <- glance$AIC
                 statistics$BIC <- glance$BIC
                 statistics$Log.likelihood <- glance$logLik
-                statistics$Confidence.level = conf.level
-                # Record which CI method produced the bounds, so exported results stay interpretable
+                # Record confidence level and CI method only when bounds were successfully computed
                 if (ci.ok) {
+                    statistics$Confidence.level <- conf.level
                     statistics$CI.method <- conf.method
                 }
             }
@@ -431,8 +445,8 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                     Aj <- data.df$A[j]
                     Vj <- data.df$V[j]
                     # Compute Km and Vmax values for this pair of observations
-                    est.Vmax <- (Ai - Aj) / ((Ai / (Vi + eps)) - (Aj / (Vj + eps) + eps))
-                    est.Km <- (Vj - Vi) / ((Vi / (Ai + eps)) - (Vj / (Aj + eps) + eps))
+                    est.Vmax <- (Ai - Aj) / ((Ai / (Vi + eps)) - (Aj / (Vj + eps)))
+                    est.Km <- (Vj - Vi) / ((Vi / (Ai + eps)) - (Vj / (Aj + eps)))
                     # Set any pair of estimated values in the 3rd quadrant to large positive values
                     # (see page 431 Fundamentals of Enzyme Kinetics 4th Edition)
                     if (est.Vmax < 0 && est.Km < 0) {
