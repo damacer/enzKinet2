@@ -255,6 +255,13 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                         NULL
                     }
                 )
+                # With a single free parameter, profile confint() returns a plain
+                # (lower, upper) vector instead of a one-row matrix. Make it a matrix
+                # so the bounds are unpacked by parameter name below.
+                if (!is.null(confidence.intervals) && !is.matrix(confidence.intervals)) {
+                    confidence.intervals <- matrix(confidence.intervals, nrow = 1,
+                                                   dimnames = list(names(coef(fit)), names(confidence.intervals)))
+                }
                 # A failed or degenerate CI (an error, or any non-finite bound) is not a valid
                 # statistical result. Keep the parameter estimates and report the CI failure.
                 if (is.null(confidence.intervals) || !all(is.finite(confidence.intervals))) {
