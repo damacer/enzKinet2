@@ -44,7 +44,7 @@ devtools::install("enzKinet2")
     <img src="resources/logo.png" alt="EKA Logo" width="200">
 </p>
 
-Enzyme Kinetics Analysis (EKA) is an R Shiny web application powered by the enzKinet2 package. EKA can be accessed at https://enzyme-kinetics.shinyapps.io/enzkinet_webpage/. 
+Enzyme Kinetics Analysis (EKA) is an R Shiny web application powered by the enzKinet2 package. EKA v1 can be accessed at https://enzyme-kinetics.shinyapps.io/enzkinet_webpage/. EKA v2 can be accessed at [eka.nz](https://eka.nz).
 
 For more detailed information on EKA, you can refer to the associated [publication](https://iubmb.onlinelibrary.wiley.com/doi/10.1002/bmb.21823).
 
