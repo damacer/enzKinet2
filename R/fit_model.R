@@ -337,70 +337,56 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     
     
     # If recursive method ================
-    # TODO: this solver needs review. It is not actually recursive.
-    # After the first estimate it replaces measured V with a perfect MM curve
-    # so later iterations cannot change the answer. Treat as a one-shot closed form until rewritten.
+    # Iterative weighted least squares for a uniform standard deviation in v
+    # (see equations 15.10-15.12, Fundamentals of Enzyme Kinetics 4th Edition)
     if (fit.method == "recursive") {
-        # Get the MM function
-        MM_function <- MODEL_FUNCTIONS[[model]]
-        # Define function to calculate the parameters as estimate
-        calculate.params <- function (data) {
-            # Define a small epsilon value
-            eps <- 1e-10
-            # Transform the vectors as needed
-            v3 <- data$V^3
-            v4 <- data$V^4
-            a1 <- data$A^1
-            a2 <- data$A^2
+        # Drop points at A = 0, which carry no information and would divide by zero
+        keep <- data.df$A > 0
+        a <- data.df$A[keep]
+        v <- data.df$V[keep]
+        # Start by using the measured rates as the calculated rates
+        v.calc <- pmax(v, 0)
+        # Set the iteration limit and the convergence tolerance
+        max.iter <- 1000
+        tol <- 1e-10
+        # Repeat until the estimates stop changing
+        for (iter in seq_len(max.iter)) {
+            # Weight each measured rate by the cube of its calculated rate
+            w <- v.calc^3
             # Calculate needed sums
-            sum_v4_by_a2 <- sum(v4/(a2+eps))
-            sum_v4_by_a1 <- sum(v4/(a1+eps))
-            sum_v4 <- sum(v4)
-            sum_v3_by_a1 <- sum(v3/(a1+eps))
-            sum_v3 <- sum(v3)
-            # Use this equation to calculate Km estimate
-            est.Km <- (sum_v4*sum_v3_by_a1 - sum_v4_by_a1*sum_v3) / 
-                (sum_v4_by_a2*sum_v3 - sum_v4_by_a1*sum_v3_by_a1 + eps)
-            # Use this equation to calculate Vmax estimate
-            est.Vmax <- (sum_v4_by_a2*sum_v4 - sum_v4_by_a1^2) / 
-                (sum_v4_by_a2*sum_v3 - sum_v4_by_a1*sum_v3_by_a1 + eps)
-            # Return estimates
-            est.params <- list("Km" = est.Km, "Vmax" = est.Vmax)
-            return (est.params)
-        }
-        # Define function to calculate the parameters recursively until convergence
-        recursive.fit <- function (data, params=NULL, max.iter=1e3, max.tol=1e-6) {
-            # If reached max iterations
-            if (max.iter < 1) {
-                # Print warning
-                warning("Reached maximum iterations without convergence.")
-                return (params)
-            # If starting with no params
-            } else if (is.null(params)) {
-                # Calculate approximate Km and Vmax using data
-                est.params <- calculate.params(data)
-                # Use approximate Km and Vmax with A's to calculate v's
-                est.data <- MM_function(est.params, data$A, NULL)
-                # Recursively call function using estimate rates
-                return(recursive.fit(est.data, est.params, max.iter=max.iter-1))
-                
-            } else {
-                # Calculate approximate Km and Vmax using data
-                est.params <- calculate.params(data)
-                # If difference between estimated params and previous params is under tolerance
-                if ((abs(est.params$Km - params$Km) < max.tol) && (abs(est.params$Vmax - params$Vmax) < max.tol)) {
-                    # Converged
-                    return(params)
-                } else {
-                    # Use approximate Km and Vmax with A's to calculate v's
-                    est.data <- MM_function(est.params, data$A, NULL)
-                    # Recursively call function using estimate rates
-                    return(recursive.fit(est.data, est.params, max.iter=max.iter-1))
-                }
+            sum.w <- sum(w)
+            sum.w.a <- sum(w / a)
+            sum.wv <- sum(w * v)
+            sum.wv.a <- sum(w * v / a)
+            sum.wv.a2 <- sum(w * v / a^2)
+            # Calculate the shared denominator
+            denominator <- sum.wv.a2 * sum.w - sum.wv.a * sum.w.a
+            # Use this equation to calculate Vmax estimate (15.10)
+            est.Vmax <- (sum.wv.a2 * sum.wv - sum.wv.a^2) / denominator
+            # Use this equation to calculate Km estimate (15.12)
+            est.Km <- (sum.wv * sum.w.a - sum.wv.a * sum.w) / denominator
+            # If the estimates can't be calculated, fail
+            if (!is.finite(est.Km) || !is.finite(est.Vmax)) {
+                fitted.params <- NULL
+                errorMessage <- "Model fitting failed: the estimates could not be calculated from this data."
+                message(errorMessage)
+                break
             }
+            # Check whether the estimates have changed since the last iteration
+            converged <- !is.null(fitted.params) &&
+                abs(est.Km - fitted.params$Km) <= tol * abs(est.Km) &&
+                abs(est.Vmax - fitted.params$Vmax) <= tol * abs(est.Vmax)
+            # Save the estimates
+            fitted.params <- list("Km" = est.Km, "Vmax" = est.Vmax)
+            # If converged, stop
+            if (converged) break
+            # If reached max iterations, print warning
+            if (iter == max.iter) {
+                warning("Reached maximum iterations without convergence.", call. = FALSE)
+            }
+            # Use the estimates with A's to calculate new rates for the weights
+            v.calc <- est.Vmax * a / (est.Km + a)
         }
-        # Use function to estimate parameters
-        fitted.params <- recursive.fit(data.df)
     }
     # ===============================
     
