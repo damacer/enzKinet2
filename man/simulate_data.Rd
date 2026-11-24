@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulate_data.R
 \name{simulate_data}
 \alias{simulate_data}
-\title{Simulate Data}
+\title{Simulate kinetics data}
 \usage{
 simulate_data(
   model,
@@ -21,37 +21,109 @@ simulate_data(
 )
 }
 \arguments{
-\item{model}{The model to generate the data from ("MM", "CI", etc.)}
+\item{model}{The model's code, one of \link{VALID_MODELS}, e.g. \code{"MM"} or \code{"CI"}.}
 
-\item{params}{The parameter values for the model (e.g. Km, Vmax, Ksi).}
+\item{params}{A named list of parameter values, each greater than 0, e.g.
+\code{list(Km = 0.5, Vmax = 2)}. It must include every parameter in
+\code{MODEL_PARAMETERS[[model]]}. Other elements are ignored.}
 
-\item{x.min}{The minimum x value to cover.}
+\item{x.min, x.max}{The range of the primary independent variable (\code{A} or
+\code{P}). \code{x.min} must be 0 or more, and less than \code{x.max}.}
 
-\item{x.max}{The maximum x value to cover.}
+\item{z.values}{For models with an extra independent variable (\code{I}, \code{B} or
+\code{R}), a numeric vector of its values. Data is generated for every
+combination of x and z. The values must be 0 or more (more than 0 for \code{R}
+in \code{"QBK"}). Ignored for other models.}
 
-\item{z.values}{The z values to cover (discrete).}
+\item{n.samples}{The number of distinct x values (default 24). For
+\code{"dilution.series"} it's the maximum. Ignored for \code{"custom"}.}
 
-\item{n.samples}{The number of data points to generate (unique x values).}
+\item{n.replicates}{The number of replicates of each point (default 1).}
 
-\item{n.replicates}{The number of replicates of data points generated.}
+\item{noise.level}{The size of the noise (default 0.05). 0 gives noise-free
+data. See Details.}
 
-\item{noise.level}{The level of noise (non-zero number).}
+\item{noise.type}{\code{"relative"} (default) or \code{"absolute"}. See Details.}
 
-\item{noise.type}{The kind of noise ("absolute" or "relative").}
+\item{space}{How the x values are spaced: \code{"linear"} (default),
+\code{"exponential"}, \code{"inverse.exponential"}, \code{"dilution.series"} or
+\code{"custom"}. See Details.}
 
-\item{space}{The distribution of the space to generate data.}
+\item{dilution.factor}{For \code{space = "dilution.series"}, the factor (more
+than 1) between successive concentrations, e.g. 2 for a two-fold series.}
 
-\item{dilution.factor}{Dilution factor if space == "dilution.series".}
+\item{x.range}{For \code{space = "custom"}, the x values to use: at least two,
+all between \code{x.min} and \code{x.max}.}
 
-\item{x.range}{If space is 'custom' these are the x values.}
-
-\item{distribution}{The distribution to use for noise generation ("norm" or "truncated.norm").}
+\item{distribution}{The noise distribution: \code{"norm"} (default; normal,
+clipped to the valid range) or \code{"truncated.norm"} (truncated normal). See
+Details.}
 }
 \value{
-synthetic.data
+A data frame with a row per point and a column per variable: the
+primary independent variable (\code{A} or \code{P}), the extra independent variable
+if the model has one (\code{I}, \code{B} or \code{R}), then the dependent variable (\code{V} or
+\code{FB}). Replicates are stacked: every point of the first replicate, then
+the second, and so on.
 }
 \description{
-Generates synthetic data for a model.
+Generates synthetic data from a model. The values of the independent
+variables are chosen, the model gives the dependent variable, and random
+noise is added. Use it to explore a model, to plan an experiment, or to test
+fitting.
+}
+\details{
+\strong{Variables.} Each model has a primary independent variable (\code{A}, the
+substrate concentration, or \code{P} for the binding models), a dependent
+variable (\code{V}, the rate, or \code{FB}, the fraction bound) and, for some models,
+an extra independent variable (\code{I}, \code{B} or \code{R}) whose values come from
+\code{z.values}. See \link{model_registry} for each model's variables and parameters.
+
+\strong{Spacing of the x values} (\code{space}):
+\itemize{
+\item \code{"linear"}: \code{n.samples} evenly spaced values from \code{x.min} to \code{x.max}.
+\item \code{"exponential"}: denser at low x. Despite the name, the spacing is
+quadratic: x = x.min + (x.max - x.min) t^2 for t evenly spaced from 0
+to 1.
+\item \code{"inverse.exponential"}: denser at high x (x = x.min + (x.max - x.min)
+(1 - t^3)).
+\item \code{"dilution.series"}: starts at \code{x.max} and divides by \code{dilution.factor}
+at each step, stopping after \code{n.samples} values or before going below
+\code{x.min}.
+\item \code{"custom"}: the values in \code{x.range}.
+}
+
+\strong{Noise} is added to the dependent variable only. With
+\code{noise.type = "relative"} its standard deviation is \code{noise.level} times the
+true value, so 0.05 means 5\%. With \code{"absolute"} it is \code{noise.level}, in the
+dependent variable's units. With \code{distribution = "norm"}, noisy values
+outside the dependent variable's valid range (V at least 0, FB from 0 to 1)
+are clipped to the edge of the range, with a warning. \code{"truncated.norm"}
+draws from a normal distribution truncated to the valid range instead, so
+values don't pile up at the edge.
+
+The noise is random: call \code{\link[=set.seed]{set.seed()}} first for reproducible data.
+}
+\examples{
+set.seed(1)
+# Michaelis-Menten data: 8 concentrations in triplicate, with 5\% noise
+mm <- simulate_data("MM", params = list(Km = 0.5, Vmax = 2),
+                    x.min = 0.1, x.max = 5, n.samples = 8, n.replicates = 3)
+head(mm)
+
+# A two-fold dilution series from 10 down to 0.1, with constant noise
+simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.1, x.max = 10,
+              space = "dilution.series", dilution.factor = 2, n.samples = 8,
+              noise.level = 0.05, noise.type = "absolute")
+
+# Competitive inhibition at three inhibitor concentrations
+ci <- simulate_data("CI", list(Km = 0.5, Vmax = 2, Ki = 1),
+                    x.min = 0.1, x.max = 5, z.values = c(0, 1, 2), n.samples = 6)
+make_plot("CI", data.df = ci)
+}
+\seealso{
+\code{\link[=make_curve]{make_curve()}} for noise-free curves, \code{\link[=fit_model]{fit_model()}} to fit the
+data, \code{\link[=make_plot]{make_plot()}} to plot it.
 }
 \author{
 Haig Bishop

@@ -1,0 +1,28 @@
+bibentry(
+  bibtype = "Article",
+  header = "To cite EKA or enzKinet2 in publications, please use:",
+  title = "Enzyme Kinetics Analysis: An online tool for analyzing enzyme initial rate data and teaching enzyme kinetics",
+  author = c(
+    person("Daniel A.", "Mak"), person("Sebastian", "Dunn"),
+    person("David", "Coombes"), person("Carlo R.", "Carere"),
+    person("Jane R.", "Allison"), person("Volker", "Nock"),
+    person("André O.", "Hudson"), person("Renwick C. J.", "Dobson")
+  ),
+  journal = "Biochemistry and Molecular Biology Education",
+  year = "2024",
+  volume = "52",
+  number = "3",
+  pages = "348--358",
+  doi = "10.1002/bmb.21823"
+)
+
+bibentry(
+  bibtype = "Manual",
+  header = "To cite the enzKinet2 package itself:",
+  title = "enzKinet2: Models for Enzyme Kinetic Analysis",
+  author = c(person("Haig", "Bishop"), person("Daniel", "Mak"),
+             person("Renwick C. J.", "Dobson")),
+  year = "2026",
+  note = paste("R package version", meta$Version),
+  url = "https://eka.nz/docs"
+)

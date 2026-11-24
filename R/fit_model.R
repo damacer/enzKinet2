@@ -1,27 +1,133 @@
 ## Function file for enzKinet2 package
 
-#' Fit Model
+#' Fit a model to data
 #'
-#' Fits a model to the given data. Returns a list with fitted.params
-#' (NULL if fitting failed), statistics, and error. Note that error can be a
-#' CI-only problem with a valid fit (fitted.params still populated, without .lb/.ub bounds).
+#' Estimates a model's parameters from data, by nonlinear least squares or,
+#' for Michaelis-Menten only, by one of three methods that need no starting
+#' values. It can also return confidence intervals and fit statistics.
 #'
+#' @details
+#' **Methods** (`fit.method`):
+#' * `"nls"` (default, every model): unweighted nonlinear least squares with
+#'   [stats::nls()] (the Gauss-Newton algorithm), starting from
+#'   `start.params`.
+#' * `"ss.calc"` (`"MM"` only): a closed-form least-squares fit of the
+#'   Lineweaver-Burk line (1/v against 1/a) weighted by v^2, which suits errors
+#'   in v with a constant coefficient of variation (Cornish-Bowden's equations
+#'   15.7-15.9).
+#' * `"nonparametric"` (`"MM"` only): the medians of the Km and Vmax values
+#'   given by every pair of points, as in the direct linear plot. Pairs with
+#'   the same `A`, or a zero `A` or `V`, are skipped, and pairs whose lines
+#'   meet in the third quadrant count as very large values.
+#' * `"recursive"` (`"MM"` only): weighted least squares for errors in v with
+#'   a constant standard deviation (Cornish-Bowden's equations 15.10-15.12).
+#'   The weights depend on the fitted rates, so it starts from the measured
+#'   rates and repeats until the estimates stop changing. It should arrive at
+#'   the same estimates as `"nls"`, without needing starting values. Points
+#'   with `A` of 0 or less are left out.
+#'
+#' The methods other than nls ignore `start.params`, and don't support locked
+#' parameters, confidence intervals or statistics. The plot you look at
+#' doesn't affect the fit.
+#'
+#' **Starting values.** nls needs starting values reasonably close to the
+#' answer. If a fit fails, try values that make the model's curve pass near
+#' the data (check with [make_curve()] and [make_plot()]).
+#'
+#' **Locked parameters.** Parameters named in `locked.params` are held at
+#' their values in `start.params` instead of being fitted. `"OGMM"` and
+#' `"ALTMM"` need `E0` locked to a known value, because rate data alone can't
+#' separate `Kcat` from `E0`.
+#'
+#' **Checks.** The data needs at least one more point than there are free
+#' parameters (unless `override.data.point.check = TRUE`). Models with an extra
+#' variable (`I`, `B` or `R`) need at least two different values of it.
+#'
+#' **Noise-free data.** nls fails on data that the model fits exactly.
+#' `add.minor.noise = TRUE` first adds normal noise with a standard deviation
+#' of 1e-6 to the dependent variable. It uses a fixed seed, so it's
+#' reproducible, and it leaves your random number stream as it was.
+#'
+#' **Confidence intervals** (`get.conf.int = TRUE`, nls only). With
+#' `conf.method = "profile"` (the default) they are profile likelihood
+#' intervals from [stats::confint()], which can be asymmetric and suit
+#' nonlinear models. With `"asymptotic"` they are Wald
+#' intervals (the estimate plus or minus t times its standard error) from
+#' [nlstools::confint2()], which are quicker and symmetric but can be
+#' misleading for nonlinear models. A locked parameter gets the interval
+#' (value, value). If the intervals can't be computed, the estimates are still
+#' returned and `error` says what went wrong.
+#'
+#' **Statistics** (`get.stats = TRUE`, nls only): each parameter's standard
+#' error (`<parameter>.se`); `R2`, 1 - var(residuals) / var(data); `RMSE`,
+#' the root mean square error; `MAE`, the mean absolute error; and `AIC`,
+#' `BIC` and `Log.likelihood`. AIC and BIC compare models fitted to the same
+#' data, and the lower value is better. When intervals were computed,
+#' `Confidence.level` and `CI.method` are included too.
+#'
+#' **Failures.** Invalid arguments are errors. A fit that fails, or that gives
+#' a parameter of 0 or less or above 1e19, returns `fitted.params = NULL` and a
+#' message in `error`, and prints the underlying error with [message()].
+#'
+#' @param model The model's code, one of [VALID_MODELS], e.g. `"MM"`.
+#' @param data.df A data frame with a numeric column for each of the model's
+#'   variables (see [model_registry]), e.g. `A` and `V` for `"MM"`. Other
+#'   columns are ignored. The model's columns can't contain `NA`.
+#' @param start.params A named list of starting values, each greater than 0,
+#'   for every parameter of the model. Required for `"nls"`, and ignored by the
+#'   other methods. Locked parameters take their values from here.
+#' @param fit.method `"nls"` (default), `"ss.calc"`, `"nonparametric"` or
+#'   `"recursive"`. See Details.
+#' @param locked.params A character vector of parameters to hold at their
+#'   `start.params` values instead of fitting them (nls only), e.g. `"E0"`.
+#' @param add.minor.noise If `TRUE`, add negligible noise before fitting, so
+#'   that noise-free data can be fitted. Default `FALSE`.
+#' @param override.data.point.check If `TRUE`, fit even when there are too few
+#'   data points for the number of free parameters. Default `FALSE`.
+#' @param get.conf.int If `TRUE`, also compute confidence intervals (nls only).
+#'   Default `FALSE`.
+#' @param conf.level The confidence level, between 0 and 1 (default 0.95).
+#' @param conf.method The confidence interval method: `"profile"` (default) or
+#'   `"asymptotic"`. See Details.
+#' @param get.stats If `TRUE`, also return fit statistics (nls only). Default
+#'   `FALSE`.
+#' @return A list of three elements:
+#'   * `fitted.params`: a named list of the estimates (e.g. `Km`, `Vmax`,
+#'     including any locked parameters), plus `<parameter>.lb` and
+#'     `<parameter>.ub` when confidence intervals were computed. `NULL` if the
+#'     fit failed.
+#'   * `statistics`: a named list of fit statistics (see Details), or `NULL`.
+#'   * `error`: `NULL`, or a message saying what went wrong. It can be set
+#'     while `fitted.params` is still valid, when only the confidence
+#'     intervals failed.
+#' @references Cornish-Bowden A (2012). *Fundamentals of Enzyme Kinetics*,
+#'   4th edition. Weinheim: Wiley-VCH.
+#' @seealso [make_curve()] and [make_plot()] to draw the fit,
+#'   [make_residual_plot()] to check it.
 #' @author Haig Bishop
-#' @param model The model to fit the data ("MM", "CI", etc.)
-#' @param data.df The data to fit the model to.
-#' @param start.params The starting parameter values for the model (e.g. Km, Vmax).
-#' @param fit.method The algorithm or calculation used to fit the model ("nls", "recursive", "ss.calc", and "nonparametric").
-#' @param locked.params A vector of parameter names to lock while fitting.
-#' @param add.minor.noise Add a negligible amount of noise to the data before fitting.
-#' @param override.data.point.check Override low number of data points error/warnings.
-#' @param get.conf.int Get extra parameter values for upper and lower bounds.
-#' @param conf.level Confidence level value of confidence interval.
-#' @param conf.method Confidence interval method ("profile" or "asymptotic").
-#' @param get.stats Get statistics of the fit (returned alongside fitted.params).
-#' @return A list containing fitted.params, statistics, and error.
-#'   Note that error can be a CI-only problem with a valid fit.
 #' @importFrom stats coef confint median nls nls.control rnorm
+#' @examples
+#' set.seed(1)
+#' mm <- simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.1, x.max = 5,
+#'                     n.samples = 8, n.replicates = 3)
+#' fit <- fit_model("MM", mm, start.params = list(Km = 1, Vmax = 1),
+#'                  get.conf.int = TRUE, get.stats = TRUE)
+#' fit$fitted.params
+#' fit$statistics$AIC
 #'
+#' # Draw the fit with its parameter uncertainty envelope
+#' curve <- make_curve("MM", fit$fitted.params, x.min = 0, x.max = 5,
+#'                     conf.int = TRUE)
+#' make_plot("MM", data.df = mm, curve.df = curve, conf.int = TRUE)
+#'
+#' # A method that needs no starting values (Michaelis-Menten only)
+#' fit_model("MM", mm, fit.method = "nonparametric")$fitted.params
+#'
+#' # OGMM: E0 must be locked to its known value
+#' og <- simulate_data("OGMM", list(Km = 0.5, Kcat = 20, E0 = 0.1),
+#'                     x.min = 0.1, x.max = 5, n.samples = 10)
+#' fit_model("OGMM", og, start.params = list(Km = 1, Kcat = 10, E0 = 0.1),
+#'           locked.params = "E0")$fitted.params
 #' @export
 
 fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", locked.params = NULL,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_model.R
 \name{fit_model}
 \alias{fit_model}
-\title{Fit Model}
+\title{Fit a model to data}
 \usage{
 fit_model(
   model,
@@ -19,36 +19,152 @@ fit_model(
 )
 }
 \arguments{
-\item{model}{The model to fit the data ("MM", "CI", etc.)}
+\item{model}{The model's code, one of \link{VALID_MODELS}, e.g. \code{"MM"}.}
 
-\item{data.df}{The data to fit the model to.}
+\item{data.df}{A data frame with a numeric column for each of the model's
+variables (see \link{model_registry}), e.g. \code{A} and \code{V} for \code{"MM"}. Other
+columns are ignored. The model's columns can't contain \code{NA}.}
 
-\item{start.params}{The starting parameter values for the model (e.g. Km, Vmax).}
+\item{start.params}{A named list of starting values, each greater than 0,
+for every parameter of the model. Required for \code{"nls"}, and ignored by the
+other methods. Locked parameters take their values from here.}
 
-\item{fit.method}{The algorithm or calculation used to fit the model ("nls", "recursive", "ss.calc", and "nonparametric").}
+\item{fit.method}{\code{"nls"} (default), \code{"ss.calc"}, \code{"nonparametric"} or
+\code{"recursive"}. See Details.}
 
-\item{locked.params}{A vector of parameter names to lock while fitting.}
+\item{locked.params}{A character vector of parameters to hold at their
+\code{start.params} values instead of fitting them (nls only), e.g. \code{"E0"}.}
 
-\item{add.minor.noise}{Add a negligible amount of noise to the data before fitting.}
+\item{add.minor.noise}{If \code{TRUE}, add negligible noise before fitting, so
+that noise-free data can be fitted. Default \code{FALSE}.}
 
-\item{override.data.point.check}{Override low number of data points error/warnings.}
+\item{override.data.point.check}{If \code{TRUE}, fit even when there are too few
+data points for the number of free parameters. Default \code{FALSE}.}
 
-\item{get.conf.int}{Get extra parameter values for upper and lower bounds.}
+\item{get.conf.int}{If \code{TRUE}, also compute confidence intervals (nls only).
+Default \code{FALSE}.}
 
-\item{conf.level}{Confidence level value of confidence interval.}
+\item{conf.level}{The confidence level, between 0 and 1 (default 0.95).}
 
-\item{conf.method}{Confidence interval method ("profile" or "asymptotic").}
+\item{conf.method}{The confidence interval method: \code{"profile"} (default) or
+\code{"asymptotic"}. See Details.}
 
-\item{get.stats}{Get statistics of the fit (returned alongside fitted.params).}
+\item{get.stats}{If \code{TRUE}, also return fit statistics (nls only). Default
+\code{FALSE}.}
 }
 \value{
-A list containing fitted.params, statistics, and error.
-Note that error can be a CI-only problem with a valid fit.
+A list of three elements:
+\itemize{
+\item \code{fitted.params}: a named list of the estimates (e.g. \code{Km}, \code{Vmax},
+including any locked parameters), plus \verb{<parameter>.lb} and
+\verb{<parameter>.ub} when confidence intervals were computed. \code{NULL} if the
+fit failed.
+\item \code{statistics}: a named list of fit statistics (see Details), or \code{NULL}.
+\item \code{error}: \code{NULL}, or a message saying what went wrong. It can be set
+while \code{fitted.params} is still valid, when only the confidence
+intervals failed.
+}
 }
 \description{
-Fits a model to the given data. Returns a list with fitted.params
-(NULL if fitting failed), statistics, and error. Note that error can be a
-CI-only problem with a valid fit (fitted.params still populated, without .lb/.ub bounds).
+Estimates a model's parameters from data, by nonlinear least squares or,
+for Michaelis-Menten only, by one of three methods that need no starting
+values. It can also return confidence intervals and fit statistics.
+}
+\details{
+\strong{Methods} (\code{fit.method}):
+\itemize{
+\item \code{"nls"} (default, every model): unweighted nonlinear least squares with
+\code{\link[stats:nls]{stats::nls()}} (the Gauss-Newton algorithm), starting from
+\code{start.params}.
+\item \code{"ss.calc"} (\code{"MM"} only): a closed-form least-squares fit of the
+Lineweaver-Burk line (1/v against 1/a) weighted by v^2, which suits errors
+in v with a constant coefficient of variation (Cornish-Bowden's equations
+15.7-15.9).
+\item \code{"nonparametric"} (\code{"MM"} only): the medians of the Km and Vmax values
+given by every pair of points, as in the direct linear plot. Pairs with
+the same \code{A}, or a zero \code{A} or \code{V}, are skipped, and pairs whose lines
+meet in the third quadrant count as very large values.
+\item \code{"recursive"} (\code{"MM"} only): weighted least squares for errors in v with
+a constant standard deviation (Cornish-Bowden's equations 15.10-15.12).
+The weights depend on the fitted rates, so it starts from the measured
+rates and repeats until the estimates stop changing. It should arrive at
+the same estimates as \code{"nls"}, without needing starting values. Points
+with \code{A} of 0 or less are left out.
+}
+
+The methods other than nls ignore \code{start.params}, and don't support locked
+parameters, confidence intervals or statistics. The plot you look at
+doesn't affect the fit.
+
+\strong{Starting values.} nls needs starting values reasonably close to the
+answer. If a fit fails, try values that make the model's curve pass near
+the data (check with \code{\link[=make_curve]{make_curve()}} and \code{\link[=make_plot]{make_plot()}}).
+
+\strong{Locked parameters.} Parameters named in \code{locked.params} are held at
+their values in \code{start.params} instead of being fitted. \code{"OGMM"} and
+\code{"ALTMM"} need \code{E0} locked to a known value, because rate data alone can't
+separate \code{Kcat} from \code{E0}.
+
+\strong{Checks.} The data needs at least one more point than there are free
+parameters (unless \code{override.data.point.check = TRUE}). Models with an extra
+variable (\code{I}, \code{B} or \code{R}) need at least two different values of it.
+
+\strong{Noise-free data.} nls fails on data that the model fits exactly.
+\code{add.minor.noise = TRUE} first adds normal noise with a standard deviation
+of 1e-6 to the dependent variable. It uses a fixed seed, so it's
+reproducible, and it leaves your random number stream as it was.
+
+\strong{Confidence intervals} (\code{get.conf.int = TRUE}, nls only). With
+\code{conf.method = "profile"} (the default) they are profile likelihood
+intervals from \code{\link[stats:confint]{stats::confint()}}, which can be asymmetric and suit
+nonlinear models. With \code{"asymptotic"} they are Wald
+intervals (the estimate plus or minus t times its standard error) from
+\code{\link[nlstools:confint2]{nlstools::confint2()}}, which are quicker and symmetric but can be
+misleading for nonlinear models. A locked parameter gets the interval
+(value, value). If the intervals can't be computed, the estimates are still
+returned and \code{error} says what went wrong.
+
+\strong{Statistics} (\code{get.stats = TRUE}, nls only): each parameter's standard
+error (\verb{<parameter>.se}); \code{R2}, 1 - var(residuals) / var(data); \code{RMSE},
+the root mean square error; \code{MAE}, the mean absolute error; and \code{AIC},
+\code{BIC} and \code{Log.likelihood}. AIC and BIC compare models fitted to the same
+data, and the lower value is better. When intervals were computed,
+\code{Confidence.level} and \code{CI.method} are included too.
+
+\strong{Failures.} Invalid arguments are errors. A fit that fails, or that gives
+a parameter of 0 or less or above 1e19, returns \code{fitted.params = NULL} and a
+message in \code{error}, and prints the underlying error with \code{\link[=message]{message()}}.
+}
+\examples{
+set.seed(1)
+mm <- simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.1, x.max = 5,
+                    n.samples = 8, n.replicates = 3)
+fit <- fit_model("MM", mm, start.params = list(Km = 1, Vmax = 1),
+                 get.conf.int = TRUE, get.stats = TRUE)
+fit$fitted.params
+fit$statistics$AIC
+
+# Draw the fit with its parameter uncertainty envelope
+curve <- make_curve("MM", fit$fitted.params, x.min = 0, x.max = 5,
+                    conf.int = TRUE)
+make_plot("MM", data.df = mm, curve.df = curve, conf.int = TRUE)
+
+# A method that needs no starting values (Michaelis-Menten only)
+fit_model("MM", mm, fit.method = "nonparametric")$fitted.params
+
+# OGMM: E0 must be locked to its known value
+og <- simulate_data("OGMM", list(Km = 0.5, Kcat = 20, E0 = 0.1),
+                    x.min = 0.1, x.max = 5, n.samples = 10)
+fit_model("OGMM", og, start.params = list(Km = 1, Kcat = 10, E0 = 0.1),
+          locked.params = "E0")$fitted.params
+}
+\references{
+Cornish-Bowden A (2012). \emph{Fundamentals of Enzyme Kinetics},
+4th edition. Weinheim: Wiley-VCH.
+}
+\seealso{
+\code{\link[=make_curve]{make_curve()}} and \code{\link[=make_plot]{make_plot()}} to draw the fit,
+\code{\link[=make_residual_plot]{make_residual_plot()}} to check it.
 }
 \author{
 Haig Bishop

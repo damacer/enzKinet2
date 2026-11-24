@@ -1,25 +1,92 @@
 ## Function file for enzKinet2 package
 
-#' Simulate Data
+#' Simulate kinetics data
 #'
-#' Generates synthetic data for a model.
+#' Generates synthetic data from a model. The values of the independent
+#' variables are chosen, the model gives the dependent variable, and random
+#' noise is added. Use it to explore a model, to plan an experiment, or to test
+#' fitting.
 #'
+#' @details
+#' **Variables.** Each model has a primary independent variable (`A`, the
+#' substrate concentration, or `P` for the binding models), a dependent
+#' variable (`V`, the rate, or `FB`, the fraction bound) and, for some models,
+#' an extra independent variable (`I`, `B` or `R`) whose values come from
+#' `z.values`. See [model_registry] for each model's variables and parameters.
+#'
+#' **Spacing of the x values** (`space`):
+#' * `"linear"`: `n.samples` evenly spaced values from `x.min` to `x.max`.
+#' * `"exponential"`: denser at low x. Despite the name, the spacing is
+#'   quadratic: x = x.min + (x.max - x.min) t^2 for t evenly spaced from 0
+#'   to 1.
+#' * `"inverse.exponential"`: denser at high x (x = x.min + (x.max - x.min)
+#'   (1 - t^3)).
+#' * `"dilution.series"`: starts at `x.max` and divides by `dilution.factor`
+#'   at each step, stopping after `n.samples` values or before going below
+#'   `x.min`.
+#' * `"custom"`: the values in `x.range`.
+#'
+#' **Noise** is added to the dependent variable only. With
+#' `noise.type = "relative"` its standard deviation is `noise.level` times the
+#' true value, so 0.05 means 5%. With `"absolute"` it is `noise.level`, in the
+#' dependent variable's units. With `distribution = "norm"`, noisy values
+#' outside the dependent variable's valid range (V at least 0, FB from 0 to 1)
+#' are clipped to the edge of the range, with a warning. `"truncated.norm"`
+#' draws from a normal distribution truncated to the valid range instead, so
+#' values don't pile up at the edge.
+#'
+#' The noise is random: call [set.seed()] first for reproducible data.
+#'
+#' @param model The model's code, one of [VALID_MODELS], e.g. `"MM"` or `"CI"`.
+#' @param params A named list of parameter values, each greater than 0, e.g.
+#'   `list(Km = 0.5, Vmax = 2)`. It must include every parameter in
+#'   `MODEL_PARAMETERS[[model]]`. Other elements are ignored.
+#' @param x.min,x.max The range of the primary independent variable (`A` or
+#'   `P`). `x.min` must be 0 or more, and less than `x.max`.
+#' @param z.values For models with an extra independent variable (`I`, `B` or
+#'   `R`), a numeric vector of its values. Data is generated for every
+#'   combination of x and z. The values must be 0 or more (more than 0 for `R`
+#'   in `"QBK"`). Ignored for other models.
+#' @param n.samples The number of distinct x values (default 24). For
+#'   `"dilution.series"` it's the maximum. Ignored for `"custom"`.
+#' @param n.replicates The number of replicates of each point (default 1).
+#' @param noise.level The size of the noise (default 0.05). 0 gives noise-free
+#'   data. See Details.
+#' @param noise.type `"relative"` (default) or `"absolute"`. See Details.
+#' @param space How the x values are spaced: `"linear"` (default),
+#'   `"exponential"`, `"inverse.exponential"`, `"dilution.series"` or
+#'   `"custom"`. See Details.
+#' @param dilution.factor For `space = "dilution.series"`, the factor (more
+#'   than 1) between successive concentrations, e.g. 2 for a two-fold series.
+#' @param x.range For `space = "custom"`, the x values to use: at least two,
+#'   all between `x.min` and `x.max`.
+#' @param distribution The noise distribution: `"norm"` (default; normal,
+#'   clipped to the valid range) or `"truncated.norm"` (truncated normal). See
+#'   Details.
+#' @return A data frame with a row per point and a column per variable: the
+#'   primary independent variable (`A` or `P`), the extra independent variable
+#'   if the model has one (`I`, `B` or `R`), then the dependent variable (`V` or
+#'   `FB`). Replicates are stacked: every point of the first replicate, then
+#'   the second, and so on.
+#' @seealso [make_curve()] for noise-free curves, [fit_model()] to fit the
+#'   data, [make_plot()] to plot it.
 #' @author Haig Bishop
-#' @param model The model to generate the data from ("MM", "CI", etc.)
-#' @param params The parameter values for the model (e.g. Km, Vmax, Ksi).
-#' @param x.min The minimum x value to cover.
-#' @param x.max The maximum x value to cover.
-#' @param z.values The z values to cover (discrete).
-#' @param n.samples The number of data points to generate (unique x values).
-#' @param n.replicates The number of replicates of data points generated.
-#' @param noise.level The level of noise (non-zero number).
-#' @param noise.type The kind of noise ("absolute" or "relative").
-#' @param space The distribution of the space to generate data.
-#' @param dilution.factor Dilution factor if space == "dilution.series".
-#' @param x.range If space is 'custom' these are the x values.
-#' @param distribution The distribution to use for noise generation ("norm" or "truncated.norm").
-#' @return synthetic.data
-#' 
+#' @examples
+#' set.seed(1)
+#' # Michaelis-Menten data: 8 concentrations in triplicate, with 5% noise
+#' mm <- simulate_data("MM", params = list(Km = 0.5, Vmax = 2),
+#'                     x.min = 0.1, x.max = 5, n.samples = 8, n.replicates = 3)
+#' head(mm)
+#'
+#' # A two-fold dilution series from 10 down to 0.1, with constant noise
+#' simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.1, x.max = 10,
+#'               space = "dilution.series", dilution.factor = 2, n.samples = 8,
+#'               noise.level = 0.05, noise.type = "absolute")
+#'
+#' # Competitive inhibition at three inhibitor concentrations
+#' ci <- simulate_data("CI", list(Km = 0.5, Vmax = 2, Ki = 1),
+#'                     x.min = 0.1, x.max = 5, z.values = c(0, 1, 2), n.samples = 6)
+#' make_plot("CI", data.df = ci)
 #' @export
 
 simulate_data <- function(model, params, x.min, x.max, z.values = NULL, 

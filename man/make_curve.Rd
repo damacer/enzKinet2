@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_curve.R
 \name{make_curve}
 \alias{make_curve}
-\title{Make Curve}
+\title{Make a model curve}
 \usage{
 make_curve(
   model,
@@ -18,31 +18,84 @@ make_curve(
 )
 }
 \arguments{
-\item{model}{The model to generate the curve from ("MM", "CI", etc.)}
+\item{model}{The model's code, one of \link{VALID_MODELS}, e.g. \code{"MM"} or \code{"CI"}.}
 
-\item{params}{The parameter values for the model (e.g. Km, Vmax, Ksi)}
+\item{params}{A named list of parameter values, as for \code{\link[=simulate_data]{simulate_data()}}.
+With \code{conf.int = TRUE} it must also hold each parameter's bounds, named
+\verb{<parameter>.lb} and \verb{<parameter>.ub} (e.g. \code{Km.lb}), as in
+\code{fit_model()$fitted.params}.}
 
-\item{x.min}{The minimum x value to cover.}
+\item{x.min, x.max}{The range of the primary independent variable (\code{A} or
+\code{P}). \code{x.min} must be 0 or more, and less than \code{x.max}.}
 
-\item{x.max}{The maximum x value to cover.}
+\item{z.values}{For models with an extra independent variable (\code{I}, \code{B} or
+\code{R}), a numeric vector of its values. Data is generated for every
+combination of x and z. The values must be 0 or more (more than 0 for \code{R}
+in \code{"QBK"}). Ignored for other models.}
 
-\item{z.values}{The z values to cover (discrete).}
+\item{n.samples}{The number of points along the curve (default 250, smooth
+enough for most plots).}
 
-\item{n.samples}{The resolution of the curve (~150 is usually enough).}
+\item{space}{How the points along the curve are spaced: \code{"linear"}
+(default), \code{"exponential"} (denser at low x), \code{"inverse.exponential"}
+(denser at high x), \code{"dilution.series"} or \code{"custom"}, as described in
+\code{\link[=simulate_data]{simulate_data()}}.}
 
-\item{space}{The distribution of the space to generate data.}
+\item{conf.int}{If \code{TRUE}, also compute the lower and upper envelope curves
+(see Details). Default \code{FALSE}.}
 
-\item{conf.int}{If TRUE, uses parameter confidence interval bounds to generate a parameter uncertainty envelope (lower and upper envelope curves).}
+\item{dilution.factor}{For \code{space = "dilution.series"}, the factor (more
+than 1) between successive concentrations, e.g. 2 for a two-fold series.}
 
-\item{dilution.factor}{Dilution factor if space == "dilution.series".}
-
-\item{x.range}{If space is "custom" these are the x values.}
+\item{x.range}{For \code{space = "custom"}, the x values to use: at least two,
+all between \code{x.min} and \code{x.max}.}
 }
 \value{
-curve.df
+A data frame with the same columns as \code{\link[=simulate_data]{simulate_data()}}. With
+\code{conf.int = TRUE}, each column is repeated with the suffixes \code{.lb} and
+\code{.ub} (e.g. \code{A.lb}, \code{V.lb}, \code{A.ub}, \code{V.ub}) for the lower and upper
+envelope curves.
 }
 \description{
-Generates a curve for a model. The "curve" is equivalent to dense noiseless data.
+Computes a model's curve: dense, noise-free values of the dependent variable
+across a range of the independent variable, ready to plot with
+\code{\link[=make_plot]{make_plot()}}. It calls \code{\link[=simulate_data]{simulate_data()}} with no noise. With
+\code{conf.int = TRUE} it also computes a parameter uncertainty envelope from the
+confidence bounds that \code{\link[=fit_model]{fit_model()}} returns.
+}
+\details{
+\strong{The envelope.} The lower envelope curve uses, for each parameter,
+whichever of its confidence bounds makes the curve lower (e.g. the upper
+bound of \code{Km} and the lower bound of \code{Vmax}), and the upper curve uses the
+other bound. For a Hill coefficient \code{n}, both bounds are tried and the
+lowest and highest curves kept. Bounds of 0 or less are raised to 1e-10. The
+envelope shows how far the curve moves when each parameter is at the edge
+of its own confidence interval. It is not a confidence band for the curve,
+and it can be wider than one, because it ignores the correlation between
+the parameters.
+}
+\examples{
+curve <- make_curve("MM", list(Km = 0.5, Vmax = 2), x.min = 0, x.max = 5)
+head(curve)
+make_plot("MM", curve.df = curve)
+
+# One curve per inhibitor concentration
+make_plot("CI", curve.df = make_curve("CI", list(Km = 0.5, Vmax = 2, Ki = 1),
+                                      x.min = 0, x.max = 5, z.values = c(0, 1, 2)))
+
+# The envelope from a fit's confidence intervals
+set.seed(1)
+mm <- simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.1, x.max = 5,
+                    n.samples = 8, n.replicates = 3)
+fit <- fit_model("MM", mm, start.params = list(Km = 1, Vmax = 1),
+                 get.conf.int = TRUE)
+envelope <- make_curve("MM", fit$fitted.params, x.min = 0, x.max = 5,
+                       conf.int = TRUE)
+make_plot("MM", data.df = mm, curve.df = envelope, conf.int = TRUE)
+}
+\seealso{
+\code{\link[=make_plot]{make_plot()}} to plot the curve, \code{\link[=fit_model]{fit_model()}} for fitted
+parameters and their bounds.
 }
 \author{
 Haig Bishop

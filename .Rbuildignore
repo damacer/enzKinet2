@@ -1,3 +1,12 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+^docs$
+^_pkgdown\.yml$
+^pkgdown$
+^vignettes/articles$
+^data-raw$
+^\.github$
+^tools$
+^CITATION\.cff$
+^enzKinet-docs-plan\.md$

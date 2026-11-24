@@ -1,20 +1,36 @@
 ## Function file for enzKinet2 package
 
-#' Update Plot Curve
+#' Replace the curve in a plot
 #'
-#' Updates (replaces) the curve in an existing enzyme kinetics plot.
+#' Removes the curves and envelope from a plot made by [make_plot()] and draws
+#' new ones, keeping the data points and the plot's other settings. This is
+#' quicker than redrawing the whole plot, e.g. as parameter values change.
 #'
+#' @param model The model's code, as used to make `plot`.
+#' @param plot A plot made by [make_plot()].
+#' @param curve.df The new curve, from [make_curve()]. Optional. Without it,
+#'   the plot is left with no curve.
+#' @param extra.curve A new extra curve, drawn in black. Optional.
+#' @param plot.transformation The transformation that `plot` was made with
+#'   (default `"standard"`). It must match, because the new curve is
+#'   transformed in the same way. A `"direct"` plot has no curves to replace.
+#' @param conf.int If `TRUE`, shade the envelope from `curve.df` (see
+#'   [make_plot()]). Default `FALSE`.
+#' @param palette The colour palette that `plot` was made with (default
+#'   `"Set1"`).
+#' @param y.range The y-axis limits, a numeric vector of two values. Default
+#'   `NULL`.
+#' @return The updated ggplot object.
+#' @seealso [make_plot()], [make_curve()].
 #' @author Haig Bishop
-#' @param plot The existing plot to be updated
-#' @param curve.df Data frame with the new curve data
-#' @param model The chosen model ("MM", "MMSI", etc.)
-#' @param extra.curve An extra curve to be displayed on top of the other
-#' @param plot.transformation Transformation to give the data.
-#' @param conf.int If TRUE, plots a parameter uncertainty envelope (shaded envelope derived from parameter confidence interval bounds).
-#' @param palette Custom plot colour palette (e.g., "Set1", "Set2", etc.).
-#' @param y.range Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).
-#' @return Updated plot
-#' 
+#' @examples
+#' set.seed(1)
+#' mm <- simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.1, x.max = 5,
+#'                     n.samples = 8)
+#' p <- make_plot("MM", data.df = mm,
+#'                curve.df = make_curve("MM", list(Km = 0.5, Vmax = 2), 0, 5))
+#' update_plot_curve("MM", p,
+#'                   curve.df = make_curve("MM", list(Km = 1, Vmax = 2.5), 0, 5))
 #' @export
 
 update_plot_curve <- function(model, plot, curve.df = NULL, extra.curve = NULL, 

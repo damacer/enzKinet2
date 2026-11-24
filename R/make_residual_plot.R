@@ -1,27 +1,39 @@
 ## Function file for enzKinet2 package
 
-#' Make a Residual Plot
+#' Plot residuals
 #'
-#' Generates a residual plot for an enzyme kinetics model given parameters and data.
+#' Plots the residuals of data from a model with given parameter values (the
+#' observed minus the predicted dependent variable) against the primary
+#' independent variable. Residuals from a good fit scatter evenly around zero.
+#' A pattern suggests that the model doesn't describe the data.
 #'
+#' @inheritParams make_plot
+#' @param params A named list of the model's parameter values, each greater
+#'   than 0, usually `fit_model()$fitted.params`. Other elements, such as
+#'   confidence bounds, are ignored.
+#' @param data.df The data, a data frame with the model's variables as columns.
+#' @param x.max Extends the x-axis to at least this value (more than 0). The
+#'   axis always starts at 0 and covers all the data. Default `NULL`.
+#' @param x.units,y.units The units of the x variable and of the residuals,
+#'   e.g. `"mM"`, added to the axis labels.
+#' @param title A plot title to use instead of the default (the model's name
+#'   followed by "Residuals").
+#' @param zero.line If `TRUE` (default), draw a dotted line at zero.
+#' @param y.range The y-axis limits, a numeric vector of two values. By default
+#'   the axis is centred on zero and just covers the largest residual.
+#' @return A ggplot object.
+#' @seealso [fit_model()] for parameter estimates, [make_plot()] for the data
+#'   and curve.
 #' @author Haig Bishop
-#' @param model The model we are plotting ("MM", "CI", etc.).
-#' @param params The parameter values for the model (e.g. Km, Vmax, Ksi).
-#' @param data.df The data to calculate residuals from.
-#' @param x.max Defines the maximum x value to plot to. Defaults to NULL (use the maximum x in the data).
-#' @param x.label Custom x-axis label.
-#' @param y.label Custom y-axis label.
-#' @param x.units Units for the x-axis, such as "mM" or "µM". Defaults to NULL (no units).
-#' @param y.units Units for the y-axis, such as "µmol/s" or "U/mL". Defaults to NULL (no units).
-#' @param title Custom plot title.
-#' @param legend.label Custom legend label.
-#' @param zero.line If TRUE (default), draws a dotted line at y=0.
-#' @param palette Custom plot colour palette.
-#' @param hide.legend Boolean to hide the plot legend.
-#' @param y.range Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).
-#' @param show.grid Boolean to show grid lines on the plot. Defaults to FALSE.
-#' @return plot
-#' 
+#' @examples
+#' set.seed(1)
+#' mm <- simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.1, x.max = 5,
+#'                     n.samples = 8, n.replicates = 3)
+#' fit <- fit_model("MM", mm, start.params = list(Km = 1, Vmax = 1))
+#' make_residual_plot("MM", fit$fitted.params, mm)
+#'
+#' # Parameter values that don't fit leave a pattern
+#' make_residual_plot("MM", list(Km = 1.5, Vmax = 2.4), mm)
 #' @export
 
 make_residual_plot <- function(model, params, data.df, x.max = NULL, x.label = NULL, 

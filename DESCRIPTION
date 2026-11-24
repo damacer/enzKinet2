@@ -2,32 +2,39 @@ Package: enzKinet2
 Title: Models for Enzyme Kinetic Analysis
 Version: 2.0.7
 Authors@R: c(
-    person(given = "Daniel",
-           family = "Mak",
-           role = c("aut"),
-           email = "dam121@uclive.ac.nz",
+    person("Haig", "Bishop", email = "haigvbishop@gmail.com",
+           role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0003-4118-3598")),
+    person("Daniel", "Mak", role = "aut",
            comment = c(ORCID = "0000-0002-3355-0696")),
-    person(given = "Haig",
-           family = "Bishop",
-           role = c("aut", "cre"),
-           email = "haigvbishop@gmail.com",
-           comment = c(ORCID = "0000-0003-4118-3598"))
+    person("Renwick C. J.", "Dobson", role = "aut",
+           comment = c(ORCID = "0000-0002-5506-4939"))
     )
-Description: This package contains models of enzyme kinetics. It includes 
-    functions to fit models to data, returning parameters (Km, Vmax, etc.). 
-    It also enables simulation of data, given parameters.
+Description: Simulates, fits and plots models of enzyme and binding
+    kinetics: Michaelis-Menten and its variants, substrate inhibition,
+    reversible inhibition, two-substrate (ternary-complex and ping-pong),
+    Hill and binding models. Models are fitted by nonlinear least squares,
+    with profile likelihood or asymptotic confidence intervals and fit
+    statistics, and plotted with or without linearising transformations
+    (Lineweaver-Burk, Hanes, Eadie-Hofstee and the direct linear plot).
+    enzKinet2 powers the EKA2 web app <https://eka.nz>.
 License: GPL (>= 3)
+URL: https://eka.nz/docs, https://github.com/damacer/enzKinet2
+BugReports: https://github.com/damacer/enzKinet2/issues
 Encoding: UTF-8
-LazyData: true
+Language: en-NZ
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Imports:
+    broom,
     ggplot2,
     ggthemes,
-    pracma,
+    MASS,
     modelr,
-    broom,
     nlstools,
+    pracma,
+    RColorBrewer,
+    stats,
     truncnorm,
-    MASS
+    utils
 Config/testthat/edition: 3

@@ -1,247 +1,76 @@
 
 # enzKinet2
 
-enzKinet2 is an R package used for the analysis of enzyme kinetics. 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/damacer/enzKinet2/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/damacer/enzKinet2/actions/workflows/R-CMD-check.yaml)
+[![Documentation](https://img.shields.io/badge/docs-eka.nz%2Fdocs-608AC8)](https://eka.nz/docs)
+[![License: GPL v3](https://img.shields.io/badge/license-GPL--3-blue)](https://github.com/damacer/enzKinet2/blob/master/LICENSE.md)
+<!-- badges: end -->
 
-### Primary Uses: 
-1) Simulating kinetics data
-2) Fitting models to kinetics data
-3) Plotting kinetics data
+enzKinet2 is an R package for enzyme kinetics. It simulates, fits and plots 14 models of enzyme and binding kinetics, and it powers [EKA2](https://eka.nz), the free enzyme kinetics web app.
 
-### Supported Models:
- - Michaelis-Menten (MM)
- - Michaelis-Menten with Substrate Inhibition (MMSI)
- - Original Michaelis-Menten (OGMM)
- - Alternative Michaelis-Menten (ALTMM)
- - Competitive Inhibition (CI)
- - Uncompetitive Inhibition (UCI)
- - Non-competitive Inhibition (NCI)
- - Mixed Inhibition (MI)
- - Ternary Complex (TC)
- - Hill (HILL)
- - Ping-Pong (PP)
- - Binding Kinetics (BK)
- - Hill Binding Kinetics (BKH)
- - Quadratic Binding Kinetics (QBK)
+**Documentation, guides and worked examples: <https://eka.nz/docs>**
 
 ## Installation
 
-To install the enzKinet2 package, you can clone the repository and
-install it using devtools.
+enzKinet2 isn't on CRAN. Install it from GitHub:
 
-```bash
-# 1. Clone the repository (CLI)
-git clone https://github.com/damacer/enzKinet2.git
-```
 ```r
-# 2. Install the R package (R)
-devtools::install("enzKinet2")
+# install.packages("remotes")
+remotes::install_github("damacer/enzKinet2")
 ```
 
-## Enzyme Kinetics Analysis (EKA)
+## Example
 
-<p align="center">
-    <img src="resources/logo.png" alt="EKA Logo" width="200">
-</p>
-
-Enzyme Kinetics Analysis (EKA) is an R Shiny web application powered by the enzKinet2 package. EKA v1 can be accessed at https://enzyme-kinetics.shinyapps.io/enzkinet_webpage/. EKA v2 can be accessed at [eka.nz](https://eka.nz).
-
-For more detailed information on EKA, you can refer to the associated [publication](https://iubmb.onlinelibrary.wiley.com/doi/10.1002/bmb.21823).
-
-## Example Usage
-
-``` r
-
-# Import the package
+```r
 library(enzKinet2)
 
-# Define some parameters for the Michaelis-Menten model
-params <- list(Km = 0.5, Vmax = 2.0)
+# Simulate Michaelis-Menten data: 8 concentrations in triplicate, with 5% noise
+set.seed(1)
+data <- simulate_data("MM", params = list(Km = 0.5, Vmax = 2),
+                      x.min = 0.1, x.max = 5, n.samples = 8, n.replicates = 3)
 
-# Define the range of x (subtrate concentration)
-x.min <- 0
-x.max <- 10
+# Fit the model, with 95% confidence intervals
+fit <- fit_model("MM", data, start.params = list(Km = 1, Vmax = 1),
+                 get.conf.int = TRUE)
+fit$fitted.params
 
-# Generate a curve for the model
-curve.df <- make_curve(model = "MM", params = params, x.min = x.min, x.max = x.max)
-
-# Generate synthetic data for the model with some noise
-data.df <- simulate_data(model = "MM", params = params, x.min = x.min, x.max = x.max)
-
-# Create a plot of both the curve and the synthetic data
-plot <- make_plot(model = "MM", data.df = data.df, curve.df = curve.df)
-
-# Show the plot (Michaelis-Menten curve with synthetic data)
-print(plot)
-
-# Transform the synthetic data, so the model no longer fits it
-new.data.df <- data.df
-new.data.df$V <- new.data.df$V * 1.2
-
-# Create a plot to see how the model fits the new data
-plot2 <- make_plot(model = "MM", data.df = new.data.df, curve.df = curve.df)
-
-# Show the plot
-print(plot2)
-
-# Fit the model to the new data 
-results <- fit_model(model = "MM", data.df = new.data.df, start.params = params)
-fitted.params <- results$fitted.params
-
-# Print the fitted params
-print(paste("Fitted Km:", sprintf("%.4f", fitted.params$Km)))
-print(paste("Fitted Vmax:", sprintf("%.4f", fitted.params$Vmax)))
-
-# Generate a curve to visualise the new model
-fitted.curve.df <- make_curve(model = "MM", params = fitted.params, x.min = x.min, x.max = x.max)
-
-# Create a plot to visualise how the new model fits the new data
-plot3 <- make_plot(model = "MM", data.df = new.data.df, curve.df = fitted.curve.df)
-
-# Show the plot
-print(plot3)
+# Plot the data, the fitted curve and its parameter uncertainty envelope
+curve <- make_curve("MM", fit$fitted.params, x.min = 0, x.max = 5, conf.int = TRUE)
+make_plot("MM", data.df = data, curve.df = curve, conf.int = TRUE)
 ```
 
-## Functions
+[Get started](https://eka.nz/docs/articles/enzKinet2.html) walks through this in more detail.
 
-### `simulate_data`
-Generates synthetic enzyme kinetics data for a specified model.
+## Models
 
-**Parameters**  
-- **model**: Character string indicating the model ("MM", "CI", etc.).  
-- **params**: List of parameter values for the model (e.g. Km, Vmax).  
-- **x.min, x.max**: Numeric ranges to generate the primary independent variable.  
-- **z.values**: Optional numeric vector for models with a second independent variable.  
-- **n.samples**: Positive integer for how many unique x values to generate.  
-- **n.replicates**: Positive integer for replicates of those x values.  
-- **noise.level**: Numeric; 0 for no noise, or a positive value.  
-- **noise.type**: `"absolute"` or `"relative"` noise.  
-- **space**: Distribution of x values (`"linear"`, `"exponential"`, `"dilution.series"`, etc.).  
-- **dilution.factor**: Factor for serial dilutions if using `space = "dilution.series"`.  
-- **x.range**: Custom x values if using `space = "custom"`.  
-- **distribution**: Noise distribution (`"norm"` or `"truncated.norm"`).  
+| Group | Models |
+|---|---|
+| Michaelis-Menten | Michaelis-Menten (`MM`), with substrate inhibition (`MMSI`), written with kcat and E0 (`OGMM`), written with kcat and the specificity constant (`ALTMM`), Hill (`HILL`) |
+| Inhibition | Competitive (`CI`), uncompetitive (`UCI`), non-competitive (`NCI`), mixed (`MI`) |
+| Two substrates | Ternary complex (`TC`), ping-pong (`PP`) |
+| Binding | Binding (`BK`), Hill binding (`BKH`), quadratic binding with ligand depletion (`QBK`) |
 
-**Returns**  
-A data frame containing the generated data.  
+Every model can be fitted by nonlinear least squares, with profile likelihood or asymptotic confidence intervals. Plots can be drawn as standard, log10, Lineweaver-Burk, Hanes, Eadie-Hofstee or direct linear plots. The [model gallery](https://eka.nz/docs/articles/concepts/models.html) has each model's equation.
 
----
+## EKA2
 
-### `fit_model`
-Fits a model to observed data and optionally returns confidence intervals and statistics.
+<p align="center">
+    <img src="man/figures/logo.png" alt="EKA Logo" width="200">
+</p>
 
-**Parameters**  
-- **model**: Character string of the model to fit ("MM", "CI", etc.).  
-- **data.df**: Data frame containing the variables required by the chosen model.  
-- **start.params**: Starting values for parameters (list).  
-- **fit.method**: Fitting approach (`"nls"`, `"recursive"`, `"ss.calc"`, `"nonparametric"`).  
-- **locked.params**: Vector of parameter names to hold constant (only for `"nls"`).  
-- **add.minor.noise**: If `TRUE`, adds a tiny amount of noise prior to fitting.  
-- **override.data.point.check**: If `TRUE`, bypasses data-point quantity checks.  
-- **get.conf.int**: If `TRUE`, attempts to compute parameter confidence intervals.  
-- **conf.level**: Confidence level (0 < value < 1).  
-- **conf.method**: Confidence interval method: `"profile"` (profile likelihood, the default) or `"asymptotic"` (Wald / standard error). 
-- **get.stats**: If `TRUE`, returns model fit statistics (R², AIC, BIC, etc.).  
+[EKA2](https://eka.nz) is a free web app for enzyme kinetics, built on enzKinet2. It does the same simulating, fitting and plotting without any code, and is designed for teaching as well as research. Its [user guide](https://eka.nz/docs/articles/eka2/user-guide.html) is part of the documentation.
 
-**Returns**  
-A list containing:  
-- **fitted.params**: Estimated parameter values or `NULL` if fitting failed.  
-- **statistics**: Fit statistics if requested (or `NULL` otherwise).  
-- **error**: A character message if fitting failed.  
+## Citation
 
----
+If you use enzKinet2 or EKA2, please cite:
 
-### `make_curve`
-Generates a noiseless curve (dense points) for a specified model and parameter set.
+Mak DA, Dunn S, Coombes D, Carere CR, Allison JR, Nock V, Hudson AO, Dobson RCJ (2024). Enzyme Kinetics Analysis: An online tool for analyzing enzyme initial rate data and teaching enzyme kinetics. *Biochemistry and Molecular Biology Education* 52(3): 348–358. <https://doi.org/10.1002/bmb.21823>
 
-**Parameters**  
-- **model**: Model name ("MM", "CI", etc.).  
-- **params**: Named list of parameter values (e.g. Km, Vmax).  
-- **x.min, x.max**: Numeric range for the primary independent variable.  
-- **z.values**: Optional numeric vector for a second independent variable.  
-- **n.samples**: Resolution (number of x points) for the curve.  
-- **space**: Distribution of x values (`"linear"`, `"exponential"`, etc.).  
-- **conf.int**: If `TRUE`, uses parameter bounds (e.g. `.lb`, `.ub`) to produce bounding curves.  
-
-**Returns**  
-A data frame of noiseless data for the chosen model, optionally including lower and upper bound columns if `conf.int` is `TRUE`.  
-
----
-
-### `make_plot`
-Creates a ggplot-based enzyme kinetics plot for data and/or curves.
-
-**Parameters**  
-- **model**: Model name ("MM", "CI", etc.).  
-- **data.df**: Data frame to be plotted (optional).  
-- **curve.df**: Data frame for the model curve (optional).  
-- **extra.curve**: An additional curve (optional).  
-- **plot.transformation**: Plot transformation (`"standard"`, `"lineweaver"`, `"direct"`, etc.).  
-- **conf.int**: If `TRUE`, plots confidence interval ribbons using `.lb` and `.ub` columns.  
-- **x.label, y.label**: Custom axis labels (strings).  
-- **x.units, y.units**: Units of the raw data variables (e.g. `"mM"`, `"µmol/s"`).
-- **title**: Custom title.  
-- **legend.label**: Title of the legend.  
-- **palette**: Colour palette (e.g. `"Set1"`).  
-- **hide.legend**: If `TRUE`, hides the legend.  
-- **y.range**: Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).  
-- **show.grid**: Boolean to show grid lines on the plot. Defaults to FALSE.  
-
-**Returns**  
-A `ggplot` object showing the desired enzyme kinetics plot.  
-
----
-
-### `make_residual_plot`
-Creates a residual plot to help evaluate how well the model fits the data.
-
-**Parameters**  
-- **model**: Model name ("MM", "CI", etc.).  
-- **params**: Parameter list used to compute the fitted model.  
-- **data.df**: Data to calculate residuals against the model.  
-- **x.max**: Maximum value to display on the x-axis.  
-- **x.label, y.label**: Custom axis labels (strings).  
-- **x.units, y.units**: Units of the raw data variables (e.g. `"mM"`, `"µmol/s"`).  
-- **title**: Custom title.  
-- **zero.line**: If `TRUE`, draws a line at y=0.  
-- **legend.label**: Legend title.  
-- **palette**: Colour palette (e.g. `"Set1"`).  
-- **hide.legend**: If `TRUE`, hides the legend.  
-- **y.range**: Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).  
-- **show.grid**: Boolean to show grid lines on the plot. Defaults to FALSE.  
-
-**Returns**  
-A `ggplot` object of residuals vs. the independent variable.  
-
----
-
-### `update_plot_curve`
-Replaces or updates the curve in an existing kinetics plot.
-
-**Parameters**  
-- **model**: Model name ("MM", "MMSI", etc.).  
-- **plot**: The existing plot (a `ggplot` object).  
-- **curve.df**: Data frame for the new curve (optional).  
-- **extra.curve**: Additional curve to overlay (optional).  
-- **plot.transformation**: Plot transformation (`"standard"`, `"lineweaver"`, `"direct"`, etc.).  
-- **conf.int**: If `TRUE`, plots confidence intervals from curve.df.  
-
-**Returns**  
-The updated `ggplot` object.
-
-## Dependencies:
- - ggplot2 (3.5.1)
- - ggthemes (5.1.0)
- - pracma (2.4.4)
- - modelr (0.1.11)
- - broom (1.0.7)
- - nlstools (2.1.0)
- - truncnorm (1.0.9)
- - MASS (7.3.60)
+`citation("enzKinet2")` gives this in BibTeX and other formats.
 
 ## Authors
-- **Primary Developer:** Haig Bishop
-- **Previous Developer:** Daniel Mak
 
-For more information, please contact Haig:
-- **Email**: [haigvbishop\@gmail.com](mailto:haigvbishop@gmail.com)
-- **GitHub**: HaigBishop
+enzKinet2 is written by Haig Bishop, with Daniel Mak and Ren Dobson. Questions and feedback are welcome at <haigvbishop@gmail.com>, and bug reports on [GitHub](https://github.com/damacer/enzKinet2/issues).
+
+Copyright © 2024–2026 Haig Bishop. enzKinet2 is free software under the [GNU General Public License, version 3 or later](LICENSE.md).

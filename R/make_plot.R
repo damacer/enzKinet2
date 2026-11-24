@@ -6,10 +6,15 @@ drop_nonfinite_xy <- function(df, x.name, y.name, transformation.name) {
     }
     keep <- is.finite(df[[x.name]]) & is.finite(df[[y.name]])
     if (!all(keep)) {
-        warning("Dropped ", sum(!keep), " non-finite row(s) after the ", transformation.name, " transformation.")
+        warning("Dropped ", sum(!keep), " non-finite row(s) after the ", transformation.name, " transformation.", call. = FALSE)
         df <- df[keep, , drop = FALSE]
     }
     return(df)
+}
+
+# Bracket a unit that contains "/" when it is divided by, e.g. 1/(µM/min) rather than 1/µM/min
+divisor_unit <- function(units) {
+    if (grepl("/", units, fixed = TRUE)) paste0("(", units, ")") else units
 }
 
 colour_aes <- function(x.name, y.name, extra.var) {
@@ -45,30 +50,90 @@ ribbon_aes <- function(x.name, y.name, extra.var) {
     }
 }
 
-#' Make Plot
+#' Plot kinetics data and curves
 #'
-#' Generates a plot for an enzyme kinetics model.
+#' Draws data points and model curves, with or without a linearising
+#' transformation, and returns a ggplot that you can print, save or change
+#' further.
 #'
+#' @details
+#' **Transformations** (`plot.transformation`). The data and the curves are
+#' transformed in the same way, so a transformed plot shows the model's curve
+#' rather than a straight line fitted to the transformed points.
+#' * `"standard"`: v against a.
+#' * `"log10"`: v against log10(a).
+#' * `"lineweaver"`: the Lineweaver-Burk plot, 1/v against 1/a. Each curve is
+#'   extended to the 1/a axis, and a dotted line marks 1/a = 0.
+#' * `"hanes"`: the Hanes plot, a/v against a.
+#' * `"eadie"`: the Eadie-Hofstee plot, v against v/a. The envelope isn't drawn
+#'   on this plot.
+#' * `"direct"`: the direct linear plot, Michaelis-Menten only. Each data point
+#'   (a, v) becomes a line through (-a, 0) and (0, v) in (Km, Vmax) space, and
+#'   the lines meet near the best estimates. It needs `data.df` and ignores any
+#'   curves.
+#'
+#' Not every transformation suits every model: see [BLOCKED_TRANSFORMATIONS].
+#' Points that a transformation makes infinite (e.g. 1/0) are dropped with a
+#' warning.
+#'
+#' **Colours.** Models with an extra variable (`I`, `B` or `R`) get a colour
+#' and a legend entry per value. Other models are drawn in one colour without
+#' a legend. If the palette has too few colours, ggplot2's default palette is
+#' used instead.
+#'
+#' **Axes.** `x.units` and `y.units` are the units of the raw variables, and
+#' the axis labels show the units of what is plotted (e.g. 1/mM on a
+#' Lineweaver-Burk plot). For the binding models the y-axis shows 0 to 1
+#' unless `y.range` is given.
+#'
+#' @param model The model's code, one of [VALID_MODELS], e.g. `"MM"`.
+#' @param data.df Data to draw as points: a data frame with the model's
+#'   variables as columns, e.g. from [simulate_data()] or your own data.
+#'   Optional.
+#' @param curve.df A curve to draw as lines, from [make_curve()]. Optional.
+#' @param extra.curve A second curve, drawn in black on top. EKA2 uses it for
+#'   the true curve of simulated data. Optional.
+#' @param plot.transformation `"standard"` (default), `"log10"`,
+#'   `"lineweaver"`, `"hanes"`, `"eadie"` or `"direct"`. See Details.
+#' @param conf.int If `TRUE`, shade the parameter uncertainty envelope.
+#'   `curve.df` must then come from `make_curve(..., conf.int = TRUE)`. Default
+#'   `FALSE`.
+#' @param x.label,y.label Axis labels to use instead of the defaults. Units are
+#'   still added.
+#' @param x.units,y.units The units of the raw x and y variables, e.g. `"mM"`
+#'   and `"mM/min"`, added to the axis labels.
+#' @param title A plot title to use instead of the default (the model's name
+#'   and the transformation).
+#' @param legend.label A legend title to use instead of the default (the extra
+#'   variable's name).
+#' @param palette A ColorBrewer palette from [PLOT_COLOUR_PALETTES] (default
+#'   `"Set1"`).
+#' @param hide.legend If `TRUE`, hide the legend. Default `FALSE`.
+#' @param y.range The y-axis limits, a numeric vector of two values. Values
+#'   outside them aren't drawn. Default `NULL` (automatic).
+#' @param show.grid If `TRUE`, draw grid lines. Default `FALSE`.
+#' @return A ggplot object.
+#' @seealso [make_curve()] for curves, [make_residual_plot()] for residuals,
+#'   [update_plot_curve()] to replace a plot's curve.
 #' @author Haig Bishop
-#' @param model The model we are plotting ("MM", "CI", etc.).
-#' @param data.df Data to be plotted as dots.
-#' @param curve.df Curve to be plotted as line.
-#' @param extra.curve An extra curve to be plotted on top of the other (black).
-#' @param plot.transformation Transformation to apply to data before plotting (e.g., "standard", "lineweaver", "direct").
-#' @param conf.int If TRUE, plots a parameter uncertainty envelope (shaded envelope derived from parameter confidence interval bounds).
-#' @param x.label Custom x-axis label.
-#' @param y.label Custom y-axis label.
-#' @param x.units Units of the raw x-variable, such as "mM" or "µM".
-#' @param y.units Units of the raw y-variable, such as "µmol/s" or "U/mL".
-#' @param title Custom plot title.
-#' @param legend.label Custom legend label.
-#' @param palette Custom plot colour palette (e.g., "Set1", "Set2", etc.).
-#' @param hide.legend Boolean to hide the plot legend.
-#' @param y.range Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).
-#' @param show.grid Boolean to show grid lines on the plot. Defaults to FALSE.
-#' @return A ggplot object representing the enzyme kinetics plot.
 #' @importFrom ggplot2 .data
-#' 
+#' @examples
+#' set.seed(1)
+#' mm <- simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.2, x.max = 5,
+#'                     n.samples = 8)
+#' curve <- make_curve("MM", list(Km = 0.5, Vmax = 2), x.min = 0.2, x.max = 5)
+#' make_plot("MM", data.df = mm, curve.df = curve, x.units = "mM",
+#'           y.units = "mM/min")
+#'
+#' # The same data and curve as a Lineweaver-Burk plot
+#' make_plot("MM", data.df = mm, curve.df = curve,
+#'           plot.transformation = "lineweaver")
+#'
+#' # The direct linear plot (data only)
+#' make_plot("MM", data.df = mm, plot.transformation = "direct")
+#'
+#' # The result is a ggplot, so it can be changed further
+#' make_plot("MM", data.df = mm, curve.df = curve) + ggplot2::theme_bw()
 #' @export
 
 make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL, 
@@ -239,12 +304,12 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     effective.y.units <- y.units
     if (plot.transformation == "lineweaver") {
         # Both axes are reciprocals: 1/x and 1/y
-        if (!is.null(x.units) && x.units != "") effective.x.units <- paste0("1/", x.units)
-        if (!is.null(y.units) && y.units != "") effective.y.units <- paste0("1/", y.units)
+        if (!is.null(x.units) && x.units != "") effective.x.units <- paste0("1/", divisor_unit(x.units))
+        if (!is.null(y.units) && y.units != "") effective.y.units <- paste0("1/", divisor_unit(y.units))
     } else if (plot.transformation == "hanes") {
         # y-axis is [A]/V; x-axis is unchanged
         if (!is.null(x.units) && x.units != "" && !is.null(y.units) && y.units != "") {
-            effective.y.units <- paste0(x.units, "/", y.units)
+            effective.y.units <- paste0(x.units, "/", divisor_unit(y.units))
         } else if (!is.null(x.units) && x.units != "") {
             effective.y.units <- x.units
         } else {
@@ -253,7 +318,7 @@ make_plot <- function(model, data.df = NULL, curve.df = NULL, extra.curve = NULL
     } else if (plot.transformation == "eadie") {
         # x-axis is V/[A]; y-axis is unchanged
         if (!is.null(y.units) && y.units != "" && !is.null(x.units) && x.units != "") {
-            effective.x.units <- paste0(y.units, "/", x.units)
+            effective.x.units <- paste0(y.units, "/", divisor_unit(x.units))
         } else if (!is.null(y.units) && y.units != "") {
             effective.x.units <- y.units
         } else {

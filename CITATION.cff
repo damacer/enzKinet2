@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: "If you use enzKinet2 or EKA2, please cite the EKA paper below."
+title: "enzKinet2: Models for Enzyme Kinetic Analysis"
+type: software
+version: 2.1.0
+license: GPL-3.0-or-later
+url: "https://eka.nz/docs"
+repository-code: "https://github.com/damacer/enzKinet2"
+authors:
+  - family-names: Bishop
+    given-names: Haig
+    orcid: "https://orcid.org/0000-0003-4118-3598"
+  - family-names: Mak
+    given-names: Daniel
+    orcid: "https://orcid.org/0000-0002-3355-0696"
+  - family-names: Dobson
+    given-names: Renwick C. J.
+    orcid: "https://orcid.org/0000-0002-5506-4939"
+preferred-citation:
+  type: article
+  title: "Enzyme Kinetics Analysis: An online tool for analyzing enzyme initial rate data and teaching enzyme kinetics"
+  authors:
+    - family-names: Mak
+      given-names: Daniel A.
+    - family-names: Dunn
+      given-names: Sebastian
+    - family-names: Coombes
+      given-names: David
+    - family-names: Carere
+      given-names: Carlo R.
+    - family-names: Allison
+      given-names: Jane R.
+    - family-names: Nock
+      given-names: Volker
+    - family-names: Hudson
+      given-names: André O.
+    - family-names: Dobson
+      given-names: Renwick C. J.
+  journal: "Biochemistry and Molecular Biology Education"
+  volume: 52
+  issue: 3
+  start: 348
+  end: 358
+  year: 2024
+  doi: "10.1002/bmb.21823"

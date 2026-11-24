@@ -2,7 +2,7 @@
 % Please edit documentation in R/update_plot_curve.R
 \name{update_plot_curve}
 \alias{update_plot_curve}
-\title{Update Plot Curve}
+\title{Replace the curve in a plot}
 \usage{
 update_plot_curve(
   model,
@@ -16,27 +16,47 @@ update_plot_curve(
 )
 }
 \arguments{
-\item{model}{The chosen model ("MM", "MMSI", etc.)}
+\item{model}{The model's code, as used to make \code{plot}.}
 
-\item{plot}{The existing plot to be updated}
+\item{plot}{A plot made by \code{\link[=make_plot]{make_plot()}}.}
 
-\item{curve.df}{Data frame with the new curve data}
+\item{curve.df}{The new curve, from \code{\link[=make_curve]{make_curve()}}. Optional. Without it,
+the plot is left with no curve.}
 
-\item{extra.curve}{An extra curve to be displayed on top of the other}
+\item{extra.curve}{A new extra curve, drawn in black. Optional.}
 
-\item{plot.transformation}{Transformation to give the data.}
+\item{plot.transformation}{The transformation that \code{plot} was made with
+(default \code{"standard"}). It must match, because the new curve is
+transformed in the same way. A \code{"direct"} plot has no curves to replace.}
 
-\item{conf.int}{If TRUE, plots a parameter uncertainty envelope (shaded envelope derived from parameter confidence interval bounds).}
+\item{conf.int}{If \code{TRUE}, shade the envelope from \code{curve.df} (see
+\code{\link[=make_plot]{make_plot()}}). Default \code{FALSE}.}
 
-\item{y.range}{Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).}
+\item{y.range}{The y-axis limits, a numeric vector of two values. Default
+\code{NULL}.}
 
-\item{palette}{Custom plot colour palette (e.g., "Set1", "Set2", etc.).}
+\item{palette}{The colour palette that \code{plot} was made with (default
+\code{"Set1"}).}
 }
 \value{
-Updated plot
+The updated ggplot object.
 }
 \description{
-Updates (replaces) the curve in an existing enzyme kinetics plot.
+Removes the curves and envelope from a plot made by \code{\link[=make_plot]{make_plot()}} and draws
+new ones, keeping the data points and the plot's other settings. This is
+quicker than redrawing the whole plot, e.g. as parameter values change.
+}
+\examples{
+set.seed(1)
+mm <- simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.1, x.max = 5,
+                    n.samples = 8)
+p <- make_plot("MM", data.df = mm,
+               curve.df = make_curve("MM", list(Km = 0.5, Vmax = 2), 0, 5))
+update_plot_curve("MM", p,
+                  curve.df = make_curve("MM", list(Km = 1, Vmax = 2.5), 0, 5))
+}
+\seealso{
+\code{\link[=make_plot]{make_plot()}}, \code{\link[=make_curve]{make_curve()}}.
 }
 \author{
 Haig Bishop

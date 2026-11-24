@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_plot.R
 \name{make_plot}
 \alias{make_plot}
-\title{Make Plot}
+\title{Plot kinetics data and curves}
 \usage{
 make_plot(
   model,
@@ -24,43 +24,107 @@ make_plot(
 )
 }
 \arguments{
-\item{model}{The model we are plotting ("MM", "CI", etc.).}
+\item{model}{The model's code, one of \link{VALID_MODELS}, e.g. \code{"MM"}.}
 
-\item{data.df}{Data to be plotted as dots.}
+\item{data.df}{Data to draw as points: a data frame with the model's
+variables as columns, e.g. from \code{\link[=simulate_data]{simulate_data()}} or your own data.
+Optional.}
 
-\item{curve.df}{Curve to be plotted as line.}
+\item{curve.df}{A curve to draw as lines, from \code{\link[=make_curve]{make_curve()}}. Optional.}
 
-\item{extra.curve}{An extra curve to be plotted on top of the other (black).}
+\item{extra.curve}{A second curve, drawn in black on top. EKA2 uses it for
+the true curve of simulated data. Optional.}
 
-\item{plot.transformation}{Transformation to apply to data before plotting (e.g., "standard", "lineweaver", "direct").}
+\item{plot.transformation}{\code{"standard"} (default), \code{"log10"},
+\code{"lineweaver"}, \code{"hanes"}, \code{"eadie"} or \code{"direct"}. See Details.}
 
-\item{conf.int}{If TRUE, plots a parameter uncertainty envelope (shaded envelope derived from parameter confidence interval bounds).}
+\item{conf.int}{If \code{TRUE}, shade the parameter uncertainty envelope.
+\code{curve.df} must then come from \code{make_curve(..., conf.int = TRUE)}. Default
+\code{FALSE}.}
 
-\item{x.label}{Custom x-axis label.}
+\item{x.label, y.label}{Axis labels to use instead of the defaults. Units are
+still added.}
 
-\item{y.label}{Custom y-axis label.}
+\item{x.units, y.units}{The units of the raw x and y variables, e.g. \code{"mM"}
+and \code{"mM/min"}, added to the axis labels.}
 
-\item{x.units}{Units of the raw x-variable, such as "mM" or "µM".}
+\item{title}{A plot title to use instead of the default (the model's name
+and the transformation).}
 
-\item{y.units}{Units of the raw y-variable, such as "µmol/s" or "U/mL".}
+\item{legend.label}{A legend title to use instead of the default (the extra
+variable's name).}
 
-\item{title}{Custom plot title.}
+\item{palette}{A ColorBrewer palette from \link{PLOT_COLOUR_PALETTES} (default
+\code{"Set1"}).}
 
-\item{legend.label}{Custom legend label.}
+\item{hide.legend}{If \code{TRUE}, hide the legend. Default \code{FALSE}.}
 
-\item{palette}{Custom plot colour palette (e.g., "Set1", "Set2", etc.).}
+\item{y.range}{The y-axis limits, a numeric vector of two values. Values
+outside them aren't drawn. Default \code{NULL} (automatic).}
 
-\item{hide.legend}{Boolean to hide the plot legend.}
-
-\item{y.range}{Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).}
-
-\item{show.grid}{Boolean to show grid lines on the plot. Defaults to FALSE.}
+\item{show.grid}{If \code{TRUE}, draw grid lines. Default \code{FALSE}.}
 }
 \value{
-A ggplot object representing the enzyme kinetics plot.
+A ggplot object.
 }
 \description{
-Generates a plot for an enzyme kinetics model.
+Draws data points and model curves, with or without a linearising
+transformation, and returns a ggplot that you can print, save or change
+further.
+}
+\details{
+\strong{Transformations} (\code{plot.transformation}). The data and the curves are
+transformed in the same way, so a transformed plot shows the model's curve
+rather than a straight line fitted to the transformed points.
+\itemize{
+\item \code{"standard"}: v against a.
+\item \code{"log10"}: v against log10(a).
+\item \code{"lineweaver"}: the Lineweaver-Burk plot, 1/v against 1/a. Each curve is
+extended to the 1/a axis, and a dotted line marks 1/a = 0.
+\item \code{"hanes"}: the Hanes plot, a/v against a.
+\item \code{"eadie"}: the Eadie-Hofstee plot, v against v/a. The envelope isn't drawn
+on this plot.
+\item \code{"direct"}: the direct linear plot, Michaelis-Menten only. Each data point
+(a, v) becomes a line through (-a, 0) and (0, v) in (Km, Vmax) space, and
+the lines meet near the best estimates. It needs \code{data.df} and ignores any
+curves.
+}
+
+Not every transformation suits every model: see \link{BLOCKED_TRANSFORMATIONS}.
+Points that a transformation makes infinite (e.g. 1/0) are dropped with a
+warning.
+
+\strong{Colours.} Models with an extra variable (\code{I}, \code{B} or \code{R}) get a colour
+and a legend entry per value. Other models are drawn in one colour without
+a legend. If the palette has too few colours, ggplot2's default palette is
+used instead.
+
+\strong{Axes.} \code{x.units} and \code{y.units} are the units of the raw variables, and
+the axis labels show the units of what is plotted (e.g. 1/mM on a
+Lineweaver-Burk plot). For the binding models the y-axis shows 0 to 1
+unless \code{y.range} is given.
+}
+\examples{
+set.seed(1)
+mm <- simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.2, x.max = 5,
+                    n.samples = 8)
+curve <- make_curve("MM", list(Km = 0.5, Vmax = 2), x.min = 0.2, x.max = 5)
+make_plot("MM", data.df = mm, curve.df = curve, x.units = "mM",
+          y.units = "mM/min")
+
+# The same data and curve as a Lineweaver-Burk plot
+make_plot("MM", data.df = mm, curve.df = curve,
+          plot.transformation = "lineweaver")
+
+# The direct linear plot (data only)
+make_plot("MM", data.df = mm, plot.transformation = "direct")
+
+# The result is a ggplot, so it can be changed further
+make_plot("MM", data.df = mm, curve.df = curve) + ggplot2::theme_bw()
+}
+\seealso{
+\code{\link[=make_curve]{make_curve()}} for curves, \code{\link[=make_residual_plot]{make_residual_plot()}} for residuals,
+\code{\link[=update_plot_curve]{update_plot_curve()}} to replace a plot's curve.
 }
 \author{
 Haig Bishop

@@ -1,22 +1,62 @@
 ## Function file for enzKinet2 package
 
-#' Make Curve
+#' Make a model curve
 #'
-#' Generates a curve for a model. The "curve" is equivalent to dense noiseless data.
+#' Computes a model's curve: dense, noise-free values of the dependent variable
+#' across a range of the independent variable, ready to plot with
+#' [make_plot()]. It calls [simulate_data()] with no noise. With
+#' `conf.int = TRUE` it also computes a parameter uncertainty envelope from the
+#' confidence bounds that [fit_model()] returns.
 #'
+#' @details
+#' **The envelope.** The lower envelope curve uses, for each parameter,
+#' whichever of its confidence bounds makes the curve lower (e.g. the upper
+#' bound of `Km` and the lower bound of `Vmax`), and the upper curve uses the
+#' other bound. For a Hill coefficient `n`, both bounds are tried and the
+#' lowest and highest curves kept. Bounds of 0 or less are raised to 1e-10. The
+#' envelope shows how far the curve moves when each parameter is at the edge
+#' of its own confidence interval. It is not a confidence band for the curve,
+#' and it can be wider than one, because it ignores the correlation between
+#' the parameters.
+#'
+#' @inheritParams simulate_data
+#' @param params A named list of parameter values, as for [simulate_data()].
+#'   With `conf.int = TRUE` it must also hold each parameter's bounds, named
+#'   `<parameter>.lb` and `<parameter>.ub` (e.g. `Km.lb`), as in
+#'   `fit_model()$fitted.params`.
+#' @param n.samples The number of points along the curve (default 250, smooth
+#'   enough for most plots).
+#' @param space How the points along the curve are spaced: `"linear"`
+#'   (default), `"exponential"` (denser at low x), `"inverse.exponential"`
+#'   (denser at high x), `"dilution.series"` or `"custom"`, as described in
+#'   [simulate_data()].
+#' @param conf.int If `TRUE`, also compute the lower and upper envelope curves
+#'   (see Details). Default `FALSE`.
+#' @return A data frame with the same columns as [simulate_data()]. With
+#'   `conf.int = TRUE`, each column is repeated with the suffixes `.lb` and
+#'   `.ub` (e.g. `A.lb`, `V.lb`, `A.ub`, `V.ub`) for the lower and upper
+#'   envelope curves.
+#' @seealso [make_plot()] to plot the curve, [fit_model()] for fitted
+#'   parameters and their bounds.
 #' @author Haig Bishop
-#' @param model The model to generate the curve from ("MM", "CI", etc.)
-#' @param params The parameter values for the model (e.g. Km, Vmax, Ksi)
-#' @param x.min The minimum x value to cover.
-#' @param x.max The maximum x value to cover.
-#' @param z.values The z values to cover (discrete).
-#' @param n.samples The resolution of the curve (~150 is usually enough).
-#' @param space The distribution of the space to generate data.
-#' @param dilution.factor Dilution factor if space == "dilution.series".
-#' @param x.range If space is "custom" these are the x values.
-#' @param conf.int If TRUE, uses parameter confidence interval bounds to generate a parameter uncertainty envelope (lower and upper envelope curves).
-#' @return curve.df
-#' 
+#' @examples
+#' curve <- make_curve("MM", list(Km = 0.5, Vmax = 2), x.min = 0, x.max = 5)
+#' head(curve)
+#' make_plot("MM", curve.df = curve)
+#'
+#' # One curve per inhibitor concentration
+#' make_plot("CI", curve.df = make_curve("CI", list(Km = 0.5, Vmax = 2, Ki = 1),
+#'                                       x.min = 0, x.max = 5, z.values = c(0, 1, 2)))
+#'
+#' # The envelope from a fit's confidence intervals
+#' set.seed(1)
+#' mm <- simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.1, x.max = 5,
+#'                     n.samples = 8, n.replicates = 3)
+#' fit <- fit_model("MM", mm, start.params = list(Km = 1, Vmax = 1),
+#'                  get.conf.int = TRUE)
+#' envelope <- make_curve("MM", fit$fitted.params, x.min = 0, x.max = 5,
+#'                        conf.int = TRUE)
+#' make_plot("MM", data.df = mm, curve.df = envelope, conf.int = TRUE)
 #' @export
 
 make_curve <- function(model, params, x.min, x.max, z.values = NULL, 

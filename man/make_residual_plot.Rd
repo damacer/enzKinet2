@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_residual_plot.R
 \name{make_residual_plot}
 \alias{make_residual_plot}
-\title{Make a Residual Plot}
+\title{Plot residuals}
 \usage{
 make_residual_plot(
   model,
@@ -23,41 +23,63 @@ make_residual_plot(
 )
 }
 \arguments{
-\item{model}{The model we are plotting ("MM", "CI", etc.).}
+\item{model}{The model's code, one of \link{VALID_MODELS}, e.g. \code{"MM"}.}
 
-\item{params}{The parameter values for the model (e.g. Km, Vmax, Ksi).}
+\item{params}{A named list of the model's parameter values, each greater
+than 0, usually \code{fit_model()$fitted.params}. Other elements, such as
+confidence bounds, are ignored.}
 
-\item{data.df}{The data to calculate residuals from.}
+\item{data.df}{The data, a data frame with the model's variables as columns.}
 
-\item{x.max}{Defines the maximum x value to plot to. Defaults to NULL (use the maximum x in the data).}
+\item{x.max}{Extends the x-axis to at least this value (more than 0). The
+axis always starts at 0 and covers all the data. Default \code{NULL}.}
 
-\item{x.label}{Custom x-axis label.}
+\item{x.label, y.label}{Axis labels to use instead of the defaults. Units are
+still added.}
 
-\item{y.label}{Custom y-axis label.}
+\item{x.units, y.units}{The units of the x variable and of the residuals,
+e.g. \code{"mM"}, added to the axis labels.}
 
-\item{x.units}{Units for the x-axis, such as "mM" or "µM". Defaults to NULL (no units).}
+\item{title}{A plot title to use instead of the default (the model's name
+followed by "Residuals").}
 
-\item{y.units}{Units for the y-axis, such as "µmol/s" or "U/mL". Defaults to NULL (no units).}
+\item{zero.line}{If \code{TRUE} (default), draw a dotted line at zero.}
 
-\item{title}{Custom plot title.}
+\item{legend.label}{A legend title to use instead of the default (the extra
+variable's name).}
 
-\item{zero.line}{If TRUE (default), draws a dotted line at y=0.}
+\item{palette}{A ColorBrewer palette from \link{PLOT_COLOUR_PALETTES} (default
+\code{"Set1"}).}
 
-\item{legend.label}{Custom legend label.}
+\item{hide.legend}{If \code{TRUE}, hide the legend. Default \code{FALSE}.}
 
-\item{palette}{Custom plot colour palette.}
+\item{y.range}{The y-axis limits, a numeric vector of two values. By default
+the axis is centred on zero and just covers the largest residual.}
 
-\item{hide.legend}{Boolean to hide the plot legend.}
-
-\item{y.range}{Specify the y-axis range (e.g., c(0, 10)). Defaults to NULL (auto range).}
-
-\item{show.grid}{Boolean to show grid lines on the plot. Defaults to FALSE.}
+\item{show.grid}{If \code{TRUE}, draw grid lines. Default \code{FALSE}.}
 }
 \value{
-plot
+A ggplot object.
 }
 \description{
-Generates a residual plot for an enzyme kinetics model given parameters and data.
+Plots the residuals of data from a model with given parameter values (the
+observed minus the predicted dependent variable) against the primary
+independent variable. Residuals from a good fit scatter evenly around zero.
+A pattern suggests that the model doesn't describe the data.
+}
+\examples{
+set.seed(1)
+mm <- simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.1, x.max = 5,
+                    n.samples = 8, n.replicates = 3)
+fit <- fit_model("MM", mm, start.params = list(Km = 1, Vmax = 1))
+make_residual_plot("MM", fit$fitted.params, mm)
+
+# Parameter values that don't fit leave a pattern
+make_residual_plot("MM", list(Km = 1.5, Vmax = 2.4), mm)
+}
+\seealso{
+\code{\link[=fit_model]{fit_model()}} for parameter estimates, \code{\link[=make_plot]{make_plot()}} for the data
+and curve.
 }
 \author{
 Haig Bishop

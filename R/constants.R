@@ -1,24 +1,94 @@
 # constants.R
 
-#' Exported package constants
+#' Model registry
 #'
-#' Shared model metadata used by enzKinet2 functions, including valid model
-#' names, model parameters, variables, formulas, plotting transformations,
-#' and fitting methods.
+#' @description
+#' The lists and vectors that define each model: its code, parameters,
+#' variables and formula, and which fitting methods and plots it supports.
+#' Every function in the package looks models up here, so they're also the
+#' easiest way to check what a model needs, e.g. `MODEL_PARAMETERS[["MI"]]`.
 #'
-#' @format Named vectors and lists.
-#' @name package_constants
-#' @aliases VALID_MODELS ALL_PARAMETERS ALL_EXTRA_INDEPENDENT_VARS
-#' @aliases MODEL_PARAMETERS MODEL_VARIABLES MODEL_VARIABLES_PRETTY
-#' @aliases MODEL_DEPENDENT_VAR_DOMAINS MODEL_OPTIONS MODEL_OPTIONS_GROUPED
-#' @aliases PLOT_TITLES AXIS_TITLES MODEL_PARAMETER_STRINGS
-#' @aliases MODEL_VARIABLE_STRINGS MODEL_FORMULAE MODEL_FORMULAE_DISPLAY
-#' @aliases MODEL_VARIABLES_DISPLAY PLOT_TRANSFORMATIONS
-#' @aliases PLOT_TRANSFORMATION_OPTIONS PLOT_TRANSFORMATION_TITLES
-#' @aliases PLOT_TRANSFORMATION_X_AXIS_TITLES
-#' @aliases PLOT_TRANSFORMATION_Y_AXIS_TITLES BLOCKED_TRANSFORMATIONS
-#' @aliases FITTING_METHODS_OPTIONS FITTING_METHODS BLOCKED_FITTING_METHODS
-#' @aliases PLOT_COLOUR_PALETTES
+#' @eval rd_model_table()
+#'
+#' @section Lists and vectors:
+#' Each is a named character vector or a named list.
+#'
+#' * `VALID_MODELS`: the 14 model codes.
+#' * `MODEL_OPTIONS`: the models' full names, named by full name, with the
+#'   codes as values.
+#' * `MODEL_PARAMETERS`: for each model code, its parameter names.
+#' * `MODEL_VARIABLES`: for each model code, its variable names in a fixed
+#'   order: the primary independent variable, the dependent variable, then the
+#'   extra independent variable if the model has one. These are the column
+#'   names that data must have.
+#' * `MODEL_DEPENDENT_VAR_DOMAINS`: for each model code, the valid range of its
+#'   dependent variable: `c(0, Inf)` for a rate `V`, `c(0, 1)` for the fraction
+#'   bound `FB`.
+#' * `MODEL_FORMULAE`: for each model code, the model as an R formula, as
+#'   passed to [stats::nls()], e.g. `V ~ Vmax * A / (Km + A)`.
+#' * `ALL_PARAMETERS`: every parameter name used by any model.
+#' * `ALL_EXTRA_INDEPENDENT_VARS`: the extra independent variables: `I`
+#'   (inhibitor concentration), `B` (concentration of the second substrate) and
+#'   `R` (total concentration of the limiting binding partner, in `"QBK"`).
+#' * `FITTING_METHODS`: for each fitting method, the models it supports.
+#' * `BLOCKED_FITTING_METHODS`: for each model code, the fitting methods it
+#'   doesn't support.
+#' * `BLOCKED_TRANSFORMATIONS`: for each model code, the plot transformations
+#'   it doesn't support.
+#' * `PLOT_TRANSFORMATIONS`: for each plot transformation, the function that
+#'   transforms a data frame for that plot.
+#' * `PLOT_COLOUR_PALETTES`: the ColorBrewer palettes the plotting functions
+#'   accept.
+#'
+#' @seealso [interface_constants] for the display strings used by EKA2.
+#' @name model_registry
+#' @aliases VALID_MODELS MODEL_OPTIONS MODEL_PARAMETERS MODEL_VARIABLES
+#' @aliases MODEL_DEPENDENT_VAR_DOMAINS MODEL_FORMULAE ALL_PARAMETERS
+#' @aliases ALL_EXTRA_INDEPENDENT_VARS FITTING_METHODS BLOCKED_FITTING_METHODS
+#' @aliases BLOCKED_TRANSFORMATIONS PLOT_TRANSFORMATIONS PLOT_COLOUR_PALETTES
+#' @examples
+#' VALID_MODELS
+#' MODEL_PARAMETERS[["MI"]]
+#' MODEL_VARIABLES[["CI"]]
+#' MODEL_FORMULAE[["HILL"]]
+#' FITTING_METHODS$nonparametric
+#' BLOCKED_TRANSFORMATIONS[["HILL"]]
+NULL
+
+#' Interface constants
+#'
+#' @description
+#' Display strings and menu choices used by EKA2's interface and for the
+#' default plot titles and axis labels. They aren't needed for analysis.
+#'
+#' * `MODEL_OPTIONS_GROUPED`: the models' full names and codes, grouped into
+#'   Michaelis-Menten, inhibition, multi-substrate and binding models.
+#' * `MODEL_VARIABLES_PRETTY`: for each model code, its variables named by
+#'   their full names.
+#' * `MODEL_PARAMETER_STRINGS`, `MODEL_VARIABLE_STRINGS`: each model's
+#'   parameters and variables as text, for messages (e.g. `"Km and Vmax"`).
+#' * `MODEL_FORMULAE_DISPLAY`: each model's equation in LaTeX.
+#' * `MODEL_VARIABLES_DISPLAY`: each model's symbols and their meanings in
+#'   LaTeX.
+#' * `PLOT_TITLES`: each model's full name, used as the default plot title.
+#' * `AXIS_TITLES`: each variable's default axis title.
+#' * `PLOT_TRANSFORMATION_OPTIONS`: the plot transformations, named by their
+#'   full names.
+#' * `PLOT_TRANSFORMATION_TITLES`, `PLOT_TRANSFORMATION_X_AXIS_TITLES`,
+#'   `PLOT_TRANSFORMATION_Y_AXIS_TITLES`: text added to the plot title and axis
+#'   titles for each transformation.
+#' * `FITTING_METHODS_OPTIONS`: the fitting methods, named by their full names.
+#'
+#' @seealso [model_registry] for the constants that define the models.
+#' @name interface_constants
+#' @aliases MODEL_OPTIONS_GROUPED MODEL_VARIABLES_PRETTY MODEL_PARAMETER_STRINGS
+#' @aliases MODEL_VARIABLE_STRINGS MODEL_FORMULAE_DISPLAY MODEL_VARIABLES_DISPLAY
+#' @aliases PLOT_TITLES AXIS_TITLES PLOT_TRANSFORMATION_OPTIONS
+#' @aliases PLOT_TRANSFORMATION_TITLES PLOT_TRANSFORMATION_X_AXIS_TITLES
+#' @aliases PLOT_TRANSFORMATION_Y_AXIS_TITLES FITTING_METHODS_OPTIONS
+#' @examples
+#' MODEL_OPTIONS_GROUPED[["Inhibition Models"]]
+#' PLOT_TRANSFORMATION_OPTIONS
 NULL
 
 # All models
@@ -112,7 +182,7 @@ MODEL_VARIABLES_PRETTY <- list(
                "Fraction Bound (FB)" = "FB"),
     QBK = list("Partner in Excess Conc. (P)" = "P",
                "Fraction Bound (FB)" = "FB", 
-               "Trace Limiting Partner Conc. (R)" = "R")
+               "Limiting Partner Conc. (R)" = "R")
 )
 
 # Each model's dependent variable's domain
@@ -205,7 +275,7 @@ AXIS_TITLES <- list(
     I = "Inhibitor\nConcentration [I]",
     FB = "Fraction Bound FB",
     P = "Concentration of Binding Partner in Excess [P]",
-    R = "Concentration of Trace\nLimiting Partner [R]"
+    R = "Concentration of\nLimiting Partner [R]"
 )
 
 # Each model's parameters as a string
@@ -301,14 +371,14 @@ MODEL_VARIABLES_DISPLAY <- list(
     
     OGMM = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
             {\\Large K_{cat}}  -  \\text{Turnover number} \\\\
-            {\\Large E_0}  -  \\text{Initial enzyme concentration} \\\\
+            {\\Large E_0}  -  \\text{Total enzyme concentration} \\\\
             {\\Large A}  -  \\text{Substrate A concentration} \\\\
             {\\Large K_m}  -  \\text{Michaelis constant}",
     
     ALTMM = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
              {\\Large K_{cat}}  -  \\text{Turnover number} \\\\
-             {\\Large K_A}  -  \\text{Association constant} \\\\
-             {\\Large E_0}  -  \\text{Initial enzyme concentration} \\\\
+             {\\Large K_A}  -  \\text{Specificity constant} \\ (K_{cat}/K_m) \\\\
+             {\\Large E_0}  -  \\text{Total enzyme concentration} \\\\
              {\\Large A}  -  \\text{Substrate A concentration}",
     
     CI = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
@@ -346,12 +416,12 @@ MODEL_VARIABLES_DISPLAY <- list(
           {\\Large B}  -  \\text{Substrate B concentration} \\\\
           {\\Large K_{mA}}  -  \\text{Michaelis constant for A} \\\\
           {\\Large K_{mB}}  -  \\text{Michaelis constant for B} \\\\
-          {\\Large K_{sat}}  -  \\text{Saturation constant}",
+          {\\Large K_{sat}}  -  \\text{Dissociation constant of EA} \\ (K_{iA})",
     
     HILL = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
             {\\Large V_{max}}  -  \\text{Maximum Velocity} \\\\
             {\\Large A}  -  \\text{Substrate A concentration} \\\\
-            {\\Large K_m}  -  \\text{Michaelis constant} \\\\
+            {\\Large K_m}  -  \\text{Half-saturation constant} \\ (K_{0.5}) \\\\
             {\\Large n}  -  \\text{Hill coefficient}",
     
     PP = "{\\Large V}  -  \\text{Velocity of reaction} \\\\
@@ -367,11 +437,11 @@ MODEL_VARIABLES_DISPLAY <- list(
 
     BKH = "{\\Large F_B}  -  \\text{Fraction bound} \\\\
            {\\Large P}  -  \\text{Binding partner in excess concentration} \\\\
-           {\\Large K_D}  -  \\text{Dissociation constant} \\\\
+           {\\Large K_D}  -  \\text{Half-saturation constant (apparent dissociation constant)} \\\\
            {\\Large n}  -  \\text{Hill coefficient}",
 
     QBK = "{\\Large F_B}  -  \\text{Fraction bound} \\\\
-           {\\Large R}  -  \\text{Trace limiting partner concentration} \\\\
+           {\\Large R}  -  \\text{Limiting partner concentration} \\\\
            {\\Large P}  -  \\text{Binding partner in excess concentration} \\\\
            {\\Large K_D}  -  \\text{Dissociation constant}"
 )
