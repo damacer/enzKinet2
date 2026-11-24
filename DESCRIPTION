@@ -1,6 +1,6 @@
 Package: enzKinet2
 Title: Models for Enzyme Kinetic Analysis
-Version: 2.0.7
+Version: 2.1.0
 Authors@R: c(
     person("Haig", "Bishop", email = "haigvbishop@gmail.com",
            role = c("aut", "cre", "cph"),
