@@ -1,0 +1,103 @@
+---
+title: "Designing an experiment by simulation"
+description: "Compare experimental designs before running them, by simulating each many times and seeing how precisely it estimates Km."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+Which substrate concentrations should you measure, and how many replicates do you need? If you have a rough idea of the parameters, you can answer this before going into the lab: simulate the experiment many times with each design, fit each simulated dataset, and see how much the estimates vary. This example compares five designs for a Michaelis-Menten (`"MM"`) enzyme.
+
+```{r}
+library(enzKinet2)
+```
+
+## The enzyme and the noise
+
+Suppose a pilot experiment suggests Km is about 0.8 mM and Vmax about 12 µM/min, and your assay's error is about 5% of each rate. These are the values the simulations use:
+
+```{r}
+true <- list(Km = 0.8, Vmax = 12)
+```
+
+## Five designs
+
+Each design is a set of arguments for `simulate_data()`:
+
+```{r}
+designs <- list(
+    "Low range\n8 points, 0.1-0.8 mM" =
+        list(x.min = 0.1, x.max = 0.8, n.samples = 8, n.replicates = 1),
+    "Wide range\n8 points, 0.1-8 mM" =
+        list(x.min = 0.1, x.max = 8, n.samples = 8, n.replicates = 1),
+    "Wide range, triplicate\n24 points, 0.1-8 mM" =
+        list(x.min = 0.1, x.max = 8, n.samples = 8, n.replicates = 3),
+    "Two-fold dilution series\n8 points, 8 mM down" =
+        list(x.min = 0.05, x.max = 8, n.samples = 8, n.replicates = 1,
+             space = "dilution.series", dilution.factor = 2),
+    "Few low points\n4 points, 0.05-0.4 mM" =
+        list(x.min = 0.05, x.max = 0.4, n.samples = 4, n.replicates = 1)
+)
+```
+
+The dilution series starts at 8 mM and halves seven times, down to 0.0625 mM. The other designs space their concentrations evenly. [Simulating data](simulating-data.html) covers all the spacing options.
+
+## Simulate and fit, many times
+
+For each design, simulate 200 datasets, fit each one, and keep the estimates. A fit that fails gives `NULL` parameters, recorded here as `NA`:
+
+```{r}
+set.seed(2024)
+n_sims <- 200
+results <- do.call(rbind, lapply(names(designs), function(design) {
+    estimates <- t(replicate(n_sims, {
+        data <- do.call(simulate_data, c(list(model = "MM", params = true, noise.level = 0.05), designs[[design]]))
+        fit <- suppressMessages(fit_model("MM", data, start.params = list(Km = 1, Vmax = 10)))
+        if (is.null(fit$fitted.params)) c(NA, NA) else c(fit$fitted.params$Km, fit$fitted.params$Vmax)
+    }))
+    data.frame(design = design, Km = estimates[, 1], Vmax = estimates[, 2])
+}))
+results$design <- factor(results$design, levels = names(designs))
+```
+
+## Compare the designs
+
+Summarise each design by the median estimate, the range that holds the middle 95% of the estimates, and the share of fits that failed:
+
+```{r}
+summary_table <- do.call(rbind, lapply(split(results, results$design), function(r) {
+    data.frame(design = gsub("\n", ": ", r$design[1]),
+               Km_median = round(median(r$Km, na.rm = TRUE), 2),
+               Km_2.5 = round(quantile(r$Km, 0.025, na.rm = TRUE), 2),
+               Km_97.5 = round(quantile(r$Km, 0.975, na.rm = TRUE), 2),
+               Vmax_2.5 = round(quantile(r$Vmax, 0.025, na.rm = TRUE), 1),
+               Vmax_97.5 = round(quantile(r$Vmax, 0.975, na.rm = TRUE), 1),
+               failed = mean(is.na(r$Km)))
+}))
+rownames(summary_table) <- NULL
+summary_table
+```
+
+```{r, fig.height = 4.6}
+library(ggplot2)
+ggplot(results[!is.na(results$Km), ], aes(x = design, y = Km)) +
+    geom_boxplot(outlier.size = 0.8, colour = "#608AC8") +
+    geom_hline(yintercept = true$Km, linetype = "dashed") +
+    scale_y_log10() +
+    labs(x = NULL, y = "Estimated Km (mM, log scale)",
+         title = "Km estimates from 200 simulated experiments per design",
+         subtitle = "The dashed line is the true value, 0.8 mM") +
+    theme_minimal()
+```
+
+## What this shows
+
+- **Where the points are matters as much as how many.** The dilution series uses 8 measurements, yet estimates Km about as precisely as the wide range in triplicate, which uses 24. Evenly spaced points over a wide range put most of the measurements on the flat part of the curve, well above Km, where they say little about Km.
+- **The range has to cover the curve.** The low range stops at Km, so it barely sees the curve level off. Its Vmax estimates spread widely, and that uncertainty carries over into Km.
+- **Too few points, too low, is worst.** With 4 points all below Km, the estimates spread far more widely, with a long tail of values that are far too high.
+- **Failures were rare.** With sensible starting values, only `r sum(is.na(results$Km))` of the `r nrow(results)` fits failed, so the differences between the designs are mostly in precision, not in whether the fit works.
+
+These results depend on the assumed parameters and noise, so rerun the comparison with your own values. The same approach answers other questions too, such as whether triplicates are worth it, or how many inhibitor concentrations to use.
+
+In EKA2 you can explore the same idea interactively: simulate data, fit it, and compare the fit with the true curve. See the [EKA2 user guide](../eka2/user-guide.html).

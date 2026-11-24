@@ -1,0 +1,151 @@
+---
+title: "Reproducing an EKA2 analysis in R"
+description: "How EKA2 calls enzKinet2, and how to repeat an EKA2 fit, curve or plot in R with the same settings."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+[EKA2](https://eka.nz) is built on enzKinet2: every curve, fit and plot in the app is a call to one of this package's functions. So anything you do in EKA2 can be repeated in R, for example to document an analysis in a script, to go beyond what the app offers, or to check a result. This page shows how EKA2 calls each function, and how to make the same calls yourself.
+
+```{r}
+library(enzKinet2)
+```
+
+## Get the data out of EKA2
+
+On EKA2's Data tab, **Download Data** saves the data you're working with as a CSV file, named like `MM-data-2026-11-23_14-05-00.csv`. Its columns have the model's variable names (`A` and `V` for Michaelis-Menten, plus `I`, `B` or `R` for models with an extra variable), so it reads straight into R:
+
+```{r, eval = FALSE}
+data <- read.csv("MM-data-2026-11-23_14-05-00.csv")
+```
+
+If you uploaded the data from your own file, you can also read that file and rename its columns, as in [Using your own data](your-own-data.html). When EKA2 loads an uploaded file, it keeps only the columns you matched to the model's variables, and it removes duplicate rows (rows with the same values in all the matched columns). To match it exactly, do the same:
+
+```{r}
+raw <- read.csv(system.file("extdata", "michaelis-menten.csv", package = "enzKinet2"))
+data <- unique(data.frame(A = raw$substrate_mM, V = raw$rate_uM_min))
+nrow(data)
+```
+
+The rest of this page uses this example data.
+
+## Repeat a fit
+
+When you click **Fit Model to Data**, EKA2 calls `fit_model()` with:
+
+- the model you selected;
+- the data;
+- `start.params`: the current values of the parameter sliders;
+- `fit.method`: the fitting method you selected;
+- `locked.params`: the parameters you locked, if "Lock parameter values for fitting" is ticked (Advanced Mode);
+- `add.minor.noise`: whether "Add minor noise" is ticked;
+- `get.conf.int = TRUE` and `get.stats = TRUE` for nonlinear least squares;
+- `conf.level`: the "Confidence" box (0.95 by default);
+- `conf.method`: `"profile"`, unless you chose "Asymptotic" in Advanced Mode. Basic Mode always uses profile likelihood.
+
+For the other fitting methods, EKA2 doesn't ask for confidence intervals, statistics or locked parameters. Everything else uses the package's defaults.
+
+So a nonlinear least squares fit in Basic Mode, from sliders at Km = 1 and Vmax = 10, is:
+
+```{r}
+fit <- fit_model("MM", data,
+                 start.params = list(Km = 1, Vmax = 10),
+                 fit.method = "nls",
+                 add.minor.noise = FALSE,
+                 get.conf.int = TRUE, conf.level = 0.95, conf.method = "profile",
+                 get.stats = TRUE)
+fit$fitted.params
+```
+
+Estimates from different starting values can differ in their last digits, because the search stops once it's within a small tolerance of the answer. To match EKA2 to the last digit, start from the slider values you used there.
+
+If the fit fails, or only its confidence intervals fail, EKA2 shows the message from `fit$error` and doesn't add a result. In R, the estimates are still in `fit$fitted.params` when only the intervals failed: see [Fitting models](fitting-models.html#when-intervals-cant-be-computed).
+
+## Compare with EKA2's results file
+
+On the Results tab, **Download Results** saves every fit in the session as a CSV file. Its columns hold the same numbers as `fit_model()` returns, with these names:
+
+| EKA2 results column | In R |
+|---|---|
+| `Dataset`, `Time` | the dataset's name and the time of the fit |
+| `Model` | the model code |
+| `Method` | `fit.method`, in capitals (e.g. `NLS`) |
+| `Km`, `Vmax`, ... | `fit$fitted.params$Km`, ... |
+| `Km_lower_bound`, `Km_upper_bound`, ... | `fit$fitted.params$Km.lb`, `fit$fitted.params$Km.ub`, ... |
+| `Km_standard_error`, ... | `fit$statistics$Km.se`, ... |
+| `CI_method`, `Confidence_level` | `fit$statistics$CI.method`, `fit$statistics$Confidence.level` |
+| `R2`, `RMSE`, `MAE`, `AIC`, `BIC`, `Log_likelihood` | `fit$statistics$R2`, ..., `fit$statistics$Log.likelihood` |
+
+That is, `.lb` becomes `_lower_bound`, `.ub` becomes `_upper_bound`, `.se` becomes `_standard_error`, and the other dots become underscores. The file isn't rounded. Columns that don't apply to a fit, such as bounds for a non-iterative method, contain `NA`.
+
+```{r, eval = FALSE}
+results <- read.csv("fit_results_2026-11-23_14-10-00.csv")
+results[, c("Model", "Method", "Km", "Km_lower_bound", "Km_upper_bound", "AIC")]
+```
+
+## Repeat the curve
+
+EKA2 draws its curve with `make_curve()`, using the package's default of 250 points. The range depends on the plot:
+
+- for the standard, Hanes and Eadie-Hofstee plots, from 0;
+- for the log10 and Lineweaver-Burk plots, from the smallest concentration above 0 in the data (or 1e-6 without data);
+- up to the larger of the "Plot x-axis maximum" slider and the largest concentration in the data.
+
+The log10 curve also uses `space = "exponential"`, which puts more of its points at low concentrations.
+
+For models with an extra variable, `z.values` are the concentrations in the box below the parameter sliders ("Concentrations for I", B or R). After an upload, EKA2 fills it with the values in your data.
+
+After a fit, EKA2 shows the envelope while the sliders still hold the fitted values. It passes the fitted parameters and their bounds to `make_curve(..., conf.int = TRUE)`, first raising any bound of 0 or less to 1e-5 (the results keep the true bounds). For the example data on a standard plot with the slider at its default maximum of 15:
+
+```{r}
+x_max <- max(15, max(data$A))
+curve <- make_curve("MM", fit$fitted.params, x.min = 0, x.max = x_max, conf.int = TRUE)
+```
+
+## Repeat the plots
+
+EKA2 draws its main plot with `make_plot()`, passing the data, the curve, the plot type, and your choices of palette, grid, legend, units, labels and title. In Basic Mode it's always the standard plot with the `"Set1"` palette, no grid and the legend shown: the other plot types and options are in Advanced Mode. "Show true curve" passes the curve of the parameters the data was simulated with as `extra.curve`. The units menus only label the axes. EKA2's menus offer a fixed list (concentrations such as mM, and rates as amounts per time such as µmol/min), while in R you can give any text:
+
+```{r}
+p <- make_plot("MM", data.df = data, curve.df = curve, conf.int = TRUE,
+               plot.transformation = "standard", palette = "Set1",
+               x.units = "mM", y.units = "µM/min", show.grid = FALSE, hide.legend = FALSE)
+p
+```
+
+The residual plot is `make_residual_plot()` with the current slider values (after a fit, the fitted values) and the same x-axis maximum:
+
+```{r}
+make_residual_plot("MM", fit$fitted.params, data, x.max = x_max,
+                   x.units = "mM", y.units = "µM/min")
+```
+
+EKA2's PDF, SVG and PNG buttons save plots 12 inches wide and 8 inches high by default (set in Options), with PNGs at 120 dots per inch. The same in R:
+
+```{r, eval = FALSE}
+ggplot2::ggsave("plot.png", p, width = 12, height = 8, units = "in", dpi = 120)
+ggplot2::ggsave("plot.pdf", p, width = 12, height = 8, units = "in")
+```
+
+## Repeat a simulation
+
+**Simulate Data** calls `simulate_data()` with the slider parameter values and the panel's settings: "Number of Samples" (`n.samples`), "Number of Replicates" (`n.replicates`), "Simulation Space" (`"linear"` or `"dilution.series"`, with its "Dilution Factor"), "Noise Level (Std Dev)" (`noise.level`), "Data x-axis range" (`x.min` and `x.max`), and the concentrations box (`z.values`).
+
+Two of EKA2's defaults differ from the package's: EKA2 simulates 6 samples rather than 24, and its noise is absolute unless you choose "Relative (to y-axis)" in Advanced Mode, while the package defaults to `noise.type = "relative"`. The noise distribution is normal in both, unless you choose "Truncated Normal". So EKA2's default simulation, with the sliders at their starting values (Km = 0.5, Vmax = 2), corresponds to:
+
+```{r}
+set.seed(1)
+simulated <- simulate_data("MM", list(Km = 0.5, Vmax = 2), x.min = 0.1, x.max = 15,
+                           n.samples = 6, n.replicates = 1, noise.level = 0.05,
+                           noise.type = "absolute", space = "linear", distribution = "norm")
+simulated
+```
+
+The noise is random, so the same settings give similar but not identical data each time, in EKA2 and in R. To repeat an exact simulated dataset, download it from EKA2 rather than simulating again.
+
+## See also
+
+- The [EKA2 user guide](../eka2/user-guide.html) describes each control in the app.
+- [Fitting models](fitting-models.html) and [Plotting](plotting.html) go further than EKA2 allows.

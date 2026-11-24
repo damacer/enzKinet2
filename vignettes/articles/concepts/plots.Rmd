@@ -1,0 +1,93 @@
+---
+title: "Plot types"
+description: "The standard, log10, Lineweaver-Burk, Hanes, Eadie-Hofstee, direct linear and residual plots, and what each shows."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", echo = FALSE, fig.width = 6, fig.height = 3.6, out.width = "75%")
+library(enzKinet2)
+set.seed(7)
+params <- list(Km = 0.8, Vmax = 12)
+data <- simulate_data("MM", params, x.min = 0.2, x.max = 6, n.samples = 7, noise.level = 0.04)
+curve <- make_curve("MM", params, x.min = 0.2, x.max = 6)
+show <- function(t, ...) make_plot("MM", data.df = data, curve.df = if (t != "direct") curve, plot.transformation = t, ...)
+```
+
+Enzyme kinetics has several classic ways to plot the same data. Each shows the data from a different angle. On this page every plot shows the same simulated Michaelis-Menten data (true Km = 0.8, Vmax = 12) with the model's curve.
+
+In EKA2 and enzKinet2, the data and the model's curve are transformed together. So a transformed plot shows the fitted model, not a separate straight line fitted to the transformed points. **The plot you look at never changes the fit.** Nonlinear least squares, the main fitting method, uses the untransformed data, because the transformations distort the measurement errors (see [Fitting](fitting.html#why-not-fit-a-straight-line-to-a-linearised-plot)).
+
+For Michaelis-Menten, the Lineweaver-Burk, Hanes and Eadie-Hofstee plots give a straight line. For the inhibition and two-substrate models, they give one straight line per inhibitor or second-substrate concentration, and the pattern of those lines (where they meet, or whether they're parallel) helps to tell the mechanisms apart. Substrate inhibition, Hill and the binding models don't offer them: see the [model gallery](models.html).
+
+## Standard plot
+
+The rate v against the substrate concentration a: the plain view of the data. For Michaelis-Menten it is a rectangular hyperbola rising towards Vmax, reaching half of Vmax at a = Km.
+
+```{r}
+show("standard")
+```
+
+## Log10 plot
+
+v against log10(a). Spreading the concentrations on a log scale shows points across a wide range of concentrations, such as a dilution series. The Michaelis-Menten curve becomes sigmoidal, with its midpoint at log10(Km).
+
+```{r}
+show("log10")
+```
+
+## Lineweaver-Burk plot
+
+1/v against 1/a, the double-reciprocal plot. The Michaelis-Menten equation becomes the straight line
+
+$$\frac{1}{v} = \frac{K_m}{V_{max}} \cdot \frac{1}{a} + \frac{1}{V_{max}}$$
+
+so the line meets the 1/v axis at 1/Vmax and the 1/a axis at −1/Km. It's the most familiar plot, and the patterns it gives for the inhibition types are classic teaching material. But it badly distorts errors: taking reciprocals magnifies the errors in the smallest rates, at the lowest concentrations, and those points end up furthest out and dominate the picture.
+
+```{r}
+show("lineweaver")
+```
+
+## Hanes plot
+
+a/v against a. The straight line is
+
+$$\frac{a}{v} = \frac{1}{V_{max}} \cdot a + \frac{K_m}{V_{max}}$$
+
+with slope 1/Vmax, meeting the a axis at −Km. It distorts errors much less than the Lineweaver-Burk plot, so it is the better linear plot for judging data by eye.
+
+```{r}
+show("hanes")
+```
+
+## Eadie-Hofstee plot
+
+v against v/a. The straight line is
+
+$$v = V_{max} - K_m \cdot \frac{v}{a}$$
+
+with slope −Km, meeting the v axis at Vmax. Because v appears on both axes, errors move points diagonally, but departures from Michaelis-Menten behaviour show clearly. The parameter uncertainty envelope isn't drawn on this plot.
+
+```{r}
+show("eadie")
+```
+
+## Direct linear plot
+
+The direct linear plot turns the problem around: its axes are the parameters Km and Vmax. Each observation (a, v) is drawn as a straight line through (−a, 0) and (0, v), the line of all the (Km, Vmax) pairs that would explain that one observation exactly. With perfect data the lines all meet at one point, the true Km and Vmax. With real data they meet in a cluster, and the medians of the intersections are robust estimates (the nonparametric fitting method). It's available for Michaelis-Menten only, needs data, and shows no curve.
+
+```{r}
+show("direct")
+```
+
+## Residual plot
+
+The residual plot shows each point's residual (observed minus predicted) against the concentration. Residuals from a good fit scatter randomly around zero. A curved or wavy pattern means the model doesn't describe the data, and a funnel shape means the error grows with the rate. EKA2 shows it beneath the main plot whenever there's data.
+
+```{r}
+make_residual_plot("MM", params, data)
+```
+
+## Doing this
+
+- **In R:** `make_plot()` with `plot.transformation`, and `make_residual_plot()`. See [Plotting](../r/plotting.html).
+- **In EKA2:** the "Select Plot" menu under Plot Options, in Advanced Mode (Basic Mode always shows the standard plot). See the [user guide](../eka2/user-guide.html).

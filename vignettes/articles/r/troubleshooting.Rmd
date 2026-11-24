@@ -1,0 +1,203 @@
+---
+title: "Troubleshooting"
+description: "What each enzKinet2 error, warning and message means, and what to do about it."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+This page lists every error, warning and message that enzKinet2 gives, grouped by function, with what it means and what to do. Search the page (Ctrl+F or Cmd+F) for the start of the message you got. In the messages below, *X* stands for a model's name or a parameter, which the real message fills in.
+
+```{r}
+library(enzKinet2)
+```
+
+## Fitting: fit_model()
+
+### The fit ran but failed
+
+These don't stop your code. `fit_model()` returns `fitted.params = NULL` and puts the message in `error`.
+
+**"Model fitting failed. Possible reasons: noiseless data, poor starting parameters, over-parameterisation, etc."**
+
+Nonlinear least squares couldn't find a solution. The printed message, which starts "Model fitting failed:", gives the reason from R's `nls()`, for example:
+
+- "singular gradient": the search couldn't decide which way to move, often because the starting values are far off or two parameters trade off against each other;
+- "number of iterations exceeded maximum of 10000": the search didn't settle, which is typical of noise-free data;
+- "step factor ... reduced below 'minFactor'": the search stalled, usually from poor starting values.
+
+What to do:
+
+- **Check the starting values.** Draw their curve over the data with `make_curve()` and `make_plot()`, and adjust them until the curve is roughly right. See [Fitting models](fitting-models.html#starting-values).
+- **Noise-free data?** Set `add.minor.noise = TRUE`.
+- **Too many parameters for the data?** A model with more parameters needs data that shows each of its effects: concentrations well above Km to find Vmax, several inhibitor levels to find Ki, and so on. Try a simpler model, add data, or lock a parameter you know.
+
+```{r}
+set.seed(42)
+data <- simulate_data("MM", list(Km = 0.8, Vmax = 12), x.min = 0.1, x.max = 6, n.samples = 8)
+fit <- fit_model("MM", data, start.params = list(Km = 1000, Vmax = 0.001))
+fit$error
+```
+
+**"Model fitting returned parameter values out of valid range."** (also printed)
+
+The fit converged, but an estimate was 0 or less, or above 1e19, so it was rejected. This usually means the data doesn't support the model, for example a Hill coefficient or inhibition constant that the data can't pin down, or a model that doesn't match the data's shape. Try another model, or collect data over a wider range.
+
+**"Nonparametric fitting needs at least two observations with different, positive A and V."**
+
+`fit.method = "nonparametric"` builds its estimates from pairs of points with different concentrations, skipping any with a concentration or rate of 0. Your data didn't have such a pair. Add more distinct concentrations.
+
+**Warning: "Reached maximum iterations without convergence."**
+
+This comes from `fit.method = "recursive"` when its estimates still haven't settled after 1,000 rounds. That's rare, and suggests the data doesn't follow a Michaelis-Menten curve well. Check the data on a plot, or fit with `"nls"`.
+
+### The fit worked but the confidence intervals didn't
+
+Here `fitted.params` holds the estimates but no bounds, and `error` explains. If the interval calculation itself raised an error (with either method), the console also shows "Confidence interval computation failed:" with the reason. It doesn't when the bounds simply came out infinite.
+
+**"Profile likelihood confidence intervals could not be computed. Try the Asymptotic CI method."**
+
+Profile likelihood intervals failed, or came out infinite. This happens when the data barely constrains a parameter, for example when every concentration is well below Km, so Vmax is unclear. Try `conf.method = "asymptotic"`, but treat wide or negative bounds as a sign that the data can't estimate that parameter well. The lasting fix is better data. [Fitting models](fitting-models.html#when-intervals-cant-be-computed) has an example.
+
+**"Asymptotic confidence intervals could not be computed. The fit may be poorly conditioned."**
+
+Asymptotic intervals failed or came out infinite, usually because the parameters' standard errors couldn't be computed. The causes and fixes are the same as above.
+
+**"Confidence interval computation failed: Package 'MASS' is required for profile likelihood confidence intervals."**
+
+enzKinet2 uses the MASS package for profile intervals. MASS comes with R and is installed with enzKinet2, so this only happens if it was removed. The estimates are still returned. Reinstall MASS with `install.packages("MASS")`, or use `conf.method = "asymptotic"`.
+
+### Errors before fitting
+
+These stop your code, because something about the arguments or data is wrong.
+
+**The model and method**
+
+- "Invalid model. Please choose a valid model such as 'MM'.": use a code from `VALID_MODELS`.
+- "Invalid fit method. Please choose a valid method such as 'nls', 'recursive', 'ss.calc' or 'nonparametric.": check the spelling of `fit.method`.
+- "The model *X* is not valid for the fit method *Y* .": only `"MM"` can use `"ss.calc"`, `"nonparametric"` and `"recursive"`. Use `"nls"` for the other models.
+- "Locked parameters are only supported for the 'nls' fit method.", "Confidence intervals can only be derived with the 'nls' fit method." and "Statistics can only be derived with the 'nls' fit method.": with the other methods, leave `locked.params` as `NULL` and `get.conf.int` and `get.stats` as `FALSE`.
+
+**Starting values**
+
+- "start.params must be a list when using nonlinear least squares.": give a named list, such as `list(Km = 1, Vmax = 10)`, not a vector.
+- "For the *X* model, alongwith nonlinear least squares, start.params must include *...*": add the missing parameters. `MODEL_PARAMETERS[["MM"]]` lists each model's parameters.
+- "*X* must be a numeric value." and "*X* must be greater than 0.": every starting value must be a positive number, including the values of locked parameters.
+
+**Locked parameters**
+
+- "locked.params must be a vector.": give a character vector, such as `"E0"` or `c("Km", "E0")`.
+- "All values of locked.params must be from: *...*": you named a parameter the model doesn't have. Check the spelling, including capitals.
+- "All parameters are locked. Unlock at least one parameter to fit.": leave at least one parameter free.
+- "For the *X* model, E0 must be locked to a known value (set locked.params = c('E0', ...)).": the Original and Alternative Michaelis-Menten models need `locked.params = "E0"`, with E0 in `start.params` set to your enzyme concentration. Rate data can't separate Kcat from E0.
+
+**The data**
+
+- "data.df must be a dataframe." and "data.df must not be empty.": pass a data frame with at least one row.
+- "For the *X* model, data.df must contain columns (variables) named *...*": rename your columns. See [Using your own data](your-own-data.html#the-columns-each-model-needs).
+- "Column *X* in data.df must be numeric.": the column was read as text, often because of a stray character, a unit in a cell, or a comma used as the decimal point. Fix the file, or convert it with `as.numeric()`.
+- "data.df must not contain NA values in the required columns.": remove the rows with missing values. See [Using your own data](your-own-data.html#missing-values).
+- "This model has *n* free parameter(s), so at least *m* data points are needed to fit. Override this by setting override.data.point.check to TRUE.": you need more points than free parameters. Add data, or set `override.data.point.check = TRUE` if you accept a fit that will be poorly determined.
+- "The *X* model requires at least 2 unique values of *I* in the data.": enzKinet2 needs measurements at two or more values of a model's extra variable (`I`, `B` or `R`).
+- "For the Quadratic Binding Kinetics model, R values must be greater than 0.": the model divides by `R`, so remove rows with `R = 0`.
+
+**Other options**
+
+- "add.minor.noise must be TRUE or FALSE.", and the same for `override.data.point.check`, `get.conf.int` and `get.stats`: pass `TRUE` or `FALSE`.
+- "Confidence level must be a numeric value between 0 and 1 (exclusive).": for example `conf.level = 0.95`, not 95.
+- "conf.method must be either 'profile' or 'asymptotic'.": check the spelling.
+
+## Simulating: simulate_data() and make_curve()
+
+`make_curve()` calls `simulate_data()`, so it can give any of these too.
+
+**Warning: "Some data values clipped to domain [0, 1]. Consider using truncated normal distribution."** (or `[0, Inf]`)
+
+Noise pushed some values outside the range the dependent variable can take (a negative rate, or a fraction bound above 1), and they were set to the edge of the range. That's fine for a quick look, but the clipped values bias the data. Use `distribution = "truncated.norm"`, or less noise. See [Simulating data](simulating-data.html#clipping-and-the-truncated-normal-distribution).
+
+**The model and parameters**
+
+- "Invalid model. Please choose a valid model such as 'MM'.": use a code from `VALID_MODELS`.
+- "params must be a list.": give a named list, not a vector.
+- "For the *X* model, params must include *...*": add the missing parameters.
+- "*X* must be a numeric value." and "*X* must be greater than 0.": every parameter must be a positive number.
+
+**The concentrations**
+
+- "x.min and x.max must be numeric values.", "x.min must be less than x.max." and "x.min must be a non-negative value.": give a valid range, starting at 0 or above.
+- "n.samples must be a positive integer." and "n.replicates must be a positive integer.": use whole numbers of 1 or more.
+- "A valid dilution.factor greater than 1 must be provided for dilution.series.": add, for example, `dilution.factor = 2`.
+- "For custom space, x.range must be a numeric vector with at least two values." and "All values in x.range must be within the bounds of x.min and x.max.": with `space = "custom"`, give at least two concentrations in `x.range`, and set `x.min` and `x.max` around them.
+- "Invalid space.": use `"linear"`, `"exponential"`, `"inverse.exponential"`, `"dilution.series"` or `"custom"`.
+
+**The extra variable**
+
+- "For models with two independent variables, z.values must be provided and contain at least one value.": the model has an extra variable (`I`, `B` or `R`), so give its values in `z.values`.
+- "z.values must be a numeric vector." and "All values in z.values must be greater than or equal to 0.": give numbers of 0 or more.
+- "For the Quadratic Binding Kinetics model, R values must be greater than 0.": `R` can't be 0.
+
+**Noise**
+
+- "noise.level must be a non-negative numeric value.": use 0 for no noise, or a positive number.
+- "noise.type must be either 'absolute' or 'relative'." and "Invalid distribution. Please choose 'norm' or 'truncated.norm'.": check the spelling.
+
+**The envelope**
+
+- "Missing parameter confidence interval bounds for: *...*": `make_curve(..., conf.int = TRUE)` needs each parameter's bounds (`Km.lb`, `Km.ub` and so on). Pass the `fitted.params` of a fit made with `get.conf.int = TRUE` whose intervals succeeded, or set `conf.int = FALSE`.
+
+```{r}
+fit <- fit_model("MM", data, start.params = list(Km = 1, Vmax = 10))
+tryCatch(make_curve("MM", fit$fitted.params, x.min = 0, x.max = 6, conf.int = TRUE),
+         error = function(e) conditionMessage(e))
+```
+
+## Plotting: make_plot() and update_plot_curve()
+
+**Warning: "Dropped *n* non-finite row(s) after the *X* transformation."**
+
+The transformation turned some points into infinite or undefined values, such as 1/v at v = 0, or log10(a) at a = 0, and they were left out. For curves, start `make_curve()` just above 0 when you use the log10, Lineweaver-Burk, Hanes or Eadie-Hofstee plots. For data, the point is simply not shown.
+
+**Warning: "For a direct linear plot, curves are not used."**
+
+The direct linear plot only draws data, so `make_plot()` ignored your curves. `update_plot_curve()` stops with an error instead: "Curves are not used in direct linear plot transformations. Please remove curve.df and extra.curve." (or "For a direct linear plot, curves are not used.").
+
+**The transformation**
+
+- "plot.transformation is invalid.": use `"standard"`, `"log10"`, `"lineweaver"`, `"hanes"`, `"eadie"` or `"direct"`.
+- "The *X* transformation is not supported for the *Y* model.": that plot doesn't suit that model. See the table in [Plotting](plotting.html#which-models-allow-which-plots).
+- "For a direct linear plot, data.df must be provided.": the direct linear plot is drawn from data.
+
+**The data and curves**
+
+- "Invalid model. Please choose a valid model such as 'MM' or 'MMSI'.": use a code from `VALID_MODELS`.
+- "data.df must be a dataframe." and "data.df must contain at least one row of data.", and the same for `curve.df`; "extra.curve must be a dataframe.": pass data frames, or leave them as `NULL`.
+- "For the *X* model, data.df must contain columns (variables) named *...*", and the same for `curve.df` and `extra.curve`: the data or curve was made for a different model, or its columns need renaming.
+- "Confidence envelope requested, but curve.df is missing." and "Parameter confidence envelope curves (e.g. 'V.lb', 'V.ub') not provided.": with `conf.int = TRUE`, pass a curve made by `make_curve(..., conf.int = TRUE)`.
+- "plot must be a ggplot object." (`update_plot_curve()` only): pass the plot that `make_plot()` returned.
+
+**Labels and style**
+
+- "Invalid colour palette. Please choose a valid palette from: *...*": use a name from `PLOT_COLOUR_PALETTES`, such as `"Set1"` or `"Dark2"`.
+- "x.label must be a character string.", and the same for `y.label`, `x.units`, `y.units`, `title` and `legend.label`: pass text in quotes.
+- "y.range must be a numeric vector of length 2, e.g., c(0, 10)." and "y.range must specify a valid range where the first value is less than the second.": for example `y.range = c(0, 15)`.
+- "show.grid must be TRUE or FALSE.", and the same for `conf.int` and `hide.legend`: pass `TRUE` or `FALSE`.
+
+**Messages from ggplot2**
+
+Some messages come from ggplot2 rather than enzKinet2. "Removed *n* rows containing missing values or values outside the scale range" appears when `y.range` cuts off some points: widen the range if you want to see them.
+
+## Residual plots: make_residual_plot()
+
+- "params must be a list." and "params list cannot be empty.": pass the parameter values as a named list, usually `fit$fitted.params`.
+- "For the *X* model, params must include *...*", "*X* must be a numeric value." and "*X* must be greater than 0.": include every parameter, each a positive number.
+- "data.df must be a dataframe.", "data.df must contain at least one row of data." and "For the *X* model, data.df must contain columns (variables) named *...*": as for `make_plot()`.
+- "For the Quadratic Binding Kinetics model, R values must be greater than 0.": remove rows with `R = 0`.
+- "x.max must be a numeric value." and "x.max must be a positive value.": give a number above 0, or leave it as `NULL`.
+- "zero.line must be TRUE or FALSE.", and the same for `show.grid` and `hide.legend`.
+- The label, palette and `y.range` messages are the same as for `make_plot()`.
+- "Scale for y is already present." is a message from ggplot2 when you set `y.range`. It's harmless: your range replaces the default one.
+
+## Still stuck?
+
+Ask at <haigvbishop@gmail.com>, or report a bug on [GitHub](https://github.com/damacer/enzKinet2/issues) with a small example that shows the problem.

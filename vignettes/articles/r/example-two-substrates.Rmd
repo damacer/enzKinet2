@@ -1,0 +1,94 @@
+---
+title: "Two substrates: ternary complex or ping-pong"
+description: "Simulate a two-substrate experiment, fit the ternary-complex and ping-pong models, and tell them apart."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+Many enzymes have two substrates, A and B. In a ternary-complex mechanism both substrates bind before any product is released. In a ping-pong (substituted-enzyme) mechanism, the enzyme releases a product after reacting with A, and only then binds B. This example simulates an experiment that varies both substrates, then fits the `"TC"` (ternary complex) and `"PP"` (ping-pong) models to see which describes it.
+
+```{r}
+library(enzKinet2)
+```
+
+## The two models
+
+```{r}
+MODEL_PARAMETERS[c("TC", "PP")]
+MODEL_VARIABLES[["TC"]]
+```
+
+Both models have a Michaelis constant for each substrate (`KmA`, `KmB`) and a limiting rate `Vmax`. The ternary-complex model has one more constant, `Ksat`, in the term `Ksat × KmB` of its denominator. In Cornish-Bowden's notation (*Fundamentals of Enzyme Kinetics*, equation 8.9) this is KiA, which in the compulsory-order mechanism is the dissociation constant of the EA complex. The ping-pong equation has no such term. The data needs columns `A`, `B` and `V`.
+
+## Simulate the experiment
+
+The usual design measures the rate over a range of A at several fixed concentrations of B. `z.values` gives the B concentrations:
+
+```{r}
+set.seed(7)
+true <- list(KmA = 0.5, Vmax = 10, KmB = 1, Ksat = 1)
+data <- simulate_data("TC", true, x.min = 0.1, x.max = 4,
+                      z.values = c(0.25, 0.5, 1, 2, 4), n.samples = 8, noise.level = 0.04)
+nrow(data)
+make_plot("TC", data.df = data, x.units = "mM", y.units = "µM/min",
+          legend.label = "B (mM)")
+```
+
+## Fit both models
+
+```{r}
+fit_tc <- fit_model("TC", data, start.params = list(KmA = 1, Vmax = 5, KmB = 1, Ksat = 1),
+                    get.conf.int = TRUE, get.stats = TRUE)
+fit_pp <- fit_model("PP", data, start.params = list(KmA = 1, Vmax = 5, KmB = 1),
+                    get.stats = TRUE)
+round(unlist(fit_tc$fitted.params), 3)
+round(unlist(fit_pp$fitted.params), 3)
+c(TC = fit_tc$statistics$AIC, PP = fit_pp$statistics$AIC)
+```
+
+The ternary-complex model fits far better (lower AIC), and its estimates are close to the true values used in the simulation. The ping-pong model has to distort its Michaelis constants to make up for the missing term.
+
+```{r}
+curves <- make_curve("TC", fit_tc$fitted.params, x.min = 0, x.max = 4,
+                     z.values = c(0.25, 0.5, 1, 2, 4))
+make_plot("TC", data.df = data, curve.df = curves, x.units = "mM", y.units = "µM/min",
+          legend.label = "B (mM)")
+```
+
+## The Lineweaver-Burk pattern
+
+The two mechanisms are easiest to tell apart on a Lineweaver-Burk plot of 1/v against 1/a, with a line for each concentration of B.
+
+- **Ping-pong:** the slope of each line is KmA/Vmax, whatever the concentration of B, so the lines are parallel.
+- **Ternary complex:** the slope also depends on B, so the lines meet at a common point, at 1/a = −1/KiA. That point is above the 1/a axis when KiA is larger than KmA, as here, and below it when KiA is smaller.
+
+```{r}
+curves_tc <- make_curve("TC", fit_tc$fitted.params, x.min = 0.1, x.max = 4,
+                        z.values = c(0.25, 0.5, 1, 2, 4))
+make_plot("TC", data.df = data, curve.df = curves_tc, plot.transformation = "lineweaver",
+          x.units = "mM", y.units = "µM/min", legend.label = "B (mM)")
+
+curves_pp <- make_curve("PP", list(KmA = 0.5, Vmax = 10, KmB = 1), x.min = 0.1, x.max = 4,
+                        z.values = c(0.25, 0.5, 1, 2, 4))
+make_plot("PP", curve.df = curves_pp, plot.transformation = "lineweaver",
+          x.units = "mM", y.units = "µM/min", legend.label = "B (mM)",
+          title = "Ping-pong (for comparison)")
+```
+
+Each line is extended to the 1/a axis, so you can see where the ternary-complex lines meet.
+
+## If the data were ping-pong
+
+The ping-pong equation is the ternary-complex equation with `Ksat` set to zero. So fitting the ternary-complex model to ping-pong data drives `Ksat` to zero or below (here, below). `fit_model()` rejects estimates of 0 or less, so the fit returns `NULL` with an error message rather than a usable result:
+
+```{r}
+set.seed(8)
+pp_data <- simulate_data("PP", list(KmA = 0.5, Vmax = 10, KmB = 1), x.min = 0.1, x.max = 4,
+                         z.values = c(0.25, 0.5, 1, 2, 4), n.samples = 8, noise.level = 0.04)
+fit_model("TC", pp_data, start.params = list(KmA = 1, Vmax = 5, KmB = 1, Ksat = 1))$error
+fit_model("PP", pp_data, start.params = list(KmA = 1, Vmax = 5, KmB = 1))$fitted.params
+```
+
+A ternary-complex fit that fails this way is therefore a hint that the mechanism is ping-pong. As with any model choice, look at the fits and residuals too, and see [Fitting models](fitting-models.html) for the options.

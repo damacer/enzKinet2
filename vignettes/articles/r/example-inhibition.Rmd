@@ -1,0 +1,126 @@
+---
+title: "Telling inhibition types apart"
+description: "Fit the competitive, uncompetitive, non-competitive and mixed inhibition models to one dataset, and choose between them."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+An inhibitor can lower an enzyme's rate in different ways, and the inhibition models describe the common ones. This example fits all four to one experiment, rates at several substrate and inhibitor concentrations, and uses AIC to choose between them. It uses the models `"CI"` (competitive), `"UCI"` (uncompetitive), `"NCI"` (non-competitive) and `"MI"` (mixed).
+
+```{r}
+library(enzKinet2)
+```
+
+## The four models
+
+Each model has a third variable, the inhibitor concentration `I`, and one or two inhibition constants:
+
+```{r}
+MODEL_PARAMETERS[c("CI", "UCI", "NCI", "MI")]
+```
+
+Mixed inhibition is the general case, with a competitive constant `Kic` and an uncompetitive constant `Kiu`. The other three are special cases of it: competitive inhibition is mixed inhibition with no uncompetitive part (`Kiu` infinitely large), uncompetitive is the reverse, and non-competitive inhibition has `Kic` and `Kiu` equal. The [model gallery](../concepts/models.html) has the equations.
+
+## Read the data
+
+The example file has rates at 6 substrate concentrations and 4 inhibitor concentrations, in duplicate. The substrate is in mM, the inhibitor in µM and the rate in µM/min:
+
+```{r}
+path <- system.file("extdata", "inhibition.csv", package = "enzKinet2")
+raw <- read.csv(path)
+data <- data.frame(A = raw$substrate_mM, I = raw$inhibitor_uM, V = raw$rate_uM_min)
+head(data)
+table(data$I)
+```
+
+```{r}
+make_plot("MI", data.df = data, x.units = "mM", y.units = "µM/min",
+          legend.label = "Inhibitor (µM)")
+```
+
+The fitted inhibition constants will be in µM, the inhibitor's units, while Km stays in mM.
+
+## Fit all four models
+
+Each model needs starting values for its own parameters:
+
+```{r}
+starts <- list(
+    CI  = list(Km = 1, Vmax = 10, Ki = 10),
+    UCI = list(Km = 1, Vmax = 10, Ki = 10),
+    NCI = list(Km = 1, Vmax = 10, Ki = 10),
+    MI  = list(Km = 1, Vmax = 10, Kic = 10, Kiu = 10)
+)
+fits <- lapply(names(starts), function(m) {
+    fit_model(m, data, start.params = starts[[m]], get.stats = TRUE)
+})
+names(fits) <- names(starts)
+```
+
+Put the estimates and the information criteria side by side:
+
+```{r}
+summary_table <- do.call(rbind, lapply(names(fits), function(m) {
+    p <- fits[[m]]$fitted.params
+    s <- fits[[m]]$statistics
+    data.frame(model = m, Km = round(p$Km, 3), Vmax = round(p$Vmax, 2),
+               Ki = if (is.null(p$Ki)) NA else round(p$Ki, 1),
+               Kic = if (is.null(p$Kic)) NA else round(p$Kic, 1),
+               Kiu = if (is.null(p$Kiu)) NA else round(p$Kiu, 1),
+               AIC = round(s$AIC, 1), BIC = round(s$BIC, 1))
+}))
+summary_table$delta_AIC <- summary_table$AIC - min(summary_table$AIC)
+summary_table
+```
+
+Lower AIC and BIC are better, and they favour mixed inhibition by a wide margin. The example data was simulated from mixed inhibition with Km = 0.8 mM, Vmax = 12 µM/min, Kic = 20 µM and Kiu = 60 µM, and the mixed model's estimates are close to those values. The others fit worse because each one forces a constraint that the data doesn't follow.
+
+A rule of thumb is that AIC differences under about 2 are weak evidence for either model. With fewer data points, or inhibitor concentrations that don't reach the inhibition constants, the models can be hard to tell apart, and the simpler one may be the better choice. Always look at the fits as well.
+
+## Plot the chosen model
+
+```{r}
+best <- fits$MI$fitted.params
+curves <- make_curve("MI", best, x.min = 0, x.max = 8, z.values = c(0, 10, 25, 50))
+make_plot("MI", data.df = data, curve.df = curves, x.units = "mM", y.units = "µM/min",
+          legend.label = "Inhibitor (µM)")
+make_residual_plot("MI", best, data, x.units = "mM", y.units = "µM/min",
+                   legend.label = "Inhibitor (µM)")
+```
+
+## What each type looks like on a Lineweaver-Burk plot
+
+On a Lineweaver-Burk plot (1/v against 1/a), the intercept on the 1/v axis is 1/Vmax and the slope is Km/Vmax, both as they appear at that inhibitor concentration. Each type of inhibition changes them in its own way:
+
+- **Competitive:** Vmax is unchanged and the slope increases, so the lines meet on the 1/v axis.
+- **Uncompetitive:** the slope is unchanged, so the lines are parallel.
+- **Non-competitive:** the intercept and slope increase in proportion, so the lines meet on the 1/a axis, at −1/Km.
+- **Mixed:** both change, and the lines meet to the left of the 1/v axis. They meet above the 1/a axis when Kic is smaller than Kiu, as here, and below it when Kic is larger.
+
+These curves show the four patterns, with the same Km and Vmax and inhibitor concentrations of 0, 1 and 2 (in the units of the inhibition constants):
+
+```{r, fig.height = 3.6}
+patterns <- list(
+    CI  = list(Km = 1, Vmax = 10, Ki = 1),
+    UCI = list(Km = 1, Vmax = 10, Ki = 1),
+    NCI = list(Km = 1, Vmax = 10, Ki = 1),
+    MI  = list(Km = 1, Vmax = 10, Kic = 1, Kiu = 3)
+)
+for (m in names(patterns)) {
+    curve <- make_curve(m, patterns[[m]], x.min = 0.5, x.max = 10, z.values = c(0, 1, 2))
+    print(make_plot(m, curve.df = curve, plot.transformation = "lineweaver",
+                    legend.label = "Inhibitor"))
+}
+```
+
+And the example data with the fitted mixed model:
+
+```{r}
+curves <- make_curve("MI", best, x.min = 0.2, x.max = 8, z.values = c(0, 10, 25, 50))
+make_plot("MI", data.df = data, curve.df = curves, plot.transformation = "lineweaver",
+          x.units = "mM", y.units = "µM/min", legend.label = "Inhibitor (µM)")
+```
+
+Linearised plots are good for seeing the pattern, but choose the model by fitting the untransformed data, as above. [Plot types](../concepts/plots.html) explains why.

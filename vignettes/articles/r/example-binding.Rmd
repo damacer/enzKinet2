@@ -1,0 +1,84 @@
+---
+title: "Binding with ligand depletion"
+description: "Fit binding data with the simple and quadratic binding models, and see why depletion matters when the limiting partner isn't at trace levels."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+The binding models describe the fraction of one molecule bound by a partner, such as a protein titrated with a ligand. The simple model, `"BK"`, assumes the limiting molecule is at a trace concentration, so binding doesn't use up the partner. When that isn't true, the quadratic model, `"QBK"`, accounts for the depletion. This example simulates a titration at three concentrations of the limiting molecule, and compares the two models.
+
+```{r}
+library(enzKinet2)
+```
+
+## The variables
+
+```{r}
+MODEL_VARIABLES[c("BK", "QBK")]
+MODEL_PARAMETERS[c("BK", "QBK")]
+```
+
+- `P` is the total concentration of the partner in excess (the titrant).
+- `FB` is the fraction of the limiting molecule that is bound, from 0 to 1.
+- `R` (QBK only) is the total concentration of the limiting molecule.
+- `KD` is the dissociation constant.
+
+BK is FB = P / (P + KD). QBK solves the binding equilibrium exactly for given totals P and R, which gives a quadratic. When R is much smaller than KD the two agree. As R grows, more of the partner is used up in binding, so QBK's curve shifts to higher P and changes shape.
+
+## Simulate a titration
+
+Here KD is 1 µM, and the titration is repeated with the limiting molecule at 0.1, 1 and 4 µM:
+
+```{r}
+set.seed(3)
+data <- simulate_data("QBK", list(KD = 1), x.min = 0, x.max = 10, z.values = c(0.1, 1, 4),
+                      n.samples = 12, noise.level = 0.03, noise.type = "absolute",
+                      distribution = "truncated.norm")
+make_plot("QBK", data.df = data, x.units = "µM", legend.label = "R (µM)")
+```
+
+The noise is absolute (a standard deviation of 0.03 in FB) and drawn from a truncated normal distribution. FB can only be between 0 and 1, and near full saturation ordinary normal noise would push some values above 1. With `distribution = "norm"`, `simulate_data()` clips those to exactly 1 (with a warning), so they pile up there. The truncated normal keeps every value in range without the pile-up. [Simulation and noise](../concepts/simulation.html) has more on the choice.
+
+## Fit the quadratic model
+
+```{r}
+fit_qbk <- fit_model("QBK", data, start.params = list(KD = 2), get.conf.int = TRUE)
+fit_qbk$fitted.params
+```
+
+The estimate is close to the true KD of 1 µM. `fit_model()` needs at least two different values of `R` to fit QBK, and `R` must be greater than 0.
+
+```{r}
+curves <- make_curve("QBK", fit_qbk$fitted.params, x.min = 0, x.max = 10, z.values = c(0.1, 1, 4))
+make_plot("QBK", data.df = data, curve.df = curves, x.units = "µM", legend.label = "R (µM)")
+```
+
+## Fit the simple model at each R
+
+BK has no `R`, so fit it separately to each titration, as you would if you ignored depletion:
+
+```{r}
+kd_bk <- sapply(c(0.1, 1, 4), function(r) {
+    fit_model("BK", data[data$R == r, ], start.params = list(KD = 2))$fitted.params$KD
+})
+data.frame(R = c(0.1, 1, 4), KD_BK = round(kd_bk, 2), KD_QBK = round(fit_qbk$fitted.params$KD, 2))
+```
+
+At R = 0.1 µM, a tenth of KD, the simple model is fine. As R grows, BK's KD rises further above the true value. With depletion, half of the limiting molecule is bound when the total P is KD + R/2 rather than KD, so ignoring depletion makes binding look weaker than it is.
+
+The R = 4 µM titration shows the mismatch. The BK fit (coloured) misses the shape that the QBK fit (black) follows:
+
+```{r}
+r4 <- data[data$R == 4, ]
+bk_fit <- fit_model("BK", r4, start.params = list(KD = 2))$fitted.params
+make_plot("BK", data.df = r4,
+          curve.df = make_curve("BK", bk_fit, x.min = 0, x.max = 10),
+          extra.curve = make_curve("QBK", fit_qbk$fitted.params, x.min = 0, x.max = 10, z.values = 4),
+          x.units = "µM", title = "R = 4 µM: BK (coloured) and QBK (black)")
+```
+
+## When to use which
+
+If the limiting molecule is at a concentration well below KD, BK is enough and needs only one titration. Otherwise use QBK. enzKinet2 and EKA2 need titrations at two or more concentrations of the limiting molecule for it. The binding models allow only the standard and log10 plots, and their y-axis shows FB from 0 to 1 unless you set `y.range`.

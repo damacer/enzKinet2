@@ -1,0 +1,89 @@
+---
+title: "Fitting and confidence intervals"
+description: "How EKA2 and enzKinet2 estimate parameters, how sure the estimates are, and how to compare models."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", echo = FALSE, fig.width = 6.5, fig.height = 3.8, out.width = "85%")
+library(enzKinet2)
+```
+
+Fitting a model means finding the parameter values that make its curve match the data as closely as possible. This page explains how EKA2 and enzKinet2 do that, how to read the results, and where the methods' limits are.
+
+## Nonlinear least squares
+
+The main method is **nonlinear least squares** (NLS). For a set of parameter values, each data point's residual is its observed value minus the model's prediction. NLS searches for the values that make the sum of the squared residuals as small as possible. It works on the data exactly as measured, so it can fit every model.
+
+The search is iterative. It starts from **starting values** and improves them step by step until they stop changing (enzKinet2 uses R's `nls()` with the Gauss-Newton algorithm). Good starting values matter. If they're far from the answer, the search can wander off and fail. A reliable way to choose them is to adjust the parameters until the curve passes near the data, then fit from there. EKA2 is built around this: its fits start from the current slider values.
+
+NLS here is **unweighted**: every point counts equally. That is the right choice when the measurement error is about the same size at every concentration. If the error grows with the rate (a constant percentage error), the least precise points count as much as the most precise ones, so the estimates are less precise than they could be.
+
+### Why not fit a straight line to a linearised plot?
+
+Before computers made NLS easy, parameters were estimated from straight-line plots such as the Lineweaver-Burk plot of 1/v against 1/a. The transformation distorts the errors: a small error in a small rate becomes a large error in its reciprocal, so the points at the lowest concentrations dominate the line. Nonlinear least squares fits the untransformed data, and the plot you look at never changes the fit. The linearised plots are there to look at, and the curve they show is the fitted model. See [Plot types](plots.html).
+
+## When a model can't be fitted
+
+Some parameter combinations can't be told apart from the data, however good it is:
+
+- **OGMM and ALTMM:** Kcat (and, in ALTMM, KA) only appear multiplied by E0, so rates alone can't separate them. E0 has to be fixed (locked) at its known value.
+- **Models with an extra variable** (I, B or R): a Ki, for example, can't be estimated from data at only one inhibitor concentration. EKA2 and enzKinet2 ask for data at two or more values of the extra variable for all these models.
+- **Too few points.** A fit needs at least one more data point than there are free parameters. In practice, many more points give far better estimates.
+- **Data with no noise.** NLS fails on data that the model fits perfectly, as simulated data with no noise does. Adding a negligible amount of noise (EKA2's "Add minor noise", or `add.minor.noise = TRUE` in R) fixes this.
+
+**Locking** a parameter holds it at a value you choose and fits the rest. Besides E0, it's useful when a value is known from elsewhere.
+
+## Confidence intervals
+
+A fit gives one estimate of each parameter. A **confidence interval** gives a range of plausible values: a 95% interval is built so that, over many repeated experiments, 95% of such intervals would contain the true value. Two methods are available:
+
+- **Profile likelihood** (the default). For each parameter, it finds how far the parameter can move, with the others refitted, before the fit gets significantly worse. The intervals can be asymmetric, which suits nonlinear models, whose uncertainty is often asymmetric.
+- **Asymptotic** (Wald). The estimate plus or minus a multiple of its standard error. It's quick and always symmetric, but it relies on the model being close to linear near the estimate, so it can be misleading for nonlinear models, for example by reaching below zero for a parameter that must be positive.
+
+Profile intervals sometimes can't be computed, typically when a parameter is poorly determined by the data. In R the estimates are still returned, and the asymptotic method may still work. In EKA2 the fit isn't recorded, but in Advanced Mode the Asymptotic method may still give a result. A locked parameter's interval is just its locked value.
+
+### The parameter uncertainty envelope
+
+EKA2 and enzKinet2 can shade an **envelope** around the fitted curve. Its lower edge is the curve with every parameter at whichever end of its confidence interval lowers the curve, and its upper edge uses the other ends. It shows how far the curve moves when the parameters are at the edges of their intervals.
+
+The envelope is not a confidence band for the curve. It ignores the correlations between parameters (in Michaelis-Menten fits, Km and Vmax estimates are usually positively correlated), so it is often wider than a true confidence band would be.
+
+```{r}
+set.seed(3)
+d <- simulate_data("MM", list(Km = 0.8, Vmax = 12), x.min = 0.1, x.max = 6, n.samples = 8, n.replicates = 2)
+f <- fit_model("MM", d, start.params = list(Km = 1, Vmax = 10), get.conf.int = TRUE)
+make_plot("MM", data.df = d, curve.df = make_curve("MM", f$fitted.params, 0, 6, conf.int = TRUE),
+          conf.int = TRUE, title = "A Michaelis-Menten fit with its parameter uncertainty envelope")
+```
+
+## Fit statistics
+
+| Statistic | Meaning |
+|---|---|
+| Standard error (`.se`) | The estimated standard deviation of each parameter estimate. |
+| R² | 1 − var(residuals) / var(data): the share of the data's variance the model accounts for. For nonlinear models it is only a rough guide, and a high value doesn't show that the model is right. |
+| RMSE | Root mean square error: the typical size of a residual, in the units of the dependent variable. |
+| MAE | Mean absolute error: the average size of a residual. |
+| Log-likelihood | How probable the data is under the fitted model, assuming normally distributed errors. Higher is better. |
+| AIC, BIC | Akaike and Bayesian information criteria: the log-likelihood penalised for the number of parameters. Lower is better. |
+
+## Comparing models
+
+To choose between models fitted to the **same data**, compare their AIC or BIC. A more complex model always fits at least as closely, and these criteria penalise the extra parameters, so the lower value marks the better trade-off. Except with very little data, BIC penalises extra parameters more heavily than AIC. Small differences aren't meaningful, and a simpler model is usually preferable unless a more complex one is clearly better. Look at the residual plots too: a systematic pattern in one model's residuals that disappears in another's is strong evidence.
+
+Several models are special cases of others, which makes comparisons natural: competitive, uncompetitive and pure non-competitive inhibition are each mixed inhibition with a constraint, and Michaelis-Menten is the Hill model with n = 1.
+
+## Methods for Michaelis-Menten only
+
+Three other methods give Michaelis-Menten estimates without starting values:
+
+- **Sum of squares calculation** solves a weighted least-squares fit of the Lineweaver-Burk line directly, with weights that suit errors with a constant coefficient of variation.
+- **Nonparametric** calculates Km and Vmax from every pair of points (as in the direct linear plot) and takes the medians, so single outliers have little effect.
+- **Recursive solve** suits errors with a constant standard deviation, as NLS does. Its weights depend on the fitted curve, so it starts from the measured rates and repeats a weighted calculation until the estimates settle. It should end at the NLS estimates.
+
+These methods don't give confidence intervals or statistics. They're useful as a check on an NLS fit, or as a source of starting values.
+
+## Doing this
+
+- **In R:** `fit_model()`, with `get.conf.int`, `conf.method`, `get.stats` and `locked.params`. See [Fitting models](../r/fitting-models.html) and the worked example [Telling inhibition types apart](../r/example-inhibition.html).
+- **In EKA2:** the "Fit Model to Data" panel and the Results tab. See the [user guide](../eka2/user-guide.html).

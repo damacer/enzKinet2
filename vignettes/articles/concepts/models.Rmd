@@ -1,0 +1,131 @@
+---
+title: "Models"
+description: "The 14 enzyme and binding kinetics models in EKA2 and enzKinet2: their equations, parameters and variables."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", echo = FALSE, fig.width = 6, fig.height = 3.4, out.width = "80%")
+library(enzKinet2)
+```
+
+EKA2 and enzKinet2 share 14 models: Michaelis-Menten and its variants, reversible inhibition, two-substrate and binding models. This page gives each model's equation, what its parameters and variables mean, and what data it needs. The equations, parameter lists and plot options below are taken from the package, so they match what EKA2 shows.
+
+**Variables.** Every model has a primary independent variable, plotted on the x-axis, and a dependent variable, on the y-axis. Some also have an extra independent variable, drawn as one curve per value.
+
+| Symbol | Meaning |
+|---|---|
+| A | Substrate concentration (for two-substrate models, of substrate A) |
+| B | Concentration of the second substrate |
+| I | Inhibitor concentration |
+| V | Initial rate of the reaction |
+| P | Concentration of the binding partner being varied, usually in excess |
+| R | Total concentration of the limiting binding partner (QBK) |
+| FB | Fraction bound: the fraction of the limiting partner that is bound |
+
+In R these are the data's column names. In EKA2 you match your file's columns to them when you upload. Concentrations can be in any units, as long as they are consistent: each parameter comes out in the units of the variable it goes with (Km in A's units, Ki in I's units, Vmax in V's units).
+
+**Groups.** EKA2's model menu groups the models as below. OGMM and ALTMM appear only in EKA2's Advanced Mode, and are described last.
+
+```{r, results = "asis"}
+for (group in names(MODEL_OPTIONS_GROUPED)) {
+  models <- unlist(MODEL_OPTIONS_GROUPED[[group]])
+  cat("- **", group, ":** ", paste0("[", names(models), "](#", tolower(models), ")", collapse = ", "), "\n", sep = "")
+}
+```
+
+```{r}
+# What each parameter means. Kept by hand, checked against Cornish-Bowden (2012).
+param_meaning <- function(model, p) {
+  if (model == "MMSI" && p == "Km") return("Michaelis constant of the curve without substrate inhibition.")
+  if (model == "MMSI" && p == "Vmax") return("Limiting rate without substrate inhibition. With it, the rate peaks and then falls, so it never reaches Vmax.")
+  if (model %in% c("CI", "UCI", "NCI", "MI") && p == "Km") return("Michaelis constant with no inhibitor: the substrate concentration at which V = Vmax/2 when I = 0.")
+  if (model %in% c("CI", "UCI", "NCI", "MI") && p == "Vmax") return("Limiting rate with no inhibitor.")
+  if (model %in% c("TC", "PP") && p == "Vmax") return("Limiting rate when both substrates are saturating.")
+  if (model == "HILL" && p == "Km") return("Half-saturation constant, K<sub>0.5</sub>: the value of A at which V = Vmax/2. Written Km in enzKinet2 and EKA2, but it isn't a Michaelis constant.")
+  if (model == "BKH" && p == "KD") return("Half-saturation constant: the value of P at which FB = 0.5 (an apparent dissociation constant).")
+  if (model == "QBK" && p == "KD") return("Dissociation constant. With P as a total concentration, FB = 0.5 at P = KD + R/2, so it equals KD only when R is small.")
+  if (p == "Ki") return(switch(model,
+    CI = "Competitive inhibition constant (K<sub>ic</sub>): the dissociation constant of the enzyme-inhibitor complex.",
+    UCI = "Uncompetitive inhibition constant (K<sub>iu</sub>).",
+    NCI = "Inhibition constant, with K<sub>ic</sub> = K<sub>iu</sub> = Ki."))
+  switch(p,
+    Km = "Michaelis constant: the substrate concentration at which V = Vmax/2.",
+    Vmax = "Limiting rate (maximum velocity): the rate approached at saturating substrate.",
+    Ksi = "Substrate inhibition constant.",
+    Kcat = "Catalytic constant (turnover number), so that Vmax = Kcat × E0.",
+    E0 = "Total enzyme concentration. Lock it to its known value when fitting.",
+    KA = "Specificity constant, kcat/Km: the second-order rate constant at low substrate concentration.",
+    Kic = "Competitive inhibition constant.",
+    Kiu = "Uncompetitive inhibition constant.",
+    KmA = "Michaelis constant for A (when B is saturating).",
+    KmB = "Michaelis constant for B (when A is saturating).",
+    Ksat = "Dissociation constant of EA, written K<sub>iA</sub> in Cornish-Bowden (2012).",
+    n = "Hill coefficient: above 1 means positive cooperativity, below 1 negative.",
+    KD = "Dissociation constant: the value of P at which FB = 0.5.")
+}
+
+notes <- list(
+  MM = "The fundamental equation of enzyme kinetics: a rectangular hyperbola that rises towards Vmax.",
+  MMSI = "Michaelis-Menten with inhibition by excess substrate. The rate peaks at A = √(Km × Ksi) and then falls.",
+  OGMM = "The Michaelis-Menten equation written with the catalytic constant Kcat and the total enzyme concentration E0 in place of Vmax (equation 2.11 in Cornish-Bowden 2012). It has the same form as Michaelis and Menten's original equation, which also multiplied a rate constant by the enzyme concentration (equation 2.3 there). Writing Vmax = Kcat × E0 gives the usual form, which is convenient when E0 isn't known. But Vmax depends on how much enzyme is in the assay, so it isn't a property of the enzyme, while Kcat is: the number of substrate molecules each enzyme molecule can convert per unit time. Kcat needn't be the rate constant of any single step, which is why it has a name of its own. Rate data alone can't separate Kcat from E0, so E0 must be locked to its known value when fitting.",
+  ALTMM = "The Michaelis-Menten equation written with Kcat and the specificity constant KA = Kcat/Km in place of Km (equation 2.13 in Cornish-Bowden 2012). Cornish-Bowden argues that Kcat and KA are the fundamental parameters, and that Km is best thought of as the ratio Kcat/KA. KA is the second-order rate constant for the reaction at low substrate concentration, and it decides how an enzyme shares its activity between competing substrates in a mixture. Cornish-Bowden also suggests that many topics, such as inhibition, multiple substrates and pH effects, would be simpler to discuss had this become the usual form. As for OGMM, E0 must be locked when fitting. Km can be recovered as Kcat/KA.",
+  CI = "The inhibitor binds only the free enzyme, competing with the substrate. It raises the apparent Km by a factor (1 + I/Ki) and leaves Vmax unchanged.",
+  UCI = "The inhibitor binds only the enzyme-substrate complex. It lowers the apparent Vmax and Km by the same factor (1 + I/Ki), leaving Vmax/Km unchanged.",
+  NCI = "Pure non-competitive inhibition: the inhibitor binds the free enzyme and the enzyme-substrate complex equally. It lowers the apparent Vmax and leaves Km unchanged. It is the special case of mixed inhibition with Kic = Kiu.",
+  MI = "Mixed inhibition, with separate competitive and uncompetitive constants. Competitive, uncompetitive and pure non-competitive inhibition are all special cases of it.",
+  TC = "A two-substrate reaction through a ternary complex EAB (equation 8.9 in Cornish-Bowden 2012). The parameter Ksat is the dissociation constant of EA, written K<sub>iA</sub> there.",
+  HILL = "An empirical equation for cooperative enzymes, with a sigmoidal curve when n > 1. With n = 1 it is the Michaelis-Menten equation.",
+  PP = "A two-substrate reaction by a substituted-enzyme (ping-pong) mechanism, in which the first product leaves before the second substrate binds.",
+  BK = "Simple one-site binding of a partner (P) in large excess over a limiting partner, so that the free and total concentrations of P are about equal.",
+  BKH = "Binding with cooperativity: the Hill equation applied to binding.",
+  QBK = "One-site binding that allows for depletion of P when the limiting partner's concentration R isn't small compared with KD (tight binding). FB is the fraction of R that is bound. When R is much smaller than KD it gives the same curve as BK. The equation shown is the usual quadratic solution; enzKinet2 computes an algebraically equivalent form that stays accurate when R is very small."
+)
+
+examples <- list(
+  MM = list(Km = 0.5, Vmax = 1), MMSI = list(Km = 0.5, Vmax = 1, Ksi = 3),
+  OGMM = list(Km = 0.5, Kcat = 10, E0 = 0.1), ALTMM = list(KA = 20, Kcat = 10, E0 = 0.1),
+  CI = list(Km = 0.5, Vmax = 1, Ki = 1), UCI = list(Km = 0.5, Vmax = 1, Ki = 1),
+  NCI = list(Km = 0.5, Vmax = 1, Ki = 1), MI = list(Km = 0.5, Vmax = 1, Kic = 1, Kiu = 3),
+  TC = list(KmA = 0.5, Vmax = 1, KmB = 1, Ksat = 0.3), HILL = list(Km = 1, Vmax = 1, n = 2.5),
+  PP = list(KmA = 0.5, Vmax = 1, KmB = 1), BK = list(KD = 1), BKH = list(KD = 1, n = 2.5),
+  QBK = list(KD = 1)
+)
+z_examples <- list(I = c(0, 1, 2, 4), B = c(0.5, 1, 2, 4), R = c(0.1, 1, 4))
+plot_names <- setNames(names(PLOT_TRANSFORMATION_OPTIONS), PLOT_TRANSFORMATION_OPTIONS)
+method_names <- setNames(names(FITTING_METHODS_OPTIONS), FITTING_METHODS_OPTIONS)
+```
+
+```{r, results = "asis"}
+# OGMM and ALTMM, the Advanced Mode forms of Michaelis-Menten, go last
+model_order <- unlist(MODEL_OPTIONS_GROUPED, use.names = FALSE)
+model_order <- c(setdiff(model_order, c("OGMM", "ALTMM")), "OGMM", "ALTMM")
+for (m in model_order) {
+  vars <- MODEL_VARIABLES[[m]]
+  cat("\n\n## ", PLOT_TITLES[[m]], " (", m, ") {#", tolower(m), "}\n\n", sep = "")
+  cat(notes[[m]], "\n\n", sep = "")
+  equation <- sub("^\\\\Large\\{(.*)\\}$", "\\1", MODEL_FORMULAE_DISPLAY[[m]])
+  cat("$$", equation, "$$\n\n", sep = "")
+  cat("**Data columns:** ", paste0("`", vars, "`", collapse = ", "), "\n\n", sep = "")
+  cat("| Parameter | Meaning |\n|---|---|\n")
+  for (p in MODEL_PARAMETERS[[m]]) cat("| `", p, "` | ", param_meaning(m, p), " |\n", sep = "")
+  plots <- setdiff(names(PLOT_TRANSFORMATIONS), BLOCKED_TRANSFORMATIONS[[m]])
+  methods <- names(FITTING_METHODS)[vapply(FITTING_METHODS, function(x) m %in% x, logical(1))]
+  cat("\n**Plots:** ", paste(sub(" \\(.*", "", plot_names[plots]), collapse = ", "), ". ", sep = "")
+  cat("**Fitting methods:** ", paste(sub(" \\(.*", "", method_names[methods]), collapse = ", "), ".\n\n", sep = "")
+  z <- if (length(vars) > 2) z_examples[[vars[3]]] else NULL
+  curve <- make_curve(m, examples[[m]], x.min = 0, x.max = 5, z.values = z)
+  print(make_plot(m, curve.df = curve, title = paste0(PLOT_TITLES[[m]], ": an example curve")))
+  cat("\n\n<small>Example parameters: ", paste(names(examples[[m]]), unlist(examples[[m]]), sep = " = ", collapse = ", "),
+      if (!is.null(z)) paste0("; ", vars[3], " = ", paste(z, collapse = ", ")), ".</small>\n\n", sep = "")
+}
+```
+
+## Using the models
+
+- In R, pass the model's code (e.g. `"MI"`) to `simulate_data()`, `make_curve()`, `fit_model()` and the plotting functions. `MODEL_PARAMETERS` and `MODEL_VARIABLES` list each model's parameters and columns: see [Get started](../enzKinet2.html).
+- In EKA2, choose the model from the menu at the top left of the Modelling tab: see the [user guide](../eka2/user-guide.html).
+- [Fitting and confidence intervals](fitting.html) explains how the parameters are estimated.
+
+## Reference
+
+Cornish-Bowden A (2012). *Fundamentals of Enzyme Kinetics*, 4th edition. Weinheim: Wiley-VCH. ISBN 978-3-527-33074-4.

@@ -1,0 +1,65 @@
+---
+title: "Glossary"
+description: "Symbols and terms used in EKA2 and enzKinet2."
+---
+
+## Variables
+
+| Symbol | Name in EKA2 and enzKinet2 | Meaning |
+|---|---|---|
+| A | `A` | Substrate concentration (substrate A in two-substrate models). |
+| B | `B` | Concentration of the second substrate (TC, PP). |
+| I | `I` | Inhibitor concentration (CI, UCI, NCI, MI). |
+| v, V | `V` | Initial rate of the reaction. |
+| P | `P` | Concentration of the binding partner being varied, usually in excess (binding models). |
+| R | `R` | Total concentration of the limiting binding partner, the one whose fraction bound is measured (QBK). |
+| FB | `FB` | Fraction bound: the fraction of the limiting partner that is bound. |
+
+## Parameters
+
+| Symbol | Name in EKA2 and enzKinet2 | Meaning |
+|---|---|---|
+| V, V<sub>max</sub> | `Vmax` | Limiting rate, often called the maximum velocity: the rate approached as the substrate concentration grows. Cornish-Bowden (2012) and the IUBMB prefer "limiting rate", because it is approached but never reached. |
+| K<sub>m</sub> | `Km` | Michaelis constant: the substrate concentration at which the rate is half of Vmax. |
+| K<sub>0.5</sub> | `Km` in the Hill model | Half-saturation constant: the concentration at which the rate is half of Vmax, in models that don't follow Michaelis-Menten kinetics, such as the Hill model. |
+| k<sub>cat</sub> | `Kcat` | Catalytic constant, also called the turnover number: the number of catalytic cycles per enzyme molecule per unit time. Vmax = kcat × e0. |
+| e<sub>0</sub> | `E0` | Total enzyme concentration. |
+| k<sub>A</sub> | `KA` | Specificity constant, kcat/Km: the second-order rate constant for the reaction at low substrate concentration. |
+| K<sub>si</sub> | `Ksi` | Substrate inhibition constant. |
+| K<sub>i</sub> | `Ki` | Inhibition constant. |
+| K<sub>ic</sub> | `Kic` | Competitive inhibition constant. |
+| K<sub>iu</sub> | `Kiu` | Uncompetitive inhibition constant. |
+| K<sub>mA</sub>, K<sub>mB</sub> | `KmA`, `KmB` | Michaelis constants for substrates A and B, each when the other substrate is saturating. |
+| K<sub>iA</sub> | `Ksat` | In the ternary-complex model, the dissociation constant of the enzyme-substrate complex EA. |
+| h, n | `n` (the "Hill Coefficient" slider in EKA2) | Hill coefficient: a measure of cooperativity. 1 means none, above 1 positive cooperativity, below 1 negative. |
+| K<sub>D</sub> | `KD` | Dissociation constant. When P is in large excess, it's the concentration of P at which half of the limiting partner is bound. In the quadratic model (QBK), with P as a total concentration, half is bound at P = KD + R/2. In the Hill binding model, KD is an apparent (half-saturation) constant. |
+
+## Terms
+
+**Initial rate.** The rate at the start of a reaction, before substrate depletion, product build-up or enzyme inactivation change it. EKA2 and enzKinet2 fit initial rates measured at different concentrations, not progress curves.
+
+**Michaelis-Menten kinetics.** A rate that follows v = Vmax·a / (Km + a): proportional to a at low concentrations and approaching Vmax at high ones.
+
+**Cooperativity.** When binding at one site of a multi-site enzyme or protein changes the affinity of the others. Positive cooperativity gives a sigmoidal rather than hyperbolic curve.
+
+**Ternary complex.** A complex of the enzyme with both substrates, EAB, formed in two-substrate reactions that don't follow a ping-pong mechanism.
+
+**Ping-pong mechanism.** A two-substrate mechanism in which the enzyme releases the first product, leaving the enzyme in a modified (substituted) form, before binding the second substrate. Also called a substituted-enzyme mechanism.
+
+**Ligand depletion.** When binding uses up a significant fraction of the partner being added, so its free concentration is noticeably lower than its total. The quadratic binding model (QBK) allows for it.
+
+**Residual.** An observed value minus the value the model predicts.
+
+**Nonlinear least squares (NLS).** Fitting by finding the parameter values that minimise the sum of squared residuals, by iterating from starting values.
+
+**Confidence interval.** A range of plausible values for a parameter. See [Fitting and confidence intervals](fitting.html#confidence-intervals).
+
+**Parameter uncertainty envelope.** The shaded area around a fitted curve, between the curves with the parameters at the ends of their confidence intervals. It isn't a confidence band for the curve.
+
+**AIC, BIC.** Akaike and Bayesian information criteria, which compare models fitted to the same data. Lower is better.
+
+**Linearised (transformed) plot.** A plot whose axes are chosen so that Michaelis-Menten data falls on a straight line: Lineweaver-Burk, Hanes and Eadie-Hofstee. See [Plot types](plots.html).
+
+## Reference
+
+Cornish-Bowden A (2012). *Fundamentals of Enzyme Kinetics*, 4th edition. Weinheim: Wiley-VCH. ISBN 978-3-527-33074-4.

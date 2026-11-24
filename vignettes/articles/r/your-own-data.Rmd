@@ -1,0 +1,154 @@
+---
+title: "Using your own data"
+description: "Get your measurements into the shape enzKinet2 needs: column names, units, replicates, several inhibitor levels and missing values."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+enzKinet2's functions take data as a data frame with one row per measurement and one column per model variable. This page shows how to get your own measurements into that shape.
+
+```{r}
+library(enzKinet2)
+```
+
+## What enzKinet2 fits
+
+The enzyme models describe initial rates: the rate of reaction at the start, before substrate is used up or product builds up. If you measured progress curves (product against time), work out the initial rate of each reaction first, for example from the slope of the early, straight part of the curve, then fit the rates. The binding models describe the fraction of a partner that is bound at equilibrium.
+
+## The columns each model needs
+
+Each model's variables are named by short column names. Your data frame needs exactly these names; other columns are ignored:
+
+```{r, echo = FALSE}
+vars <- MODEL_VARIABLES[VALID_MODELS]
+knitr::kable(data.frame(
+  Code = VALID_MODELS,
+  Model = unlist(PLOT_TITLES[VALID_MODELS]),
+  `Independent variable` = vapply(vars, `[`, "", 1),
+  `Dependent variable` = vapply(vars, `[`, "", 2),
+  `Extra variable` = vapply(vars, function(v) if (length(v) > 2) v[3] else "", ""),
+  check.names = FALSE), row.names = FALSE)
+```
+
+- `A`: substrate concentration (substrate A for the two-substrate models). `V`: the rate.
+- `I`: inhibitor concentration. `B`: concentration of the second substrate.
+- `P`: concentration of the binding partner in excess. `FB`: fraction bound, from 0 to 1. `R`: total concentration of the limiting partner, which must be greater than 0.
+
+`MODEL_VARIABLES[["CI"]]` gives the same list in code.
+
+## Reading a CSV file
+
+enzKinet2 comes with an example file of Michaelis-Menten rates. Like most real data, its columns have their own names:
+
+```{r}
+path <- system.file("extdata", "michaelis-menten.csv", package = "enzKinet2")
+raw <- read.csv(path)
+head(raw)
+```
+
+Make a data frame with the model's column names. Here the substrate concentration becomes `A` and the rate becomes `V`:
+
+```{r}
+data <- data.frame(A = raw$substrate_mM, V = raw$rate_uM_min)
+```
+
+Now it works with every function:
+
+```{r}
+fit <- fit_model("MM", data, start.params = list(Km = 1, Vmax = 10), get.conf.int = TRUE)
+fit$fitted.params
+make_plot("MM", data.df = data, curve.df = make_curve("MM", fit$fitted.params, x.min = 0, x.max = 8),
+          x.units = "mM", y.units = "µM/min")
+```
+
+For your own file, give `read.csv()` its path instead:
+
+```{r, eval = FALSE}
+raw <- read.csv("my-rates.csv")
+```
+
+[Michaelis-Menten from a CSV](example-michaelis-menten.html) takes this example further.
+
+## Reading an Excel file
+
+Use the readxl package, which you may need to install first:
+
+```{r, eval = FALSE}
+# install.packages("readxl")
+raw <- readxl::read_excel("my-rates.xlsx", sheet = 1)
+data <- data.frame(A = raw$substrate_mM, V = raw$rate_uM_min)
+```
+
+`read_excel()` returns a tibble. Building a plain data frame from its columns, as above, avoids any surprises.
+
+## Units
+
+enzKinet2 doesn't know about units: parameters come out in the units of your data. With substrate in mM and rates in µM/min, Km is in mM and Vmax in µM/min. An inhibition constant is in the units of the inhibitor concentration, and a dissociation constant in the units of `P`.
+
+Starting values must be in the same units too. Data in molar units, with concentrations like 0.0000005 M, fits fine from starting values on that scale, but starting values like 1 would fail. Units that keep the numbers moderate (0.5 µM rather than 0.0000005 M) make starting values easier to choose and results easier to read. `x.units` and `y.units` in the plotting functions only label the axes; they don't convert anything.
+
+## Replicates
+
+Keep replicates as separate rows with the same concentration, rather than averaging them, so the fit sees every measurement:
+
+```{r}
+head(data[order(data$A), ], 6)
+```
+
+The example file has three replicates at each concentration.
+
+## Several inhibitor or substrate levels
+
+For a model with an extra variable, put each measurement's level of it in its own column. The second example file has rates at four inhibitor concentrations:
+
+```{r}
+raw <- read.csv(system.file("extdata", "inhibition.csv", package = "enzKinet2"))
+head(raw)
+inhibition <- data.frame(A = raw$substrate_mM, I = raw$inhibitor_uM, V = raw$rate_uM_min)
+table(inhibition$I)
+```
+
+Include the measurements without inhibitor (`I = 0`): they pin down Km and Vmax. You need at least two different values of the extra variable, and in practice several. With the inhibitor in µM, the inhibition constants come out in µM:
+
+```{r}
+fit <- fit_model("MI", inhibition, start.params = list(Km = 1, Vmax = 10, Kic = 10, Kiu = 10),
+                 get.conf.int = TRUE)
+round(unlist(fit$fitted.params), 2)
+make_plot("MI", data.df = inhibition,
+          curve.df = make_curve("MI", fit$fitted.params, x.min = 0, x.max = 8,
+                                z.values = unique(inhibition$I)),
+          x.units = "mM", y.units = "µM/min", legend.label = "Inhibitor (µM)")
+```
+
+Pass the same levels to `make_curve()` as `z.values`, so there's one curve per level. [Telling inhibition types apart](example-inhibition.html) compares the inhibition models on this data.
+
+## Missing values
+
+`fit_model()` refuses data with `NA` in the model's columns. Remove those rows first:
+
+```{r}
+with_gap <- data
+with_gap$V[3] <- NA
+complete <- with_gap[complete.cases(with_gap[, c("A", "V")]), ]
+nrow(with_gap)
+nrow(complete)
+```
+
+`NA` in other columns, such as notes, doesn't matter.
+
+## What fit_model() checks
+
+Before fitting, `fit_model()` checks that:
+
+- every column the model needs is present and numeric, with no `NA`;
+- there are more data points than free parameters (at least one more);
+- a model with an extra variable has at least two different values of it;
+- for `"QBK"`, every `R` value is greater than 0.
+
+It doesn't check that concentrations and rates are 0 or more, so check your data for typing errors yourself. [Troubleshooting](troubleshooting.html) explains each error message.
+
+## Data from EKA2
+
+EKA2's "Download Data" button saves the data you're working with as a CSV file with the model's column names (`A`, `V` and so on), so it reads straight into R with `read.csv()`. See [Reproducing an EKA2 analysis in R](reproducing-eka2.html).

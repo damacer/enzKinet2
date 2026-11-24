@@ -1,0 +1,113 @@
+---
+title: "Get started with enzKinet2"
+description: "Install enzKinet2, then simulate, fit and plot a Michaelis-Menten experiment."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+enzKinet2 simulates, fits and plots models of enzyme and binding kinetics. This page walks through a whole analysis with the Michaelis-Menten model: draw the model's curve, simulate an experiment, fit the model, and check the fit. The other models work the same way.
+
+## Install
+
+enzKinet2 isn't on CRAN. Install it from GitHub, then load it:
+
+```r
+# install.packages("remotes")
+remotes::install_github("damacer/enzKinet2")
+```
+
+```{r}
+library(enzKinet2)
+```
+
+## Models are named by short codes
+
+Every function takes a model code as its first argument, such as `"MM"` for Michaelis-Menten or `"CI"` for competitive inhibition. The [model registry](../reference/model_registry.html) lists each model's parameters and variables:
+
+```{r}
+VALID_MODELS
+MODEL_PARAMETERS[["MM"]]
+MODEL_VARIABLES[["MM"]]
+```
+
+Michaelis-Menten has two parameters, `Km` and `Vmax`, and two variables: the substrate concentration `A` and the rate `V`. Data for this model is a data frame with columns `A` and `V`. The [model gallery](concepts/models.html) has every model's equation.
+
+## Draw a curve
+
+`make_curve()` computes a model's curve from parameter values, and `make_plot()` draws it. Here Km is 0.8 mM and Vmax is 12 µM/min:
+
+```{r}
+params <- list(Km = 0.8, Vmax = 12)
+curve <- make_curve("MM", params, x.min = 0, x.max = 6)
+make_plot("MM", curve.df = curve, x.units = "mM", y.units = "µM/min")
+```
+
+## Simulate an experiment
+
+`simulate_data()` picks substrate concentrations, computes the rate at each, and adds random noise. This simulates 8 concentrations from 0.1 to 6 mM in duplicate, with noise of 5% of each rate:
+
+```{r}
+set.seed(42)
+data <- simulate_data("MM", params, x.min = 0.1, x.max = 6,
+                      n.samples = 8, n.replicates = 2, noise.level = 0.05)
+head(data)
+```
+
+`set.seed()` makes the noise reproducible. Your own data works the same way, as long as it has the model's columns: see [Using your own data](r/your-own-data.html).
+
+## Fit the model
+
+`fit_model()` estimates the parameters by nonlinear least squares. It needs starting values, which don't have to be accurate, just in the right region:
+
+```{r}
+fit <- fit_model("MM", data, start.params = list(Km = 1, Vmax = 10),
+                 get.conf.int = TRUE, get.stats = TRUE)
+fit$fitted.params
+```
+
+The estimates are close to the true values (Km = 0.8, Vmax = 12). `Km.lb` and `Km.ub` are the lower and upper bounds of the 95% confidence interval for Km, and likewise for Vmax. `fit$statistics` holds the standard errors and fit statistics:
+
+```{r}
+str(fit$statistics)
+```
+
+If a fit fails, `fit$fitted.params` is `NULL` and `fit$error` says why. [Fitting models](r/fitting-models.html) covers this, and the other options.
+
+## Plot the fit
+
+Pass the fitted parameters to `make_curve()`. With `conf.int = TRUE` it also computes a parameter uncertainty envelope from the confidence intervals, which `make_plot()` shades:
+
+```{r}
+fitted_curve <- make_curve("MM", fit$fitted.params, x.min = 0, x.max = 6, conf.int = TRUE)
+make_plot("MM", data.df = data, curve.df = fitted_curve, conf.int = TRUE,
+          x.units = "mM", y.units = "µM/min")
+```
+
+## Check the residuals
+
+The residuals are the data minus the fitted curve. Residuals from a good fit scatter around zero with no pattern:
+
+```{r}
+make_residual_plot("MM", fit$fitted.params, data, x.units = "mM", y.units = "µM/min")
+```
+
+## Try other plots
+
+Linearised plots, such as the Lineweaver-Burk plot, are one `plot.transformation` away. The curve is transformed with the data, so you still see the fitted model:
+
+```{r}
+make_plot("MM", data.df = data, curve.df = make_curve("MM", fit$fitted.params, x.min = 0.1, x.max = 6),
+          plot.transformation = "lineweaver", x.units = "mM", y.units = "µM/min")
+```
+
+Every plot is a ggplot object, so you can change it further with ggplot2.
+
+## Next steps
+
+- [Simulating data](r/simulating-data.html), [Fitting models](r/fitting-models.html) and [Plotting](r/plotting.html) cover each step in depth.
+- [Using your own data](r/your-own-data.html) shows how to read and prepare your measurements.
+- The worked examples go further, from [telling inhibition types apart](r/example-inhibition.html) to [designing an experiment](r/example-experimental-design.html).
+- The [function reference](../reference/index.html) documents every argument.
+- [EKA2](https://eka.nz) does all of this in your browser, without code.

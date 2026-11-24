@@ -1,0 +1,198 @@
+---
+title: "Plotting"
+description: "Draw data, curves and residuals with make_plot() and make_residual_plot(), with linearising transformations and your own styling."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+`make_plot()` draws data points and model curves, with or without a linearising transformation. `make_residual_plot()` draws residuals, and `update_plot_curve()` swaps the curve in an existing plot. All three return ggplot objects, so you can print them, save them, or change them further with ggplot2. [Plot types](../concepts/plots.html) explains what each transformation shows.
+
+```{r}
+library(enzKinet2)
+
+set.seed(42)
+data <- simulate_data("MM", list(Km = 0.8, Vmax = 12), x.min = 0.1, x.max = 6,
+                      n.samples = 8, n.replicates = 2, noise.level = 0.05)
+fit <- fit_model("MM", data, start.params = list(Km = 1, Vmax = 10), get.conf.int = TRUE)
+curve <- make_curve("MM", fit$fitted.params, x.min = 0.1, x.max = 6, conf.int = TRUE)
+```
+
+## Data, curves and the true curve
+
+`data.df` is drawn as points, `curve.df` as lines, and `extra.curve` as a black line on top. All three are optional, but you need at least one of them to see anything:
+
+```{r}
+true_curve <- make_curve("MM", list(Km = 0.8, Vmax = 12), x.min = 0.1, x.max = 6)
+make_plot("MM", data.df = data, curve.df = curve, extra.curve = true_curve,
+          x.units = "mM", y.units = "µM/min")
+```
+
+Here the coloured line is the fit and the black line is the curve the data was simulated from. EKA2 uses `extra.curve` for its "true curve" option.
+
+## The envelope
+
+With `conf.int = TRUE`, `make_plot()` shades the parameter uncertainty envelope between the lower and upper curves. The curve must come from `make_curve(..., conf.int = TRUE)`, which needs the confidence bounds that `fit_model()` returns:
+
+```{r}
+make_plot("MM", data.df = data, curve.df = curve, conf.int = TRUE,
+          x.units = "mM", y.units = "µM/min")
+```
+
+The envelope shows how far the curve moves when each parameter is at the edge of its confidence interval. It is not a confidence band for the curve: see [Fitting and confidence intervals](../concepts/fitting.html).
+
+## Transformations
+
+`plot.transformation` redraws the same data and curve on different axes. The curve is transformed with the data, so you always see the fitted model, never a straight line fitted to the transformed points.
+
+```{r, fig.height = 3.6}
+for (transformation in c("log10", "lineweaver", "hanes", "eadie")) {
+  print(make_plot("MM", data.df = data, curve.df = curve, conf.int = TRUE,
+                  plot.transformation = transformation))
+}
+```
+
+- `"log10"`: v against log10(a).
+- `"lineweaver"`: the Lineweaver-Burk plot, 1/v against 1/a. Each curve is extended to the horizontal axis (for Michaelis-Menten it crosses at −1/Km), and a dotted line marks 1/a = 0.
+- `"hanes"`: the Hanes plot, a/v against a.
+- `"eadie"`: the Eadie-Hofstee plot, v against v/a. The envelope isn't drawn on this plot, even with `conf.int = TRUE`: v is on both axes, so the envelope's curves move sideways as well as up and down, and can't be shaded as a band.
+
+### The direct linear plot
+
+`"direct"` draws the direct linear plot, for Michaelis-Menten only. Each data point (a, v) becomes a line through (−a, 0) and (0, v), in axes of Km and Vmax. The lines cross near the best estimates:
+
+```{r}
+make_plot("MM", data.df = data, plot.transformation = "direct")
+```
+
+It needs `data.df`, and it doesn't draw curves (it warns if you pass one). Points with a concentration of 0 have no line.
+
+### Points that can't be transformed
+
+A transformation can turn a point into an infinite value, such as 1/a at a = 0. Such points are dropped with a warning:
+
+```{r}
+curve_from_zero <- make_curve("MM", fit$fitted.params, x.min = 0, x.max = 6)
+p <- make_plot("MM", curve.df = curve_from_zero, plot.transformation = "lineweaver")
+```
+
+To avoid it, start curves for the log10, Lineweaver-Burk, Hanes and Eadie-Hofstee plots just above 0, as above.
+
+### Which models allow which plots
+
+Not every transformation makes sense for every model. This table comes from `BLOCKED_TRANSFORMATIONS`:
+
+```{r, echo = FALSE}
+blocked <- vapply(VALID_MODELS, function(m) {
+  b <- BLOCKED_TRANSFORMATIONS[[m]]
+  if (length(b) == 0) "none" else paste(b, collapse = ", ")
+}, character(1))
+knitr::kable(data.frame(Code = VALID_MODELS, Model = unlist(PLOT_TITLES[VALID_MODELS]),
+                        `Not allowed` = blocked, check.names = FALSE), row.names = FALSE)
+```
+
+Only Michaelis-Menten allows the direct linear plot. Substrate inhibition, Hill and the binding models only allow the standard and log10 plots. Asking for a blocked transformation is an error.
+
+## Axis units
+
+`x.units` and `y.units` are the units of the raw variables. The axis labels show the units of what is plotted, so a Lineweaver-Burk plot gets reciprocal units:
+
+```{r}
+make_plot("MM", data.df = data, curve.df = curve, plot.transformation = "lineweaver",
+          x.units = "mM", y.units = "µM/min")
+```
+
+The Hanes y-axis (a/v) and the Eadie-Hofstee x-axis (v/a) get combined units in the same way. The log10 x-axis has no units.
+
+## Labels, title, legend and style
+
+The other arguments change the text and look:
+
+```{r}
+set.seed(3)
+inhibition <- simulate_data("NCI", list(Km = 0.8, Vmax = 12, Ki = 2), x.min = 0.2, x.max = 6,
+                            n.samples = 6, z.values = c(0, 1, 3))
+make_plot("NCI", data.df = inhibition,
+          curve.df = make_curve("NCI", list(Km = 0.8, Vmax = 12, Ki = 2), x.min = 0, x.max = 6,
+                                z.values = c(0, 1, 3)),
+          x.label = "Glucose", y.label = "Rate", x.units = "mM", y.units = "µM/min",
+          title = "Non-competitive inhibition", legend.label = "Inhibitor (mM)",
+          palette = "Dark2", show.grid = TRUE, y.range = c(0, 12))
+```
+
+- `x.label`, `y.label` and `title` replace the defaults. Units are still added to the labels.
+- Models with an extra variable (`I`, `B` or `R`) get one colour per value, and a legend. `legend.label` replaces the legend's default title, and `hide.legend = TRUE` hides it. Models without an extra variable are drawn in one colour with no legend.
+- `palette` is a ColorBrewer palette from `PLOT_COLOUR_PALETTES` (default `"Set1"`). If it has fewer colours than there are values to colour, ggplot2's default colours are used instead.
+- `show.grid = TRUE` adds grid lines.
+- `y.range` fixes the y-axis limits. Points and curves outside them aren't drawn.
+
+### Binding models
+
+For the binding models the dependent variable is a fraction bound, so the y-axis shows 0 to 1 unless you set `y.range`:
+
+```{r}
+make_plot("BK", curve.df = make_curve("BK", list(KD = 2), x.min = 0, x.max = 20),
+          x.units = "µM")
+```
+
+## Customising and saving
+
+Since the result is a ggplot object, you can add any ggplot2 layer, scale or theme to it:
+
+```{r}
+make_plot("MM", data.df = data, curve.df = curve, conf.int = TRUE,
+          x.units = "mM", y.units = "µM/min") +
+  ggplot2::theme_bw() +
+  ggplot2::geom_hline(yintercept = 12, linetype = "dashed")
+```
+
+Save a plot with `ggplot2::ggsave()`:
+
+```{r}
+p <- make_plot("MM", data.df = data, curve.df = curve, x.units = "mM", y.units = "µM/min")
+file <- tempfile(fileext = ".png")
+ggplot2::ggsave(file, p, width = 15, height = 10, units = "cm", dpi = 300)
+```
+
+Use a `.pdf` or `.svg` file name for a vector image.
+
+## Replacing a plot's curve
+
+`update_plot_curve()` removes the curves and envelope from a plot made by `make_plot()` and draws new ones, keeping the data points. Pass the same model, transformation and palette that the plot was made with:
+
+```{r}
+p <- make_plot("MM", data.df = data,
+               curve.df = make_curve("MM", list(Km = 1, Vmax = 10), x.min = 0.1, x.max = 6))
+update_plot_curve("MM", p, curve.df = curve, conf.int = TRUE)
+```
+
+This is useful when you redraw a plot many times, for example as parameter values change.
+
+## Residual plots
+
+`make_residual_plot()` plots the data minus the model's prediction at each point, against the concentration. It takes the parameter values directly, not a curve:
+
+```{r}
+make_residual_plot("MM", fit$fitted.params, data, x.units = "mM", y.units = "µM/min")
+```
+
+Residuals from a good fit scatter evenly around zero. A pattern, such as residuals mostly on one side of zero or following a curve, means the model or its parameter values don't describe the data:
+
+```{r}
+make_residual_plot("MM", list(Km = 1.5, Vmax = 13), data, x.units = "mM", y.units = "µM/min",
+                   title = "Residuals from parameter values that don't fit")
+```
+
+Its options mostly match `make_plot()`'s:
+
+- By default the y-axis is centred on zero and just covers the largest residual. `y.range` sets it instead.
+- The x-axis starts at 0 and covers all the data. `x.max` extends it further, for example to line it up with a plot of the curve.
+- `zero.line = FALSE` removes the dotted line at zero.
+- `x.label`, `y.label`, `x.units`, `y.units`, `title`, `legend.label`, `palette`, `hide.legend` and `show.grid` work as in `make_plot()`. Here `y.units` are the residuals' units, the same as the dependent variable's.
+
+## See also
+
+- [Plot types](../concepts/plots.html) for what each transformation is for.
+- [Fitting models](fitting-models.html) for the fits being plotted.
+- `make_plot()`, `make_residual_plot()` and `update_plot_curve()` in the function reference.

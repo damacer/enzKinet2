@@ -1,0 +1,114 @@
+---
+title: "EKA2 FAQ"
+description: "Answers to common questions and problems with EKA2."
+---
+
+## Using EKA2
+
+### Is EKA2 free? Do I need an account?
+
+Yes, it's free, and there's no account or installation. Open [eka.nz](https://eka.nz) in a browser.
+
+### Is my data saved or shared?
+
+No. Each visitor gets their own private session, and your data and results exist only while it's open. Nothing is kept after the session ends, so download your results and plots before you leave. See [Using EKA2](user-guide.html#using-eka2).
+
+### Can I use EKA2 on a phone or tablet?
+
+It works, but it's laid out for a wide screen, so everything is small. Also some functionalities may have more friction because EKA is not as optimised for mobile usage. A laptop or desktop computer is much better.
+
+### What does "The server does not have enough capacity to start this app" mean?
+
+EKA2 runs a limited number of sessions at once, and it's full. Try again in a few minutes. If a whole class will use EKA2 at the same time, let us know in advance (see [Teaching with EKA2](teaching.html#running-a-class)).
+
+### The page has greyed out or stopped responding
+
+Your session may have ended: sessions close after 45 minutes without activity, and after 4 hours at most. Reload the page to start a new session. Anything you hadn't downloaded is lost.
+
+### What is Advanced Mode?
+
+A switch in **Options** (the cog at the top right) that adds more models, plot types, noise settings, parameter locking and plot styling. See [Advanced Mode](user-guide.html#advanced-mode).
+
+## Data
+
+### My file won't upload, or gives an error
+
+Check that:
+
+- It's a CSV, TSV or Excel (.xlsx, .xls) file, or a TXT file separated by tabs. From Excel, EKA2 reads the first sheet.
+- It has one row per measurement and a column for each of the model's variables.
+- Every column contains only numbers, apart from the column names. Remove columns of sample names or notes. Units go in the column names, not the cells.
+- The model's columns have no empty cells.
+- Concentrations aren't negative, rates aren't negative, and fractions bound are between 0 and 1. For Quadratic Binding Kinetics, R is above 0.
+- There are at least two different rows.
+
+The message beneath the upload box says which check failed. Compare your file with the [sample data](../../data/michaelis-menten.csv).
+
+### EKA2 picked the wrong columns
+
+In the Match Columns to Variables dialog, choose the right column for each variable before clicking **Okay**. EKA2 guesses from the column names, so names like "substrate" and "rate" make its guesses more reliable.
+
+### Some of my replicate rows have disappeared
+
+On upload, rows with the same values in all the matched columns are kept only once. Replicates that differ in any of those values are all kept.
+
+### Can I use progress curves (product against time)?
+
+Not directly. EKA2 fits initial rates: work out the initial rate of each reaction first, and upload those rates against the concentrations.
+
+## Fitting
+
+### The fit failed
+
+Nonlinear least squares starts from the current slider values, and can fail when they're far from the answer. In order of what usually helps:
+
+1. Move the sliders until the curve passes roughly near the data, then fit again.
+2. If the data is simulated with no noise, tick **Add minor noise**.
+3. Check that you have enough data: at least one more distinct row than there are unlocked parameters, and for models with an extra variable (I, B or R), at least two of its values.
+4. Try a simpler model. A model with more parameters than the data can determine won't fit.
+
+For Original and Alternative Michaelis-Menten, lock E0 at your enzyme concentration (Advanced Mode). Rates alone can't separate Kcat from E0.
+
+### The confidence intervals couldn't be calculated
+
+Profile likelihood intervals sometimes can't be found, usually because the data doesn't pin a parameter down well. When this happens, EKA2 doesn't record the fit. More data, especially over a wider range of concentrations, is the real fix. In Advanced Mode, you can switch the **Confidence Interval Method** to **Asymptotic**, which almost always gives an answer but can be misleading for nonlinear models. See [Confidence intervals](../concepts/fitting.html#confidence-intervals).
+
+### Why is the shaded envelope so wide, or why has it gone?
+
+The envelope shows how far the curve moves when each parameter is at the edge of its confidence interval, so it's wide when the parameters are uncertain. It's only shown while the sliders hold the fitted values, so moving a slider hides it. It also isn't drawn on the Eadie-Hofstee or direct linear plots, and Advanced Mode can hide it. See [The parameter uncertainty envelope](../concepts/fitting.html#the-parameter-uncertainty-envelope).
+
+### Which model fits my data best?
+
+Fit each candidate model to the same data, then compare their AIC and BIC in the Results tab (**Extra Stats Columns**): lower is better. Check the residual plots too. See [Comparing models](../concepts/fitting.html#comparing-models).
+
+### Can I fit using the Lineweaver-Burk plot?
+
+The plot shown never changes the fit. Nonlinear least squares fits the untransformed data, because linearised plots distort the measurement errors. (For Michaelis-Menten, the Sum of Squares Calculation method is a weighted fit of the Lineweaver-Burk line, with weights that reduce that distortion.) The plots are for looking at the data and the model. See [Plot types](../concepts/plots.html).
+
+## Plots and results
+
+### Why can't I choose another plot?
+
+Plot types are in Advanced Mode. Some plots also don't suit some models (for example the Lineweaver-Burk plot for the Hill model). The direct linear plot is for Michaelis-Menten only, and appears in the menu once there is data. The [model gallery](../concepts/models.html) lists the plots for each model.
+
+### How do I get a plot for a paper or poster?
+
+Use the **PDF** or **SVG** buttons beside the plot: both are vector formats that scale cleanly. Set the size under **Options**, choose units under Plot Options, and in Advanced Mode add a title, axis labels and a colour palette.
+
+### Can I get the numbers behind the results?
+
+**Download Results** on the Results tab saves every fit, unrounded, as a CSV file. **Download Data** on the Data tab saves the data.
+
+## Other
+
+### How do I cite EKA2?
+
+Click the quotation-mark button at the top right for the citation in several formats, or see [the home page](../../index.html#cite).
+
+### Can I do this in R instead?
+
+Yes. EKA2 is built on [enzKinet2](../enzKinet2.html), an R package that does everything EKA2 does, with full control. [Reproducing an EKA2 analysis in R](../r/reproducing-eka2.html) shows how.
+
+### I found a bug, or have a suggestion
+
+Please email <haigvbishop@gmail.com>, saying what you did, what you expected and what happened.

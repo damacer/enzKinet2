@@ -1,0 +1,237 @@
+---
+title: "Fitting models"
+description: "Fit models with fit_model(): starting values, confidence intervals, statistics, locked parameters, failures and model comparison."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+`fit_model()` estimates a model's parameters from data. This page covers its options and what to do when a fit goes wrong. [Fitting and confidence intervals](../concepts/fitting.html) explains the ideas behind them.
+
+```{r}
+library(enzKinet2)
+
+set.seed(42)
+data <- simulate_data("MM", list(Km = 0.8, Vmax = 12), x.min = 0.1, x.max = 6,
+                      n.samples = 8, n.replicates = 2, noise.level = 0.05)
+```
+
+The data is simulated with Km = 0.8 mM and Vmax = 12 µM/min, so you can see how close each fit gets.
+
+## Starting values
+
+The default method, nonlinear least squares (`"nls"`), searches for the best parameters by starting from values you give and improving them step by step. The starting values don't need to be accurate, but a search that starts far from the answer can fail. A quick check is to draw the curve your starting values give over the data:
+
+```{r}
+guess <- list(Km = 1, Vmax = 10)
+make_plot("MM", data.df = data, curve.df = make_curve("MM", guess, x.min = 0, x.max = 6))
+```
+
+The curve has roughly the right shape and height, so it's a good start. Two rules of thumb for Michaelis-Menten data: Vmax is a little above the highest rate, and Km is around the concentration where the rate is half of that.
+
+```{r}
+fit <- fit_model("MM", data, start.params = guess)
+fit$fitted.params
+```
+
+`start.params` must include every parameter of the model, each greater than 0.
+
+## What fit_model() returns
+
+`fit_model()` always returns a list of three elements:
+
+- `fitted.params`: the estimates and, when you ask for confidence intervals, their lower (`.lb`) and upper (`.ub`) bounds. It's `NULL` if the fit failed.
+- `statistics`: the fit statistics when you ask for them, otherwise `NULL`.
+- `error`: `NULL`, or a message saying what went wrong.
+
+```{r}
+fit <- fit_model("MM", data, start.params = guess, get.conf.int = TRUE, get.stats = TRUE)
+str(fit)
+```
+
+Pass `fit$fitted.params` to `make_curve()` to draw the fit, and to `make_residual_plot()` to check it.
+
+## Confidence intervals
+
+With `get.conf.int = TRUE`, each parameter gets a confidence interval. `conf.method` chooses how it's computed:
+
+- `"profile"` (the default): profile likelihood intervals. They follow the shape of the problem, so they can be asymmetric, which suits nonlinear models.
+- `"asymptotic"`: Wald intervals, the estimate plus or minus a multiple of its standard error. They are quicker and always symmetric, but they can be misleading for nonlinear models, and can even include impossible negative values.
+
+```{r}
+profile <- fit_model("MM", data, start.params = guess, get.conf.int = TRUE)
+asymptotic <- fit_model("MM", data, start.params = guess, get.conf.int = TRUE,
+                        conf.method = "asymptotic")
+round(rbind(profile = unlist(profile$fitted.params),
+            asymptotic = unlist(asymptotic$fitted.params)), 3)
+```
+
+The estimates are the same. The asymptotic interval for Km is symmetric about 0.781, while the profile interval reaches further above the estimate than below it.
+
+`conf.level` sets the confidence level (default 0.95). A higher level gives wider intervals:
+
+```{r}
+fit99 <- fit_model("MM", data, start.params = guess, get.conf.int = TRUE, conf.level = 0.99)
+round(unlist(fit99$fitted.params), 3)
+```
+
+### When intervals can't be computed
+
+Some data pins the parameters down poorly. Here all the concentrations are well below Km, so the data can't show where the curve levels off:
+
+```{r}
+set.seed(3)
+low <- simulate_data("MM", list(Km = 5, Vmax = 12), x.min = 0.05, x.max = 0.6,
+                     n.samples = 6, noise.level = 0.08)
+weak <- fit_model("MM", low, start.params = list(Km = 1, Vmax = 5), get.conf.int = TRUE)
+weak$fitted.params
+weak$error
+```
+
+The profile intervals failed, so `error` says so, but the estimates are still returned. Asymptotic intervals can be computed here, and their width shows how little the data says:
+
+```{r}
+fit_model("MM", low, start.params = list(Km = 1, Vmax = 5), get.conf.int = TRUE,
+          conf.method = "asymptotic")$fitted.params
+```
+
+Bounds are reported as computed, including negative ones. The real fix is better data: concentrations that reach well above Km.
+
+## Statistics
+
+With `get.stats = TRUE`, `statistics` holds:
+
+- `<parameter>.se`: each fitted parameter's standard error.
+- `R2`: 1 − var(residuals) / var(data).
+- `RMSE` and `MAE`: the root mean square and mean absolute residual, in the units of the dependent variable.
+- `AIC`, `BIC` and `Log.likelihood`: for comparing models (see below).
+- `Confidence.level` and `CI.method`, when confidence intervals were computed.
+
+```{r}
+round(unlist(fit$statistics[c("Km.se", "Vmax.se", "R2", "RMSE", "MAE", "AIC", "BIC")]), 3)
+```
+
+A high R2 doesn't show that the model is right, so the residual plot is a better check of fit.
+
+## Locked parameters
+
+`locked.params` holds parameters at their values in `start.params` instead of fitting them. Use it when you already know a value. For example, if Vmax is known to be 12:
+
+```{r}
+locked <- fit_model("MM", data, start.params = list(Km = 1, Vmax = 12), locked.params = "Vmax",
+                    get.conf.int = TRUE, get.stats = TRUE)
+round(unlist(locked$fitted.params), 3)
+names(locked$statistics)
+```
+
+A locked parameter is returned with the interval (value, value), and it has no standard error. At least one parameter must stay free.
+
+Two models need a locked parameter when fitting. In `"OGMM"` and `"ALTMM"`, Kcat (and, in ALTMM, KA) only appear multiplied by E0, so rate data alone can't separate them. Lock E0 at the enzyme concentration you used:
+
+```{r}
+set.seed(5)
+og <- simulate_data("OGMM", list(Km = 0.8, Kcat = 120, E0 = 0.1), x.min = 0.1, x.max = 6, n.samples = 8)
+tryCatch(fit_model("OGMM", og, start.params = list(Km = 1, Kcat = 100, E0 = 0.1)),
+         error = function(e) conditionMessage(e))
+fit_model("OGMM", og, start.params = list(Km = 1, Kcat = 100, E0 = 0.1),
+          locked.params = "E0")$fitted.params
+```
+
+Locking is only available with `"nls"`.
+
+## Noise-free data
+
+Nonlinear least squares can't fit data that the model passes through exactly, so it fails on noise-free simulated data:
+
+```{r}
+clean <- simulate_data("MM", list(Km = 0.8, Vmax = 12), x.min = 0.1, x.max = 6,
+                       n.samples = 8, noise.level = 0)
+fit_model("MM", clean, start.params = guess)$error
+```
+
+`add.minor.noise = TRUE` first adds tiny normal noise (standard deviation 1e-6) to the dependent variable, which is enough for the fit to work without changing the result meaningfully. It uses a fixed seed, so the same data always gives the same fit, and it leaves your own random numbers untouched:
+
+```{r}
+fit_model("MM", clean, start.params = guess, add.minor.noise = TRUE)$fitted.params
+```
+
+## Checks on the data
+
+`fit_model()` checks the data before fitting, and stops with an error if:
+
+- a column the model needs is missing, isn't numeric, or contains `NA`;
+- there are fewer data points than the number of free parameters plus one (set `override.data.point.check = TRUE` to fit anyway);
+- a model with an extra variable has only one value of it, because then the extra parameter can't be estimated:
+
+```{r}
+set.seed(6)
+one_level <- simulate_data("CI", list(Km = 0.8, Vmax = 12, Ki = 2), x.min = 0.1, x.max = 6,
+                           n.samples = 6, z.values = 1)
+tryCatch(fit_model("CI", one_level, start.params = list(Km = 1, Vmax = 10, Ki = 1)),
+         error = function(e) conditionMessage(e))
+```
+
+[Troubleshooting](troubleshooting.html) lists every message and what to do about it.
+
+## When a fit fails
+
+Problems with the arguments are errors. A fit that runs but fails is not: you get `fitted.params = NULL` and a message in `error`, and the underlying reason is printed as a message. Here the starting values are far off:
+
+```{r}
+bad <- fit_model("MM", data, start.params = list(Km = 1000, Vmax = 0.001))
+bad$fitted.params
+bad$error
+```
+
+So in a script, check the result before using it:
+
+```{r}
+if (is.null(bad$fitted.params)) {
+  # Try again from better starting values
+  bad <- fit_model("MM", data, start.params = guess)
+}
+bad$fitted.params
+```
+
+`error` can also be set when the fit itself worked and only the confidence intervals failed, as in the example above. Then `fitted.params` holds the estimates but no bounds. A fit is also treated as failed if any estimate is 0 or less, or above 1e19.
+
+## Michaelis-Menten-only methods
+
+For `"MM"`, `fit.method` offers three more methods, which need no starting values:
+
+- `"ss.calc"`: a closed-form least squares fit of the Lineweaver-Burk line (1/v against 1/a), with each point weighted by v². This weighting suits errors that are a constant percentage of the rate.
+- `"nonparametric"`: for every pair of points with different concentrations, the Km and Vmax that a curve through both would have, then the median of each. This is the calculation behind the direct linear plot.
+- `"recursive"`: weighted least squares for errors with a constant standard deviation, which is what `"nls"` assumes too. The weights depend on the fitted rates, so it starts from the measured rates and repeats until the estimates settle. It should give the same estimates as `"nls"`.
+
+```{r}
+methods <- c("nls", "ss.calc", "nonparametric", "recursive")
+estimates <- sapply(methods, function(m) {
+  start <- if (m == "nls") guess else NULL
+  unlist(fit_model("MM", data, start.params = start, fit.method = m)$fitted.params)
+})
+round(estimates, 3)
+```
+
+All four land near the true values here, and `"recursive"` matches `"nls"`. These methods don't support locked parameters, confidence intervals or statistics, and the other models can only use `"nls"`.
+
+## Comparing models
+
+To compare models fitted to the same data, use AIC or BIC: the lower value is better. Both reward a close fit but penalise extra parameters, so a more complex model only wins if it fits clearly better. Here are three candidate models for the Michaelis-Menten data:
+
+```{r}
+starts <- list(Km = 1, Vmax = 10, n = 1, Ksi = 50)
+comparison <- sapply(c("MM", "HILL", "MMSI"), function(m) {
+  f <- fit_model(m, data, start.params = starts[MODEL_PARAMETERS[[m]]], get.stats = TRUE)
+  c(AIC = f$statistics$AIC, BIC = f$statistics$BIC)
+})
+round(comparison, 2)
+```
+
+Michaelis-Menten has the lowest AIC and BIC. The Hill and substrate inhibition models each add a parameter without improving the fit enough to justify it. When the values are close, the data can't really tell the models apart, so look at the residual plots too. [Telling inhibition types apart](example-inhibition.html) works through a fuller comparison.
+
+## See also
+
+- [Fitting and confidence intervals](../concepts/fitting.html) for the ideas behind fitting.
+- [Plotting](plotting.html) for drawing fits and residuals.
+- `fit_model()` in the function reference lists every argument.

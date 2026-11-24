@@ -1,0 +1,127 @@
+---
+title: "Michaelis-Menten from a CSV"
+description: "Read initial rates from a CSV file, fit the Michaelis-Menten model, and check the fit with residuals and linearised plots."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+This example analyses a typical initial-rate experiment from start to finish: read the measurements from a CSV file, fit the Michaelis-Menten model (`"MM"`), and check the fit. It also compares three fitting methods and shows the data on the classic linearised plots.
+
+```{r}
+library(enzKinet2)
+```
+
+## Read the data
+
+The package includes an example file with rates measured at 7 substrate concentrations, in triplicate. Your own file would be read the same way, with `read.csv()` or `readxl::read_excel()`:
+
+```{r}
+path <- system.file("extdata", "michaelis-menten.csv", package = "enzKinet2")
+raw <- read.csv(path)
+head(raw)
+```
+
+enzKinet2 expects the columns to be named after the model's variables. For Michaelis-Menten these are `A` (substrate concentration) and `V` (rate):
+
+```{r}
+MODEL_VARIABLES[["MM"]]
+data <- data.frame(A = raw$substrate_mM, V = raw$rate_uM_min)
+```
+
+The concentrations are in mM and the rates in µM/min, so the fitted Km will be in mM and Vmax in µM/min. [Using your own data](your-own-data.html) has more on preparing a file.
+
+## Look at it first
+
+Plot the data before fitting, to check that it looks like a Michaelis-Menten curve and to choose starting values:
+
+```{r}
+make_plot("MM", data.df = data, x.units = "mM", y.units = "µM/min")
+```
+
+The rates are still rising slowly at 8 mM, towards about 12 µM/min, and are about half of that at 1 mM. Those make good starting values for Vmax and Km.
+
+## Fit the model
+
+```{r}
+fit <- fit_model("MM", data, start.params = list(Km = 1, Vmax = 12),
+                 get.conf.int = TRUE, get.stats = TRUE)
+fit$fitted.params
+```
+
+The example data is simulated, so the true values are known: Km = 0.8 mM and Vmax = 12 µM/min. The 95% confidence interval for Km (`Km.lb` to `Km.ub`, `r round(fit$fitted.params$Km.lb, 2)` to `r round(fit$fitted.params$Km.ub, 2)` mM) contains the true value. The interval for Vmax (`r round(fit$fitted.params$Vmax.lb, 2)` to `r round(fit$fitted.params$Vmax.ub, 2)` µM/min) only just misses it. That's expected now and then: a 95% interval misses the true value about one time in 20.
+
+The standard errors and fit statistics are in `fit$statistics`:
+
+```{r}
+fit$statistics[c("Km.se", "Vmax.se", "R2", "RMSE", "AIC")]
+```
+
+## Plot the fit
+
+Draw the fitted curve over the data, with the parameter uncertainty envelope from the confidence intervals:
+
+```{r}
+curve <- make_curve("MM", fit$fitted.params, x.min = 0, x.max = 8, conf.int = TRUE)
+make_plot("MM", data.df = data, curve.df = curve, conf.int = TRUE,
+          x.units = "mM", y.units = "µM/min")
+```
+
+The envelope shows how far the curve moves with each parameter at the edge of its confidence interval. It isn't a confidence band for the curve: [Fitting and confidence intervals](../concepts/fitting.html) explains the difference.
+
+## Check the residuals
+
+```{r}
+make_residual_plot("MM", fit$fitted.params, data, x.units = "mM", y.units = "µM/min")
+```
+
+The residuals scatter around zero with no clear trend, so the model describes the data well.
+
+The noise in this data is 5% of each rate, so it's larger at higher rates. Unweighted least squares, which `fit_model()` uses, treats every point as equally reliable. With noise like this the estimates are still sound, just not the most precise possible.
+
+## Compare fitting methods
+
+For Michaelis-Menten only, `fit_model()` has three methods besides nonlinear least squares that need no starting values:
+
+```{r}
+methods <- c("nls", "ss.calc", "nonparametric", "recursive")
+estimates <- lapply(methods, function(m) {
+    start <- if (m == "nls") list(Km = 1, Vmax = 12) else NULL
+    fit_model("MM", data, start.params = start, fit.method = m)$fitted.params
+})
+data.frame(method = methods,
+           Km = sapply(estimates, function(p) round(p$Km, 3)),
+           Vmax = sapply(estimates, function(p) round(p$Vmax, 2)))
+```
+
+All four agree closely here:
+
+- `"nls"`: unweighted nonlinear least squares.
+- `"ss.calc"`: a weighted least-squares fit of the Lineweaver-Burk line. Its weights suit noise proportional to the rate, as in this data.
+- `"nonparametric"`: the medians of the estimates from every pair of points, as in the direct linear plot.
+- `"recursive"`: the same least-squares estimates as `"nls"`, reached by repeating a weighted calculation instead of from starting values.
+
+Only `"nls"` gives confidence intervals and statistics. [Fitting models](fitting-models.html) has the details.
+
+## Linearised plots
+
+The same data and fitted curve on the Lineweaver-Burk (1/v against 1/a) and Hanes (a/v against a) plots:
+
+```{r}
+curve <- make_curve("MM", fit$fitted.params, x.min = 0.1, x.max = 8)
+make_plot("MM", data.df = data, curve.df = curve, plot.transformation = "lineweaver",
+          x.units = "mM", y.units = "µM/min")
+make_plot("MM", data.df = data, curve.df = curve, plot.transformation = "hanes",
+          x.units = "mM", y.units = "µM/min")
+```
+
+The curve starts at 0.1 mM here, because 1/a is infinite at a = 0. On the Lineweaver-Burk plot, the points at the lowest concentrations are spread out the most. Taking reciprocals magnifies their errors, which is why nonlinear least squares uses the untransformed data.
+
+The direct linear plot draws each point as a line in (Km, Vmax) space. The lines cross near the best estimates:
+
+```{r}
+make_plot("MM", data.df = data, plot.transformation = "direct")
+```
+
+[Plot types](../concepts/plots.html) explains what each plot shows and when it helps.

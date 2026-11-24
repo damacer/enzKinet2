@@ -1,0 +1,87 @@
+---
+title: "Cooperativity: the Hill model"
+description: "Fit the Hill model to sigmoidal rate data, compare it with Michaelis-Menten, and read the Hill coefficient."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+Some enzymes respond to substrate cooperatively: binding at one site makes binding at others easier, and the rate curve is sigmoidal rather than hyperbolic. The Hill model (`"HILL"`) describes curves like this empirically. This example simulates cooperative data, fits both the Hill and Michaelis-Menten (`"MM"`) models, and shows how the residuals tell them apart.
+
+```{r}
+library(enzKinet2)
+```
+
+## The Hill model
+
+```{r}
+print(MODEL_FORMULAE[["HILL"]], showEnv = FALSE)
+```
+
+The Hill model has three parameters:
+
+- `Vmax`, the limiting rate.
+- `n`, the Hill coefficient. With n = 1 the Hill model is the Michaelis-Menten equation. n greater than 1 means positive cooperativity (a sigmoidal curve), and n less than 1 negative cooperativity.
+- `Km`, the substrate concentration that gives half of Vmax. In the Hill model this is the half-saturation constant, K0.5. It is named `Km` in enzKinet2, but it isn't a Michaelis constant, because the Hill equation isn't the Michaelis-Menten equation unless n = 1.
+
+## Simulate cooperative data
+
+```{r}
+set.seed(11)
+data <- simulate_data("HILL", list(Km = 1, Vmax = 10, n = 2.5), x.min = 0.1, x.max = 4,
+                      n.samples = 12, n.replicates = 2, noise.level = 0.05)
+make_plot("HILL", data.df = data, x.units = "mM", y.units = "µM/min")
+```
+
+The rise is slow at low concentrations, then steep around 1 mM: the sigmoidal shape of cooperativity.
+
+## Fit both models
+
+```{r}
+fit_hill <- fit_model("HILL", data, start.params = list(Km = 1, Vmax = 8, n = 1),
+                      get.conf.int = TRUE, get.stats = TRUE)
+fit_mm <- fit_model("MM", data, start.params = list(Km = 1, Vmax = 8), get.stats = TRUE)
+round(unlist(fit_hill$fitted.params), 3)
+round(unlist(fit_mm$fitted.params), 3)
+c(HILL = fit_hill$statistics$AIC, MM = fit_mm$statistics$AIC)
+```
+
+Starting the Hill fit at n = 1, the Michaelis-Menten case, works here: the fit moves n to about `r round(fit_hill$fitted.params$n, 1)`, and its confidence interval excludes 1, which is evidence of cooperativity. The Hill model's AIC is far lower. The Michaelis-Menten fit makes up for the wrong shape with a larger Km and Vmax.
+
+## Compare the fits and residuals
+
+```{r}
+curve_hill <- make_curve("HILL", fit_hill$fitted.params, x.min = 0, x.max = 4)
+curve_mm <- make_curve("MM", fit_mm$fitted.params, x.min = 0, x.max = 4)
+make_plot("HILL", data.df = data, curve.df = curve_hill, extra.curve = curve_mm,
+          x.units = "mM", y.units = "µM/min",
+          title = "Hill fit (coloured) and Michaelis-Menten fit (black)")
+```
+
+```{r}
+make_residual_plot("HILL", fit_hill$fitted.params, data, x.units = "mM", y.units = "µM/min",
+                   title = "Hill residuals")
+make_residual_plot("MM", fit_mm$fitted.params, data, x.units = "mM", y.units = "µM/min",
+                   title = "Michaelis-Menten residuals")
+```
+
+The Hill residuals scatter around zero. The Michaelis-Menten residuals follow a pattern: negative at low concentrations, positive in the middle and negative again at the top. A run of residuals with the same sign like this is the usual sign of the wrong model.
+
+## Plots for the Hill model
+
+The Lineweaver-Burk, Hanes and Eadie-Hofstee plots only straighten Michaelis-Menten curves, and the direct linear plot is for Michaelis-Menten only. enzKinet2 doesn't allow them for the Hill model:
+
+```{r}
+BLOCKED_TRANSFORMATIONS[["HILL"]]
+```
+
+The log10 plot (v against log10 a) is allowed, and suits a sigmoidal curve, spreading out the low concentrations:
+
+```{r}
+curve_log <- make_curve("HILL", fit_hill$fitted.params, x.min = 0.1, x.max = 4)
+make_plot("HILL", data.df = data, curve.df = curve_log, plot.transformation = "log10",
+          x.units = "mM", y.units = "µM/min")
+```
+
+The curve starts at 0.1 mM, because log10(0) is undefined. For binding with cooperativity, the Hill Binding Kinetics model (`"BKH"`) is the equivalent: see the [model gallery](../concepts/models.html).

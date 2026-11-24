@@ -1,0 +1,185 @@
+---
+title: "Simulating data"
+description: "Choose concentrations, replicates and noise with simulate_data(), and compare simulated data with the true curve."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4.2, out.width = "100%")
+```
+
+`simulate_data()` makes synthetic data from a model. It chooses the values of the independent variable, computes the model's dependent variable at each, and adds random noise. Simulated data is useful for learning how a model behaves, for testing a fitting approach on data where you know the true answer, and for planning an experiment (see [Designing an experiment](example-experimental-design.html)).
+
+```{r}
+library(enzKinet2)
+```
+
+## The basics
+
+You give a model code, its parameter values, and the range of the primary independent variable (`A`, the substrate concentration, or `P` for the binding models):
+
+```{r}
+set.seed(1)
+data <- simulate_data("MM", params = list(Km = 0.8, Vmax = 12), x.min = 0.1, x.max = 6)
+nrow(data)
+head(data)
+```
+
+By default you get 24 evenly spaced concentrations, one replicate each, with noise whose standard deviation is 5% of each rate. The result is a data frame with one column per variable, the same shape as the data `fit_model()` and `make_plot()` take.
+
+The parameter list must include every parameter of the model (`MODEL_PARAMETERS[["MM"]]`), each greater than 0. Other elements are ignored, so you can pass the `fitted.params` from a fit straight in.
+
+## Choosing the concentrations
+
+`n.samples` sets how many distinct concentrations there are, and `space` sets how they're spaced. Here are six concentrations from 0 to 10 with each option, without noise so only the concentrations matter:
+
+```{r}
+concentrations <- function(space, ...) {
+  simulate_data("MM", list(Km = 1, Vmax = 10), x.min = 0, x.max = 10,
+                n.samples = 6, noise.level = 0, space = space, ...)$A
+}
+concentrations("linear")
+concentrations("exponential")
+concentrations("inverse.exponential")
+```
+
+- `"linear"` (the default) spaces them evenly.
+- `"exponential"` puts more of them at low concentrations. Despite its name, the spacing is quadratic: the values are `x.min + (x.max - x.min) * t^2` for `t` evenly spaced from 0 to 1.
+- `"inverse.exponential"` puts more of them at high concentrations. The values are `x.min + (x.max - x.min) * (1 - t^3)`, so they also come out in decreasing order.
+
+### Dilution series
+
+`"dilution.series"` mimics a serial dilution. It starts at `x.max` and divides by `dilution.factor` at each step:
+
+```{r}
+simulate_data("MM", list(Km = 1, Vmax = 10), x.min = 0.1, x.max = 10, n.samples = 10,
+              noise.level = 0, space = "dilution.series", dilution.factor = 2)$A
+```
+
+It stops after `n.samples` concentrations, or before going below `x.min`, whichever comes first. Here the next value, 0.078, would be below 0.1, so there are 7 concentrations rather than 10. `dilution.factor` must be greater than 1.
+
+### Your own concentrations
+
+With `space = "custom"`, `x.range` gives the concentrations directly. They must lie between `x.min` and `x.max`, and `n.samples` is ignored:
+
+```{r}
+simulate_data("MM", list(Km = 1, Vmax = 10), x.min = 0, x.max = 10,
+              noise.level = 0, space = "custom", x.range = c(0.25, 0.5, 1, 2, 4, 8))$A
+```
+
+This is the easiest way to simulate the exact design you plan to run in the lab.
+
+## Replicates
+
+`n.replicates` repeats every concentration. The replicates are stacked: all the concentrations of the first replicate, then all of the second, and so on:
+
+```{r}
+set.seed(1)
+simulate_data("MM", list(Km = 1, Vmax = 10), x.min = 1, x.max = 3, n.samples = 3, n.replicates = 2)
+```
+
+Each replicate gets its own noise.
+
+## Models with an extra variable
+
+The inhibition models (`I`), the two-substrate models (`B`) and the quadratic binding model (`R`) have a second independent variable. Its values come from `z.values`, and data is generated for every combination of concentration and z value:
+
+```{r}
+set.seed(1)
+inhibition <- simulate_data("CI", list(Km = 0.8, Vmax = 12, Ki = 2), x.min = 0.2, x.max = 6,
+                            n.samples = 6, z.values = c(0, 2, 5))
+head(inhibition)
+table(inhibition$I)
+make_plot("CI", data.df = inhibition, x.units = "mM", y.units = "µM/min")
+```
+
+`z.values` is required for these models, and its values must be 0 or more. For `"QBK"` the `R` values must be greater than 0. For models without an extra variable, `z.values` is ignored.
+
+## Noise
+
+Noise is added to the dependent variable only (`V` or `FB`); the concentrations are exact.
+
+- With `noise.type = "relative"` (the default), the standard deviation is `noise.level` times the true value, so `noise.level = 0.05` means 5%. Larger rates get larger noise, and a rate of 0 stays at 0.
+- With `noise.type = "absolute"`, the standard deviation is `noise.level` for every point, in the units of the dependent variable.
+- `noise.level = 0` gives noise-free data.
+
+```{r}
+set.seed(2)
+relative <- simulate_data("MM", list(Km = 1, Vmax = 10), x.min = 0.2, x.max = 10, n.samples = 12,
+                          n.replicates = 3, noise.level = 0.1, noise.type = "relative")
+make_plot("MM", data.df = relative, title = "Relative noise (10%)")
+
+set.seed(2)
+absolute <- simulate_data("MM", list(Km = 1, Vmax = 10), x.min = 0.2, x.max = 10, n.samples = 12,
+                          n.replicates = 3, noise.level = 0.5, noise.type = "absolute")
+make_plot("MM", data.df = absolute, title = "Absolute noise (SD 0.5)")
+```
+
+With relative noise, the replicates spread further apart as the rate rises. With absolute noise, the spread is the same everywhere.
+
+### Clipping and the truncated normal distribution
+
+Noise can push a value outside the range the dependent variable can take: a rate below 0, or a fraction bound above 1. With `distribution = "norm"` (the default), such values are clipped to the edge of the range, and you get a warning. This binding example has absolute noise of 0.1, so values near full binding often go over 1:
+
+```{r}
+set.seed(7)
+clipped <- simulate_data("BK", list(KD = 1), x.min = 0, x.max = 20, n.samples = 12,
+                         n.replicates = 3, noise.level = 0.1, noise.type = "absolute")
+sum(clipped$FB == 1)
+```
+
+Several points sit at exactly 1, which real measurements rarely would.
+
+`distribution = "truncated.norm"` is an alternative. It draws the noise from a normal distribution truncated to the valid range, so no value needs clipping and the values spread smoothly up to the edge instead:
+
+```{r}
+set.seed(7)
+truncated <- simulate_data("BK", list(KD = 1), x.min = 0, x.max = 20, n.samples = 12,
+                           n.replicates = 3, noise.level = 0.1, noise.type = "absolute",
+                           distribution = "truncated.norm")
+sum(truncated$FB == 1)
+max(truncated$FB)
+```
+
+Neither is perfect. Near an edge, both may shift the average of the data a little away from the true curve, so fits to such data might be slightly biased.
+
+## Reproducible data
+
+The noise is random, so each call gives different data. Call `set.seed()` first to get the same data every time, as every example on this site does:
+
+```{r}
+set.seed(123); a <- simulate_data("MM", list(Km = 1, Vmax = 10), x.min = 0.5, x.max = 5, n.samples = 4)
+set.seed(123); b <- simulate_data("MM", list(Km = 1, Vmax = 10), x.min = 0.5, x.max = 5, n.samples = 4)
+identical(a, b)
+```
+
+## Curves are dense, noise-free data
+
+`make_curve()` calls `simulate_data()` with no noise and 250 points, so a curve is simply dense, noise-free data. It takes the same model, parameters and spacing arguments:
+
+```{r}
+curve <- make_curve("MM", list(Km = 1, Vmax = 10), x.min = 0, x.max = 10)
+dim(curve)
+```
+
+## Comparing data with the true curve
+
+Because you know the parameters you simulated with, you can draw the true curve alongside a fitted one. `make_plot()` draws `extra.curve` in black on top of everything else:
+
+```{r}
+true_params <- list(Km = 1, Vmax = 10)
+set.seed(4)
+data <- simulate_data("MM", true_params, x.min = 0.2, x.max = 8, n.samples = 6, noise.level = 0.1)
+fit <- fit_model("MM", data, start.params = list(Km = 2, Vmax = 8))
+
+make_plot("MM", data.df = data,
+          curve.df = make_curve("MM", fit$fitted.params, x.min = 0, x.max = 8),
+          extra.curve = make_curve("MM", true_params, x.min = 0, x.max = 8))
+```
+
+The coloured line is the fit, and the black line is the truth. The gap between them is the error that this design and this much noise produce. [Designing an experiment](example-experimental-design.html) repeats this many times to compare designs.
+
+## See also
+
+- [Simulation and noise](../concepts/simulation.html) explains the ideas behind these options.
+- [Fitting models](fitting-models.html) covers fitting the data you simulate.
+- `simulate_data()` in the function reference lists every argument.

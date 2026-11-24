@@ -1,0 +1,68 @@
+---
+title: "Teaching with EKA2"
+description: "Ideas for using EKA2 in enzyme kinetics classes, from exploring a model to designing an experiment."
+---
+
+EKA2 was designed for teaching as well as research. Students need only a browser: there's nothing to install and no accounts to set up. Because EKA2 can simulate data from a model with known parameters, students can test their understanding against a known answer, which real data doesn't offer.
+
+The exercises below are starting points. Each lists what students do in EKA2 and what they should notice. They build on each other, roughly from a first lecture on Michaelis-Menten kinetics to a lab on inhibition. The [user guide](user-guide.html) explains every control mentioned.
+
+## Exercises
+
+A tip for exercises that simulate more than once: a fit moves the sliders to the fitted values, and **Simulate Data** uses whatever values the sliders hold. So set the parameters back to the same values (for example Km = 0.5 and Vmax = 2) before each new simulation.
+
+### 1. Meet the Michaelis-Menten equation
+
+**Exercise:** with Michaelis-Menten selected, move the Km and Vmax sliders and watch the curve.
+
+**Notice:** Vmax sets the height the curve approaches; Km sets how quickly it gets there. At a substrate concentration equal to Km, the rate is exactly half of Vmax. Ask students to predict the curve before moving a slider.
+
+### 2. Noise, replicates and confidence
+
+**Exercise:** simulate data with a low noise level (say 0.02) and fit; then a high noise level (say 0.25) and fit; then the high noise level with 3 replicates. Compare the confidence intervals in the Results tab (**Bounds & Errors Columns**). Turn on **Show true curve (of simulated data)** to compare each fit with the truth.
+
+**Notice:** more noise gives wider confidence intervals and fits further from the true values. Replicates narrow the intervals again. A 95% interval misses the true value about one time in twenty.
+
+### 3. Where to measure
+
+**Exercise:** keeping the parameters fixed, simulate and fit three experiments with the same number of samples: concentrations only well below Km, only well above Km, and spanning Km (adjust the **Data x-axis range**). Compare the confidence intervals for Km and Vmax.
+
+**Notice:** data only at low concentrations pins down neither parameter well, and its fit may fail to give confidence intervals at all (in Advanced Mode, the Asymptotic method may still give some, very wide). Data only at saturating concentrations determines Vmax but hardly Km. Spanning Km works best. A **Dilution Series** is a practical way to do this. The worked example [Designing an experiment by simulation](../r/example-experimental-design.html) explores the same idea in R.
+
+### 4. What linearised plots do to errors
+
+**Exercise:** In **Advanced Mode**, simulate noisy data with a few low concentrations, fit, and switch between the standard, Lineweaver-Burk and Hanes plots.
+
+**Notice:** taking reciprocals magnifies the errors at the lowest concentrations, so those points scatter wildly on the Lineweaver-Burk plot and dominate it, while the Hanes plot keeps them in proportion. This is why nonlinear least squares fits the untransformed data. See [Plot types](../concepts/plots.html).
+
+### 5. Recognising inhibition types
+
+**Exercise:** choose Competitive, Uncompetitive, Non-competitive and Mixed Inhibition in turn, and look at the curves on the standard plot and (in Advanced Mode) the Lineweaver-Burk plot. Mixed Inhibition starts with Kiu (2) larger than Kic (0.5). Try making them equal: it then behaves exactly like non-competitive inhibition. Then simulate data from one inhibition type without telling the students which, and ask them to identify it.
+
+**Notice:** competitive inhibition raises the apparent Km and leaves Vmax unchanged, so the Lineweaver-Burk lines meet on the 1/v axis; uncompetitive inhibition gives parallel lines; pure non-competitive inhibition gives lines meeting on the 1/a axis; mixed inhibition gives lines meeting elsewhere.
+
+### 6. Choosing between models
+
+**Exercise:** upload the sample [inhibition data](../../data/inhibition.csv) (simulated from a mixed inhibitor). Fit the competitive, uncompetitive, non-competitive and mixed models, and compare their AIC and BIC (**Extra Stats Columns** in the Results tab) and their residual plots.
+
+**Notice:** the model with the lowest AIC and patternless residuals is the best description of the data. The worked example [Telling inhibition types apart](../r/example-inhibition.html) does the same analysis in R.
+
+### 7. Cooperativity
+
+**Exercise:** select the Hill model and move the Hill coefficient above and below 1, comparing the curve with Michaelis-Menten (a coefficient of 1). Then set the Hill coefficient to 2.5, the **Data x-axis range** to 0.1–2 and **Number of Samples** to 15, so that the data covers the sigmoidal part of the curve, and simulate data. Fit the Hill model, then switch to Michaelis-Menten and fit that too.
+
+**Notice:** n above 1 gives a sigmoidal curve. Michaelis-Menten fits it badly, which shows as a clear wave in its residuals and a much higher AIC.
+
+### 8. The direct linear plot
+
+**Exercise:** In **Advanced Mode**, simulate a small Michaelis-Menten dataset, switch to the direct linear plot, and estimate Km and Vmax from where the lines cluster. Compare with the fitted values.
+
+**Notice:** each measurement becomes a line of possible (Km, Vmax) pairs, and the lines meet near the answer. It's a way to estimate parameters with a ruler, and the idea behind the Nonparametric fitting method.
+
+## Running a class
+
+- **Capacity.** EKA2 runs a limited number of sessions at once. If a whole class will use it at the same time, email <haigvbishop@gmail.com> in advance, so that capacity can be raised for the session.
+- **Sessions are private and temporary.** Each student works in their own session, and nothing is saved, so ask students to download results (**Download Results**) and plots (**PDF**, **SVG** or **PNG**) for their reports.
+- **Basic Mode first.** EKA2 starts in Basic Mode, which keeps the screen simple. Introduce Advanced Mode when students need other plots, noise settings or parameter locking.
+
+The concepts behind these exercises are explained in [Enzyme Kinetics Concepts](../concepts/models.html).

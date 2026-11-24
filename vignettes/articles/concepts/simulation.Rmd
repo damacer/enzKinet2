@@ -1,0 +1,71 @@
+---
+title: "Simulation and noise"
+description: "Why simulate kinetics data, how simulated data is made, and how noise is modelled."
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", echo = FALSE, fig.width = 6.5, fig.height = 3.6, out.width = "85%")
+library(enzKinet2)
+```
+
+Simulated data is data generated from a model with known parameter values, plus random noise that imitates measurement error. Because the true values are known, you can see how well an analysis recovers them. That makes simulation useful for:
+
+- **Learning:** seeing how noise, the number of points and the concentration range affect a fit.
+- **Planning experiments:** checking, before going to the lab, whether a design will give precise enough estimates. The worked example [Designing an experiment](../r/example-experimental-design.html) does this.
+- **Testing:** checking that a fitting method works before trusting it with real data.
+
+## How simulated data is made
+
+1. **Choose the concentrations.** The primary independent variable (A, or P for binding) gets a set of values between a minimum and a maximum. For models with an extra variable (I, B or R), every chosen value of it is combined with every value of A or P.
+2. **Compute the true values.** The model gives the exact rate (or fraction bound) at each point.
+3. **Repeat for replicates.** Each point can be repeated, as replicate measurements would be.
+4. **Add noise.** A random number is added to each value of the dependent variable.
+
+## Spacing the concentrations
+
+How the concentrations are spread matters as much as how many there are. Points crowded at high concentrations say little about Km.
+
+- **Linear:** evenly spaced.
+- **Dilution series:** each concentration is the previous one divided by a dilution factor, starting from the maximum, as in a serial dilution in the lab. This spreads the points evenly on a logarithmic scale. If the series reaches the bottom of the range first, you get fewer concentrations than asked for.
+- **Denser at low or high concentrations** (enzKinet2 only): these are called `"exponential"` and `"inverse.exponential"`, although the spacing is actually quadratic and cubic.
+- **Custom** (enzKinet2 only): your own list of concentrations.
+
+```{r}
+spaces <- list(
+  "Linear" = simulate_data("MM", list(Km = 1, Vmax = 1), 0.1, 8, n.samples = 8, noise.level = 0)$A,
+  "Dilution series (factor 2)" = simulate_data("MM", list(Km = 1, Vmax = 1), 0.05, 8, n.samples = 8, noise.level = 0,
+                                               space = "dilution.series", dilution.factor = 2)$A,
+  "Denser at low (\"exponential\")" = simulate_data("MM", list(Km = 1, Vmax = 1), 0.1, 8, n.samples = 8, noise.level = 0,
+                                                    space = "exponential")$A
+)
+df <- do.call(rbind, lapply(names(spaces), function(s) data.frame(spacing = s, A = spaces[[s]])))
+df$spacing <- factor(df$spacing, levels = rev(names(spaces)))
+ggplot2::ggplot(df, ggplot2::aes(A, spacing)) + ggplot2::geom_point(size = 3, colour = "#608AC8") +
+  ggplot2::labs(x = "Substrate concentration A", y = NULL, title = "Eight concentrations up to 8, spaced three ways") +
+  ggthemes::theme_few()
+```
+
+## Noise
+
+Real measurements scatter around the true value. Simulated data imitates this by adding normally distributed noise with a chosen standard deviation:
+
+- **Absolute noise** has the same standard deviation at every point, in the units of the y variable (the rate, or the fraction bound). It suits measurements whose error doesn't depend on the size of the signal.
+- **Relative noise** has a standard deviation proportional to the true value: a noise level of 0.05 means 5%. It suits measurements whose error grows with the signal, and it gives small rates small errors.
+
+### The valid range
+
+A rate can't be negative, and a fraction bound must be between 0 and 1. With enough noise, some simulated values would fall outside these limits. There are two ways to handle that:
+
+- **Clipping** (normal noise): values outside the range are set to its edge, so they can pile up unnaturally at exactly 0 or 1.
+- **Truncated normal** noise: values are drawn from a normal distribution cut off at the edges of the range, so they spread smoothly up to the edge instead.
+
+It's a trade-off. Truncated normal noise looks more like real data near a limit, such as a fraction bound close to 1, but with either method the average of the data near a limit may be shifted a little from the true curve.
+
+## The true curve
+
+Because simulated data comes from a known model, its curve can be drawn alongside a fit. EKA2 calls this the **true curve**. Comparing a fitted curve with the true one shows directly how well the fit recovered the model.
+
+## Doing this
+
+- **In R:** `simulate_data()` and `make_curve()`. See [Simulating data](../r/simulating-data.html).
+- **In EKA2:** the Simulate Data panel on the Modelling tab, and "Show true curve" under Plot Options. See the [user guide](../eka2/user-guide.html).
