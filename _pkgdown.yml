@@ -1,0 +1,102 @@
+url: https://eka.nz/docs
+title: EKA Documentation
+
+# The left side panel with the three sections is in pkgdown/templates/before-body.html
+# (placed by pkgdown/templates/layout.html). Keep its links in step with the articles below.
+
+template:
+  bootstrap: 5
+  light-switch: true
+  math-rendering: katex
+  bslib:
+    primary: "#608AC8"
+    base_font: {google: {family: "Ubuntu Sans", wght: [400, 700], display: "fallback"}}
+    heading_font: {google: {family: "Ubuntu", wght: [400, 500, 700], display: "fallback"}}
+    code_font: {google: {family: "Ubuntu Mono", wght: [400, 700], display: "fallback"}}
+  opengraph:
+    image:
+      src: man/figures/logo.png
+      alt: "EKA logo"
+
+home:
+  title: Documentation for EKA2 and enzKinet2
+  description: >
+    Documentation for EKA2, the free enzyme kinetics web app at eka.nz, and
+    enzKinet2, the R package behind it.
+  sidebar: false
+
+navbar:
+  structure:
+    left: []
+    right: [eka2, search, github, lightswitch]
+  components:
+    eka2:
+      text: Open EKA2
+      href: https://eka.nz
+      target: _blank
+      class: eka-ext
+      aria-label: Open the EKA2 web app (opens in a new tab)
+    github:
+      icon: fa-github
+      href: https://github.com/damacer/enzKinet2
+      aria-label: enzKinet2 on GitHub
+
+reference:
+- title: Simulate
+  contents:
+  - simulate_data
+  - make_curve
+- title: Fit
+  contents:
+  - fit_model
+- title: Plot
+  contents:
+  - make_plot
+  - make_residual_plot
+  - update_plot_curve
+- title: Models
+  desc: The constants that define the models, and the strings EKA2 displays.
+  contents:
+  - model_registry
+  - interface_constants
+
+articles:
+- title: R Package (enzKinet2)
+  navbar: ~
+  contents:
+  - articles/enzKinet2
+  - articles/r/simulating-data
+  - articles/r/fitting-models
+  - articles/r/plotting
+  - articles/r/your-own-data
+  - articles/r/troubleshooting
+  - articles/r/reproducing-eka2
+- title: Worked examples
+  contents:
+  - articles/r/example-michaelis-menten
+  - articles/r/example-hill
+  - articles/r/example-inhibition
+  - articles/r/example-two-substrates
+  - articles/r/example-binding
+  - articles/r/example-experimental-design
+- title: Web App (EKA2)
+  contents:
+  - articles/eka2/quick-start
+  - articles/eka2/user-guide
+  - articles/eka2/faq
+  - articles/eka2/teaching
+- title: Enzyme Kinetics Concepts
+  contents:
+  - articles/concepts/models
+  - articles/concepts/fitting
+  - articles/concepts/simulation
+  - articles/concepts/plots
+  - articles/concepts/glossary
+
+footer:
+  structure:
+    left: [copyright]
+    right: [eka]
+  components:
+    copyright: "Copyright © 2024–2026 Haig Bishop. enzKinet2 is free software under the [GPL-3](https://eka.nz/docs/LICENSE.html)."
+    eka: "[EKA2](https://eka.nz) · [enzKinet2 on GitHub](https://github.com/damacer/enzKinet2)"

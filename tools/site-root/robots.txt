@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /app/
+
+Sitemap: https://eka.nz/docs/sitemap.xml

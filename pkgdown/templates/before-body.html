@@ -1,0 +1,56 @@
+<!-- Overrides pkgdown's BS5 before-body.html (pkgdown 2.2.1) to render the left side panel.
+     layout.html places it beside the content. Keep the links in step with the articles in _pkgdown.yml. -->
+{{#includes}}{{{before_body}}}{{/includes}}
+    <nav class="eka-sidebar" aria-label="Documentation sections">
+      <details class="eka-sidebar-details" open>
+      <summary>Documentation sections</summary>
+      <a class="eka-home" href="{{#site}}{{root}}{{/site}}index.html">Home</a>
+
+      <h2>R Package (enzKinet2)</h2>
+      <ul>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/enzKinet2.html">Get started</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/r/simulating-data.html">Simulating data</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/r/fitting-models.html">Fitting models</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/r/plotting.html">Plotting</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/r/your-own-data.html">Using your own data</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/r/troubleshooting.html">Troubleshooting</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/r/reproducing-eka2.html">Reproducing EKA2 in R</a></li>
+        <li class="eka-group">Worked examples
+          <ul>
+            <li><a href="{{#site}}{{root}}{{/site}}articles/r/example-michaelis-menten.html">Michaelis-Menten from a CSV</a></li>
+            <li><a href="{{#site}}{{root}}{{/site}}articles/r/example-hill.html">Cooperativity (Hill)</a></li>
+            <li><a href="{{#site}}{{root}}{{/site}}articles/r/example-inhibition.html">Telling inhibition types apart</a></li>
+            <li><a href="{{#site}}{{root}}{{/site}}articles/r/example-two-substrates.html">Two substrates</a></li>
+            <li><a href="{{#site}}{{root}}{{/site}}articles/r/example-binding.html">Binding with ligand depletion</a></li>
+            <li><a href="{{#site}}{{root}}{{/site}}articles/r/example-experimental-design.html">Designing an experiment</a></li>
+          </ul>
+        </li>
+        <li><a href="{{#site}}{{root}}{{/site}}reference/index.html">Function reference</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}news/index.html">Changelog</a></li>
+      </ul>
+
+      <h2>Web App (EKA2)</h2>
+      <ul>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/eka2/quick-start.html">Quick start</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/eka2/user-guide.html">User guide</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/eka2/faq.html">FAQ</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/eka2/teaching.html">Teaching with EKA2</a></li>
+        <li><a class="eka-ext" href="https://eka.nz" target="_blank" rel="noopener">Open EKA2</a></li>
+      </ul>
+
+      <h2>Enzyme Kinetics Concepts</h2>
+      <ul>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/concepts/models.html">Models</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/concepts/fitting.html">Fitting and confidence intervals</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/concepts/simulation.html">Simulation and noise</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/concepts/plots.html">Plot types</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}articles/concepts/glossary.html">Glossary</a></li>
+      </ul>
+
+      <h2>About</h2>
+      <ul>
+        <li><a href="{{#site}}{{root}}{{/site}}authors.html">Authors and citation</a></li>
+        <li><a href="{{#site}}{{root}}{{/site}}LICENSE.html">Licence</a></li>
+      </ul>
+      </details>
+    </nav>
