@@ -90,7 +90,7 @@ results[, c("Model", "Method", "Km", "Km_lower_bound", "Km_upper_bound", "AIC")]
 EKA2 draws its curve with `make_curve()`, using the package's default of 250 points. The range depends on the plot:
 
 - for the standard, Hanes and Eadie-Hofstee plots, from 0;
-- for the log10 and Lineweaver-Burk plots, from the smallest concentration above 0 in the data (or 1e-6 without data);
+- for the log10 and Lineweaver-Burk plots, from the smallest concentration above 0 in the data (or, without data, from the bottom of the "Data x-axis range");
 - up to the larger of the "Plot x-axis maximum" slider and the largest concentration in the data.
 
 The log10 curve also uses `space = "exponential"`, which puts more of its points at low concentrations.
