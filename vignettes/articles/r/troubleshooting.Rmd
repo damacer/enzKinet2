@@ -44,6 +44,10 @@ fit$error
 
 The fit converged, but an estimate was 0 or less, or above 1e19, so it was rejected. This usually means the data doesn't support the model, for example a Hill coefficient or inhibition constant that the data can't pin down, or a model that doesn't match the data's shape. Try another model, or collect data over a wider range.
 
+**"Model fitting failed: the estimates could not be calculated from this data."** (also printed)
+
+`fit.method = "ss.calc"` or `"recursive"` couldn't calculate its estimates, usually because too few points have a concentration above 0 (both leave out points at 0). Add more distinct concentrations, or fit with `"nls"`.
+
 **"Nonparametric fitting needs at least two observations with different, positive A and V."**
 
 `fit.method = "nonparametric"` builds its estimates from pairs of points with different concentrations, skipping any with a concentration or rate of 0. Your data didn't have such a pair. Add more distinct concentrations.
