@@ -345,9 +345,9 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
             # Get confidence intervals
             if (get.conf.int) {
                 # Compute the confidence intervals using the chosen method.
-                #  - "profile":    profile likelihood via stats::confint(), which dispatches
-                #                  to MASS:::confint.nls. Preferred for nonlinear fits as it
-                #                  captures asymmetric parameter uncertainty, but it can fail
+                #  - "profile":    profile likelihood via stats::confint() (whose method for nls
+                #                  fits came from MASS before R 4.4). Preferred for nonlinear fits
+                #                  as it captures asymmetric parameter uncertainty, but it can fail
                 #                  or return non-finite bounds for weakly identified parameters.
                 #  - "asymptotic": Wald / standard-error intervals via nlstools::confint2().
                 #                  Fast and symmetric, but can cross impossible parameter ranges.
@@ -355,8 +355,8 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
                     switch(
                         conf.method,
                         profile = {
-                            # Profile likelihood relies on MASS's confint.nls S3 method.
-                            if (!requireNamespace("MASS", quietly = TRUE)) {
+                            # Before R 4.4, the confint() method for nls fits is in MASS
+                            if (getRversion() < "4.4.0" && !requireNamespace("MASS", quietly = TRUE)) {
                                 stop("Package 'MASS' is required for profile likelihood confidence intervals.")
                             }
                             suppressMessages(stats::confint(fit, level = conf.level))

@@ -70,7 +70,7 @@ Asymptotic intervals failed or came out infinite, usually because the parameters
 
 **"Confidence interval computation failed: Package 'MASS' is required for profile likelihood confidence intervals."**
 
-enzKinet2 uses the MASS package for profile intervals. MASS comes with R and is installed with enzKinet2, so this only happens if it was removed. The estimates are still returned. Reinstall MASS with `install.packages("MASS")`, or use `conf.method = "asymptotic"`.
+Before R 4.4, profile intervals come from the MASS package. MASS comes with R, so this only happens with an older R from which it was removed. The estimates are still returned. Reinstall MASS with `install.packages("MASS")`, or use `conf.method = "asymptotic"`.
 
 ### Errors before fitting
 

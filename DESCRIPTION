@@ -29,7 +29,6 @@ Imports:
     broom,
     ggplot2,
     ggthemes,
-    MASS,
     modelr,
     nlstools,
     pracma,
@@ -37,4 +36,6 @@ Imports:
     stats,
     truncnorm,
     utils
+Suggests:
+    MASS
 Config/testthat/edition: 3
