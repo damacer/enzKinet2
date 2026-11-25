@@ -306,7 +306,7 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         }
         # Ensure all values of locked.params are in param.names
         if (!is.null(locked.params) && !all(locked.params %in% param.names)) {
-            stop("All values of locked.params must be from:", model.params.string, ".")
+            stop("All values of locked.params must be from: ", model.params.string, ".")
         }
         # Ensure not all parameters are locked (nothing left to fit)
         if (!is.null(locked.params) && all(param.names %in% locked.params)) {
