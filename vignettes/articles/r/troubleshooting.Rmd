@@ -52,6 +52,10 @@ The fit converged, but an estimate was 0 or less, or above 1e19, so it was rejec
 
 This comes from `fit.method = "recursive"` when its estimates still haven't settled after 1,000 rounds. That's rare, and suggests the data doesn't follow a Michaelis-Menten curve well. Check the data on a plot, or fit with `"nls"`.
 
+**Warning: "The minor noise (standard deviation 1e-6) is more than 0.1% of the largest V value, so it isn't negligible. Consider using smaller units, such as uM rather than M."**
+
+`add.minor.noise = TRUE` adds noise of a fixed size, which is only negligible when the data is much larger than it. Convert the data to smaller units, which makes its values larger, and fit again.
+
 ### The fit worked but the confidence intervals didn't
 
 Here `fitted.params` holds the estimates but no bounds, and `error` explains. If the interval calculation itself raised an error (with either method), the console also shows "Confidence interval computation failed:" with the reason. It doesn't when the bounds simply came out infinite.

@@ -112,7 +112,9 @@ variable (\code{I}, \code{B} or \code{R}) need at least two different values of 
 \strong{Noise-free data.} nls fails on data that the model fits exactly.
 \code{add.minor.noise = TRUE} first adds normal noise with a standard deviation
 of 1e-6 to the dependent variable. It uses a fixed seed, so it's
-reproducible, and it leaves your random number stream as it was.
+reproducible, and it leaves your random number stream as it was. It warns
+if that is more than 0.1\% of the dependent variable's largest value, as it
+can be for data in large units (e.g. rates in M/s).
 
 \strong{Confidence intervals} (\code{get.conf.int = TRUE}, nls only). With
 \code{conf.method = "profile"} (the default) they are profile likelihood

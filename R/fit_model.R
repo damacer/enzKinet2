@@ -46,7 +46,9 @@
 #' **Noise-free data.** nls fails on data that the model fits exactly.
 #' `add.minor.noise = TRUE` first adds normal noise with a standard deviation
 #' of 1e-6 to the dependent variable. It uses a fixed seed, so it's
-#' reproducible, and it leaves your random number stream as it was.
+#' reproducible, and it leaves your random number stream as it was. It warns
+#' if that is more than 0.1% of the dependent variable's largest value, as it
+#' can be for data in large units (e.g. rates in M/s).
 #'
 #' **Confidence intervals** (`get.conf.int = TRUE`, nls only). With
 #' `conf.method = "profile"` (the default) they are profile likelihood
@@ -260,6 +262,11 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
         saved.seed <- if (had.seed) get(".Random.seed", envir = .GlobalEnv) else NULL
         set.seed(24)
         dependent.var.name <- MODEL_VARIABLES[[model]][2]
+        # The noise is only negligible if the data is much larger than it
+        if (1e-6 > 1e-3 * max(abs(data.df[[dependent.var.name]]))) {
+            warning("The minor noise (standard deviation 1e-6) is more than 0.1% of the largest ", dependent.var.name,
+                    " value, so it isn't negligible. Consider using smaller units, such as uM rather than M.", call. = FALSE)
+        }
         noise <- rnorm(n = nrow(data.df), mean = 0, sd = 1e-6)
         data.df[[dependent.var.name]] <- data.df[[dependent.var.name]] + noise
         if (had.seed) {
