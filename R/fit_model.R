@@ -14,7 +14,7 @@
 #' * `"ss.calc"` (`"MM"` only): a closed-form least-squares fit of the
 #'   Lineweaver-Burk line (1/v against 1/a) weighted by v^2, which suits errors
 #'   in v with a constant coefficient of variation (Cornish-Bowden's equations
-#'   15.7-15.9).
+#'   15.7-15.9). Points with `A` of 0 or less are left out.
 #' * `"nonparametric"` (`"MM"` only): the medians of the Km and Vmax values
 #'   given by every pair of points, as in the direct linear plot. Pairs with
 #'   the same `A`, or a zero `A` or `V`, are skipped, and pairs whose lines
@@ -499,27 +499,33 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     
     # If sum of squares calculation method =========
     if (fit.method == "ss.calc") {
-        # Define a small epsilon value
-        eps <- 1e-10
+        # Drop points at A = 0, which have no 1/a and would divide by zero
+        keep <- data.df$A > 0
         # Transform the vectors as needed
-        v1 <- data.df$V^1
-        v2 <- data.df$V^2
-        a1 <- data.df$A^1
-        a2 <- data.df$A^2
+        v1 <- data.df$V[keep]
+        v2 <- v1^2
+        a1 <- data.df$A[keep]
+        a2 <- a1^2
         # Calculate needed sums
-        sum_v2_by_a2 <- sum(v2/(a2+eps))
-        sum_v2_by_a1 <- sum(v2/(a1+eps))
-        sum_v1_by_a1 <- sum(v1/(a1+eps))
+        sum_v2_by_a2 <- sum(v2/a2)
+        sum_v2_by_a1 <- sum(v2/a1)
+        sum_v1_by_a1 <- sum(v1/a1)
         sum_v2 <- sum(v2)
         sum_v1 <- sum(v1)
+        # Calculate the shared denominator
+        denominator <- sum_v2_by_a2 * sum_v1 - sum_v2_by_a1 * sum_v1_by_a1
         # Use this equation to calculate Km estimate
-        est.Km <- (sum_v2 * sum_v1_by_a1 - sum_v2_by_a1 * sum_v1) / 
-            (sum_v2_by_a2 * sum_v1 - sum_v2_by_a1 * sum_v1_by_a1 + eps)
+        est.Km <- (sum_v2 * sum_v1_by_a1 - sum_v2_by_a1 * sum_v1) / denominator
         # Use this equation to calculate Vmax estimate
-        est.Vmax <- (sum_v2_by_a2 * sum_v2 - sum_v2_by_a1^2) / 
-            (sum_v2_by_a2 * sum_v1 - sum_v2_by_a1 * sum_v1_by_a1 + eps)
-        # Return estimates
-        fitted.params <- list("Km" = est.Km, "Vmax" = est.Vmax)
+        est.Vmax <- (sum_v2_by_a2 * sum_v2 - sum_v2_by_a1^2) / denominator
+        # If the estimates can't be calculated, fail
+        if (!is.finite(est.Km) || !is.finite(est.Vmax)) {
+            fitted.params <- NULL
+            errorMessage <- "Model fitting failed: the estimates could not be calculated from this data."
+            message(errorMessage)
+        } else {
+            fitted.params <- list("Km" = est.Km, "Vmax" = est.Vmax)
+        }
     }
     # ===============================
     

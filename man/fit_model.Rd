@@ -79,7 +79,7 @@ values. It can also return confidence intervals and fit statistics.
 \item \code{"ss.calc"} (\code{"MM"} only): a closed-form least-squares fit of the
 Lineweaver-Burk line (1/v against 1/a) weighted by v^2, which suits errors
 in v with a constant coefficient of variation (Cornish-Bowden's equations
-15.7-15.9).
+15.7-15.9). Points with \code{A} of 0 or less are left out.
 \item \code{"nonparametric"} (\code{"MM"} only): the medians of the Km and Vmax values
 given by every pair of points, as in the direct linear plot. Pairs with
 the same \code{A}, or a zero \code{A} or \code{V}, are skipped, and pairs whose lines
