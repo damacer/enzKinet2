@@ -138,6 +138,10 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     if (!model %in% VALID_MODELS) {
         stop("Invalid model. Please choose a valid model such as 'MM'.")
     }
+    # Check if fit.method is valid
+    if (!is.character(fit.method) || length(fit.method) != 1 || !fit.method %in% names(FITTING_METHODS)) {
+        stop("Invalid fit method. Please choose a valid method such as 'nls', 'recursive', 'ss.calc' or 'nonparametric'.")
+    }
     # Check if start.params is a list if fit.method is NLS
     if (!is.list(start.params) && fit.method == "nls") {
         stop("start.params must be a list when using nonlinear least squares.")
@@ -170,12 +174,8 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
     if (!is.logical(get.stats)) {
         stop("get.stats must be TRUE or FALSE.")
     }
-    # Check if fit.method is valid
-    if (!is.null(fit.method) && !fit.method %in% names(FITTING_METHODS)) {
-        stop("Invalid fit method. Please choose a valid method such as 'nls', 'recursive', 'ss.calc' or 'nonparametric.")
-    }
     # Check if model is valid for the fit.method
-    if (!is.null(fit.method) && !model %in% FITTING_METHODS[[fit.method]]) {
+    if (!model %in% FITTING_METHODS[[fit.method]]) {
         stop(paste("The model", model, "is not valid for the fit method", fit.method, "."))
     }
     # Check if fit.method is not "nls" and locked.params is TRUE

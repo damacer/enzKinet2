@@ -75,7 +75,7 @@ These stop your code, because something about the arguments or data is wrong.
 **The model and method**
 
 - "Invalid model. Please choose a valid model such as 'MM'.": use a code from `VALID_MODELS`.
-- "Invalid fit method. Please choose a valid method such as 'nls', 'recursive', 'ss.calc' or 'nonparametric.": check the spelling of `fit.method`.
+- "Invalid fit method. Please choose a valid method such as 'nls', 'recursive', 'ss.calc' or 'nonparametric'.": check the spelling of `fit.method`.
 - "The model *X* is not valid for the fit method *Y* .": only `"MM"` can use `"ss.calc"`, `"nonparametric"` and `"recursive"`. Use `"nls"` for the other models.
 - "Locked parameters are only supported for the 'nls' fit method.", "Confidence intervals can only be derived with the 'nls' fit method." and "Statistics can only be derived with the 'nls' fit method.": with the other methods, leave `locked.params` as `NULL` and `get.conf.int` and `get.stats` as `FALSE`.
 
