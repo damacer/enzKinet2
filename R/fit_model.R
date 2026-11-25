@@ -427,6 +427,10 @@ fit_model <- function(model, data.df, start.params = NULL, fit.method = "nls", l
             }
             
         }, error = function(e) {
+            # Return no estimates, even if nls() itself succeeded, so that estimates
+            # with an error always mean that only the confidence intervals failed
+            fitted.params <<- NULL
+            statistics <<- NULL
             # Message for web page
             errorMessage <<- paste("Model fitting failed. Possible reasons: noiseless data, poor starting parameters, over-parameterisation, etc.")
             # Message for console
