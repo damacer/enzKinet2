@@ -61,7 +61,7 @@ fit$fitted.params
 
 Estimates from different starting values can differ in their last digits, because the search stops once it's within a small tolerance of the answer. To match EKA2 to the last digit, start from the slider values you used there.
 
-If the fit fails, or only its confidence intervals fail, EKA2 shows the message from `fit$error` and doesn't add a result. In R, the estimates are still in `fit$fitted.params` when only the intervals failed: see [Fitting models](fitting-models.html#when-intervals-cant-be-computed).
+If the fit fails, EKA2 shows the message from `fit$error` and doesn't add a result. If only its confidence intervals fail, EKA2 shows the message and adds the result without them, using the estimates that are still in `fit$fitted.params`: see [Fitting models](fitting-models.html#when-intervals-cant-be-computed).
 
 ## Compare with EKA2's results file
 

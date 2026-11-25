@@ -40,7 +40,7 @@ A fit gives one estimate of each parameter. A **confidence interval** gives a ra
 - **Profile likelihood** (the default). For each parameter, it finds how far the parameter can move, with the others refitted, before the fit gets significantly worse. The intervals can be asymmetric, which suits nonlinear models, whose uncertainty is often asymmetric.
 - **Asymptotic** (Wald). The estimate plus or minus a multiple of its standard error. It's quick and always symmetric, but it relies on the model being close to linear near the estimate, so it can be misleading for nonlinear models, for example by reaching below zero for a parameter that must be positive.
 
-Profile intervals sometimes can't be computed, typically when a parameter is poorly determined by the data. In R the estimates are still returned, and the asymptotic method may still work. In EKA2 the fit isn't recorded, but in Advanced Mode the Asymptotic method may still give a result. A locked parameter's interval is just its locked value.
+Profile intervals sometimes can't be computed, typically when a parameter is poorly determined by the data. The estimates are still returned, in R and in EKA2, and the asymptotic method (in EKA2's Advanced Mode) may still work. A locked parameter's interval is just its locked value.
 
 ### The parameter uncertainty envelope
 

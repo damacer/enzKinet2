@@ -132,7 +132,7 @@ The shaded band around the fitted curve is the **parameter uncertainty envelope*
 
 ![A fitted curve with its parameter uncertainty envelope.](images/fitted.png){.eka-shot width=629}
 
-If a fit fails, or its confidence intervals can't be calculated, a message explains and the fit isn't added to the results. [Fitting and confidence intervals](../concepts/fitting.html) explains the common causes, and the [FAQ](faq.html) has fixes.
+If a fit fails, a message explains and the fit isn't added to the results. If only its confidence intervals can't be calculated, a message says so, and the fit is added to the results without them (and without the envelope). [Fitting and confidence intervals](../concepts/fitting.html) explains the common causes, and the [FAQ](faq.html) has fixes.
 
 ## Results
 

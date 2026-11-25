@@ -71,11 +71,11 @@ For Original and Alternative Michaelis-Menten, lock E0 at your enzyme concentrat
 
 ### The confidence intervals couldn't be calculated
 
-Profile likelihood intervals sometimes can't be found, usually because the data doesn't pin a parameter down well. When this happens, EKA2 doesn't record the fit. More data, especially over a wider range of concentrations, is the real fix. In Advanced Mode, you can switch the **Confidence Interval Method** to **Asymptotic**, which almost always gives an answer but can be misleading for nonlinear models. See [Confidence intervals](../concepts/fitting.html#confidence-intervals).
+Profile likelihood intervals sometimes can't be found, usually because the data doesn't pin a parameter down well. When this happens, EKA2 still records the fit and moves the sliders, but without intervals or the envelope. More data, especially over a wider range of concentrations, is the real fix. In Advanced Mode, you can switch the **Confidence Interval Method** to **Asymptotic**, which almost always gives an answer but can be misleading for nonlinear models. See [Confidence intervals](../concepts/fitting.html#confidence-intervals).
 
 ### Why is the shaded envelope so wide, or why has it gone?
 
-The envelope shows how far the curve moves when each parameter is at the edge of its confidence interval, so it's wide when the parameters are uncertain. It's only shown while the sliders hold the fitted values, so moving a slider hides it. It also isn't drawn on the Eadie-Hofstee or direct linear plots, and Advanced Mode can hide it. See [The parameter uncertainty envelope](../concepts/fitting.html#the-parameter-uncertainty-envelope).
+The envelope shows how far the curve moves when each parameter is at the edge of its confidence interval, so it's wide when the parameters are uncertain. It's only shown while the sliders hold the fitted values, so moving a slider hides it, and only when the confidence intervals could be calculated. It also isn't drawn on the Eadie-Hofstee or direct linear plots, and Advanced Mode can hide it. See [The parameter uncertainty envelope](../concepts/fitting.html#the-parameter-uncertainty-envelope).
 
 ### Which model fits my data best?
 
